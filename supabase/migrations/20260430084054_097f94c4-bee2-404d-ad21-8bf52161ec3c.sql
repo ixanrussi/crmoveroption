@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS login text, ADD COLUMN IF NOT EXISTS senha text;

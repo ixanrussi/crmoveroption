@@ -165,10 +165,12 @@ export default function Afiliados() {
                              className="cursor-pointer" onClick={() => toggleCh(c.id)}>{c.name}</Badge>
                     ))}
                   </div>
-                  {channelIds.length > 0 && (
-                    <div className="space-y-2 p-3 border rounded-md bg-muted/30">
-                      <p className="text-xs text-muted-foreground">Link de promoción por canal</p>
-                      {channelIds.map((cid) => {
+                  <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+                    <p className="text-xs font-medium">Link de promoción por canal</p>
+                    {channelIds.length === 0 ? (
+                      <p className="text-xs text-muted-foreground">Selecciona uno o más canales arriba para agregar sus links.</p>
+                    ) : (
+                      channelIds.map((cid) => {
                         const ch = channels.find((c) => c.id === cid);
                         return (
                           <div key={cid} className="grid grid-cols-[140px_1fr] gap-2 items-center">
@@ -181,9 +183,9 @@ export default function Afiliados() {
                             />
                           </div>
                         );
-                      })}
-                    </div>
-                  )}
+                      })
+                    )}
+                  </div>
                 </div>
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

@@ -191,7 +191,22 @@ export type Database = {
           updated_at?: string
           wager?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "client_commission_plans_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_commission_plans_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       client_contacts: {
         Row: {

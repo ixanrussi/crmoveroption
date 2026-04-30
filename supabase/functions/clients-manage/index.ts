@@ -16,6 +16,7 @@ type ClientPayload = {
   website?: string | null;
   address?: string | null;
   country_id?: string | null;
+  country_ids?: string[] | null;
   affiliate_id?: string | null;
   status?: string;
   notes?: string | null;

@@ -130,6 +130,41 @@ export type Database = {
           },
         ]
       }
+      client_contacts: {
+        Row: {
+          channel: string
+          client_id: string
+          contact_id: string
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          channel: string
+          client_id: string
+          contact_id: string
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          channel?: string
+          client_id?: string
+          contact_id?: string
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_contacts_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       client_software_links: {
         Row: {
           client_id: string

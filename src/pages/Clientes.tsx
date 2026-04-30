@@ -367,8 +367,13 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Currency</Label>
-                          <Input placeholder="USD, EUR, BRL..." value={pl.currency}
-                            onChange={(e) => updatePlan(i, { currency: e.target.value })} />
+                          <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USD">USD</SelectItem>
+                              <SelectItem value="EUR">EUR</SelectItem>
+                            </SelectContent>
+                          </Select>
                         </div>
                         <div className="col-span-2 space-y-1">
                           <Label className="text-xs">Description</Label>

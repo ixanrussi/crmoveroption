@@ -34,10 +34,7 @@ export function AppSidebar() {
             <img src={logo} alt="Overoption" className="h-5 w-auto" />
           </div>
           {!collapsed && (
-            <div className="flex flex-col">
-              <span className="text-sm font-semibold text-sidebar-foreground">CRM</span>
-              <span className="text-[10px] text-sidebar-foreground/60">Overoption</span>
-            </div>
+            <span className="text-lg font-semibold text-sidebar-foreground">CRM</span>
           )}
         </div>
       </SidebarHeader>

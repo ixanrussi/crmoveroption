@@ -25,8 +25,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const fetchRoles = async (uid: string) => {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const [superAdminResult, adminResult] = await Promise.all([
-        (supabase as any).rpc("has_role", { _user_id: uid, _role: "super_admin" }),
-        (supabase as any).rpc("has_role", { _user_id: uid, _role: "admin" }),
+        supabase.rpc("has_role", { _user_id: uid, _role: "super_admin" }),
+        supabase.rpc("has_role", { _user_id: uid, _role: "admin" }),
       ]);
 
       if (!superAdminResult.error && !adminResult.error) {

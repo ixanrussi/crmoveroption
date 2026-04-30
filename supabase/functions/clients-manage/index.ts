@@ -100,6 +100,12 @@ Deno.serve(async (req) => {
     const c = body.client ?? {};
     if (!c.company_name?.trim()) return json(400, { error: "Empresa requerida" });
 
+    const ALLOWED_TYPES = ["Directo", "Agencia", "Network"];
+    const clientType = c.client_type && ALLOWED_TYPES.includes(c.client_type) ? c.client_type : null;
+    const brands = Array.isArray(c.brands)
+      ? c.brands.map((b) => (b ?? "").toString().trim()).filter((b) => b.length > 0)
+      : [];
+
     const payload = {
       company_name: c.company_name.trim(),
       website: c.website || null,
@@ -110,6 +116,8 @@ Deno.serve(async (req) => {
       notes: c.notes || null,
       login: c.login || null,
       senha: c.senha || null,
+      client_type: clientType,
+      brands,
     };
 
     let clientId = body.id;

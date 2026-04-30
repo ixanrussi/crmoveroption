@@ -157,7 +157,7 @@ export default function Afiliados() {
                   <Input value={form.tax_id ?? ""} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} /></div>
                 <div className="col-span-2 space-y-1"><Label>Datos bancarios</Label>
                   <Textarea value={form.bank_details ?? ""} onChange={(e) => setForm({ ...form, bank_details: e.target.value })} /></div>
-                <div className="col-span-2 space-y-1">
+                <div className="col-span-2 space-y-2">
                   <Label>Canales</Label>
                   <div className="flex flex-wrap gap-2 p-2 border rounded-md">
                     {channels.map((c) => (
@@ -165,6 +165,25 @@ export default function Afiliados() {
                              className="cursor-pointer" onClick={() => toggleCh(c.id)}>{c.name}</Badge>
                     ))}
                   </div>
+                  {channelIds.length > 0 && (
+                    <div className="space-y-2 p-3 border rounded-md bg-muted/30">
+                      <p className="text-xs text-muted-foreground">Link de promoción por canal</p>
+                      {channelIds.map((cid) => {
+                        const ch = channels.find((c) => c.id === cid);
+                        return (
+                          <div key={cid} className="grid grid-cols-[140px_1fr] gap-2 items-center">
+                            <Label className="text-sm">{ch?.name}</Label>
+                            <Input
+                              type="url"
+                              placeholder="https://..."
+                              value={channelLinks[cid] ?? ""}
+                              onChange={(e) => setChannelLinks({ ...channelLinks, [cid]: e.target.value })}
+                            />
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

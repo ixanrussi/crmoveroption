@@ -232,6 +232,59 @@ export default function Clientes() {
                   ))}
                 </div>
 
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <Label className="text-base">Marcas</Label>
+                  <p className="text-xs text-muted-foreground">Agrega las marcas del cliente (cuando tiene más de una).</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nombre de la marca"
+                      value={brandInput}
+                      onChange={(e) => setBrandInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = brandInput.trim();
+                          if (v && !(form.brands ?? []).includes(v)) {
+                            setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                          }
+                          setBrandInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const v = brandInput.trim();
+                        if (v && !(form.brands ?? []).includes(v)) {
+                          setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                        }
+                        setBrandInput("");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Agregar
+                    </Button>
+                  </div>
+                  {(form.brands ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Sin marcas agregadas.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(form.brands ?? []).map((b: string, i: number) => (
+                        <Badge key={`${b}-${i}`} variant="secondary" className="flex items-center gap-1">
+                          {b}
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, brands: form.brands.filter((_: string, idx: number) => idx !== i) })}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
                   <Select value={softwareId ?? ""} onValueChange={(v) => setSoftwareId(v || null)}>

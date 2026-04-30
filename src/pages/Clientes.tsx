@@ -63,28 +63,33 @@ export default function Clientes() {
     setOpen(true);
   };
 
+  const [saving, setSaving] = useState(false);
+
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }
-    const payload = {
-      company_name: form.company_name, contact_name: form.contact_name || null,
-      email: form.email || null, phone: form.phone || null, website: form.website || null,
-      address: form.address || null, country_id: form.country_id || null,
-      affiliate_id: form.affiliate_id || null, status: form.status, notes: form.notes || null,
-    };
-    let clientId = editing?.id;
-    if (editing) {
-      const { error } = await supabase.from("clients").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); return; }
-    } else {
-      const { data, error } = await supabase.from("clients").insert(payload).select().single();
-      if (error) { toast.error(error.message); return; }
-      clientId = data.id;
-    }
-    // sync software links
-    await supabase.from("client_software_links").delete().eq("client_id", clientId);
-    if (softwareIds.length) {
-      await supabase.from("client_software_links").insert(softwareIds.map((sid) => ({ client_id: clientId, software_id: sid })));
-    }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("clients-manage", {
+      body: {
+        action: editing ? "update" : "insert",
+        id: editing?.id,
+        client: {
+          company_name: form.company_name,
+          contact_name: form.contact_name,
+          email: form.email,
+          phone: form.phone,
+          website: form.website,
+          address: form.address,
+          country_id: form.country_id,
+          affiliate_id: form.affiliate_id,
+          status: form.status,
+          notes: form.notes,
+        },
+        software_ids: softwareIds,
+      },
+    });
+    setSaving(false);
+    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
+    if (errMsg) { toast.error(errMsg); return; }
     toast.success("Guardado");
     setOpen(false);
     load();
@@ -92,9 +97,13 @@ export default function Clientes() {
 
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar cliente?")) return;
-    const { error } = await supabase.from("clients").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Eliminado"); load(); }
+    const { data, error } = await supabase.functions.invoke("clients-manage", {
+      body: { action: "delete", id },
+    });
+    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
+    if (errMsg) { toast.error(errMsg); return; }
+    toast.success("Eliminado");
+    load();
   };
 
   const toggleSw = (id: string) => {

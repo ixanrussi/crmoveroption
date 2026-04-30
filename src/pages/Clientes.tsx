@@ -168,10 +168,10 @@ export default function Clientes() {
                   </Select>
                 </div>
                 <div className="space-y-1">
-                  <Label>Afiliado asociado</Label>
-                  <Select value={form.affiliate_id ?? ""} onValueChange={(v) => setForm({ ...form, affiliate_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Ninguno" /></SelectTrigger>
-                    <SelectContent>{affiliates.map((a) => <SelectItem key={a.id} value={a.id}>{a.unique_id} — {a.fixed_name}</SelectItem>)}</SelectContent>
+                  <Label>Estado</Label>
+                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">

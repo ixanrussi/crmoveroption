@@ -14,7 +14,7 @@ const mainItems = [
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
 ];
 const listItems = [
-  { title: "Países", url: "/listas/paises" },
+  { title: "GEO´s", url: "/listas/paises" },
   { title: "Software", url: "/listas/software" },
   { title: "Canales", url: "/listas/canales" },
 ];

@@ -400,7 +400,20 @@ export default function Clientes() {
                   ) : "—"}
                 </div>
                 <div><span className="text-muted-foreground">Estado: </span><Badge variant={viewing.status === "active" ? "default" : "secondary"}>{viewing.status}</Badge></div>
+                <div><span className="text-muted-foreground">Tipo: </span>{viewing.client_type || "—"}</div>
                 <div><span className="text-muted-foreground">Software: </span>{viewing.client_software_links?.map((l: any) => l.software?.name).join(", ") || "—"}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Marcas:</div>
+                {(viewing.brands ?? []).length === 0 ? (
+                  <div className="text-muted-foreground">—</div>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {viewing.brands.map((b: string, i: number) => (
+                      <Badge key={i} variant="secondary">{b}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <div className="text-muted-foreground mb-1">Contactos:</div>

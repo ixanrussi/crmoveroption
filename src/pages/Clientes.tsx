@@ -52,6 +52,7 @@ export default function Clientes() {
   const [editing, setEditing] = useState<any | null>(null);
   const [softwareId, setSoftwareId] = useState<string | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
 
   const empty = {

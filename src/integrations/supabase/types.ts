@@ -133,6 +133,63 @@ export type Database = {
           },
         ]
       }
+      client_commission_plans: {
+        Row: {
+          baseline: number | null
+          brand: string | null
+          cap: number | null
+          client_id: string
+          country_id: string | null
+          cpa: number | null
+          cpl: number | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          plan_start_date: string | null
+          rev_share_pct: number | null
+          updated_at: string
+          wager_type: string | null
+        }
+        Insert: {
+          baseline?: number | null
+          brand?: string | null
+          cap?: number | null
+          client_id: string
+          country_id?: string | null
+          cpa?: number | null
+          cpl?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager_type?: string | null
+        }
+        Update: {
+          baseline?: number | null
+          brand?: string | null
+          cap?: number | null
+          client_id?: string
+          country_id?: string | null
+          cpa?: number | null
+          cpl?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager_type?: string | null
+        }
+        Relationships: []
+      }
       client_contacts: {
         Row: {
           channel: string

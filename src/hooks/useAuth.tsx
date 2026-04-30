@@ -23,7 +23,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchRoles = async (uid: string) => {
-    const { data } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", uid);
+    console.log("[useAuth] fetchRoles", { uid, data, error });
     setRoles((data?.map((r: any) => r.role) ?? []) as AppRole[]);
   };
 

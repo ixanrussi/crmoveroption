@@ -85,6 +85,15 @@ export default function Clientes() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
+  const countryNames = (row: any): string => {
+    const ids: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row?.country_id ? [row.country_id] : []);
+    if (ids.length === 0) return row?.country?.name ?? "";
+    const map = new Map(countries.map((c) => [c.id, c.name]));
+    return ids.map((id) => map.get(id) ?? "").filter(Boolean).join(", ");
+  };
+
   const openNew = () => {
     setEditing(null);
     setForm(empty);

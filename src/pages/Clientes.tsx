@@ -174,7 +174,7 @@ export default function Clientes() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button onClick={save}>Guardar</Button>
+                <Button onClick={save} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

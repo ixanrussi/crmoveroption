@@ -8,9 +8,11 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
@@ -58,7 +60,7 @@ export default function Clientes() {
 
   const empty = {
     company_name: "", website: "",
-    address: "", country_id: null, status: "active", notes: "", login: "", senha: "",
+    address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
     client_type: "", brands: [] as string[],
   };
   const [form, setForm] = useState<any>(empty);
@@ -83,6 +85,15 @@ export default function Clientes() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
+  const countryNames = (row: any): string => {
+    const ids: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row?.country_id ? [row.country_id] : []);
+    if (ids.length === 0) return row?.country?.name ?? "";
+    const map = new Map(countries.map((c) => [c.id, c.name]));
+    return ids.map((id) => map.get(id) ?? "").filter(Boolean).join(", ");
+  };
+
   const openNew = () => {
     setEditing(null);
     setForm(empty);
@@ -94,8 +105,12 @@ export default function Clientes() {
   };
   const openEdit = (row: any) => {
     setEditing(row);
+    const ids: string[] = Array.isArray(row.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row.country_id ? [row.country_id] : []);
     setForm({
       ...row,
+      country_ids: ids,
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
     });
@@ -156,7 +171,7 @@ export default function Clientes() {
           company_name: form.company_name,
           website: form.website,
           address: form.address,
-          country_id: form.country_id,
+          country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
           status: form.status,
           notes: form.notes,
           login: form.login,
@@ -227,11 +242,47 @@ export default function Clientes() {
                 <div className="space-y-1"><Label>Seña</Label>
                   <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
                 <div className="space-y-1">
-                  <Label>País</Label>
-                  <Select value={form.country_id ?? ""} onValueChange={(v) => setForm({ ...form, country_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                    <SelectContent>{countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <Label>GEO's (países)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button type="button" variant="outline" className="w-full justify-between font-normal">
+                        <span className="truncate">
+                          {(form.country_ids ?? []).length === 0
+                            ? "Selecciona uno o más"
+                            : countries
+                                .filter((c) => (form.country_ids ?? []).includes(c.id))
+                                .map((c) => c.name)
+                                .join(", ")}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-2 max-h-72 overflow-y-auto" align="start">
+                      <div className="space-y-1">
+                        {countries.map((c) => {
+                          const checked = (form.country_ids ?? []).includes(c.id);
+                          return (
+                            <label key={c.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer">
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(v) => {
+                                  const cur: string[] = form.country_ids ?? [];
+                                  setForm({
+                                    ...form,
+                                    country_ids: v ? [...cur, c.id] : cur.filter((id) => id !== c.id),
+                                  });
+                                }}
+                              />
+                              <span className="text-sm">{c.name}</span>
+                            </label>
+                          );
+                        })}
+                        {countries.length === 0 && (
+                          <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-1">
                   <Label>Estado</Label>
@@ -488,7 +539,7 @@ export default function Clientes() {
                       <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>
                     ))}
                   </TableCell>
-                  <TableCell>{r.country?.name}</TableCell>
+                  <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
                   <TableCell className="text-xs">{r.affiliate ? `${r.affiliate.unique_id}` : "—"}</TableCell>
                   <TableCell className="text-xs">{r.client_software_links?.map((l: any) => l.software?.name).join(", ")}</TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
@@ -529,7 +580,7 @@ export default function Clientes() {
                     </a>
                   ) : "—"}
                 </div>
-                <div><span className="text-muted-foreground">País: </span>{viewing.country?.name || "—"}</div>
+                <div><span className="text-muted-foreground">GEO's: </span>{countryNames(viewing) || "—"}</div>
                 <div>
                   <span className="text-muted-foreground">Login: </span>
                   {viewing.login ? (

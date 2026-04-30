@@ -158,8 +158,6 @@ export default function Clientes() {
                   <Input value={form.login ?? ""} onChange={(e) => setForm({ ...form, login: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Senha</Label>
                   <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
-                <div className="col-span-2 space-y-1"><Label>Dirección</Label>
-                  <Input value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
                 <div className="space-y-1">
                   <Label>País</Label>
                   <Select value={form.country_id ?? ""} onValueChange={(v) => setForm({ ...form, country_id: v })}>

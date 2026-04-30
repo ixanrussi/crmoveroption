@@ -10,18 +10,25 @@ import { useAuth } from "@/hooks/useAuth";
 type Role = "super_admin" | "admin" | "user";
 const ROLES: Role[] = ["super_admin", "admin", "user"];
 
+type UserRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  job_title: string | null;
+  roles: Role[];
+};
+
 export default function Usuarios() {
   const { user: me } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserRow[]>([]);
 
   const load = async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at");
-    const { data: rolesData } = await supabase.from("user_roles").select("*");
-    const merged = (profiles ?? []).map((p: any) => ({
-      ...p,
-      roles: (rolesData ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => r.role),
-    }));
-    setUsers(merged);
+    const { data, error } = await supabase.functions.invoke<{ users: UserRow[] }>("admin-users");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setUsers(data?.users ?? []);
   };
   useEffect(() => { load(); }, []);
 

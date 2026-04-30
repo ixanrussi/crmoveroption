@@ -7,6 +7,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Trash2, Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 interface Props {
   table: "countries" | "softwares" | "affiliate_channels";
@@ -37,9 +48,20 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Eliminado"); load(); }
+    const { error, count } = await supabase
+      .from(table)
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (!count) {
+      toast.error("No se pudo eliminar (sin permisos o registro en uso)");
+      return;
+    }
+    toast.success("Eliminado");
+    load();
   };
 
   return (
@@ -77,9 +99,27 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
                   {withCode && <TableCell>{it.code}</TableCell>}
                   {isAdmin && (
                     <TableCell>
-                      <Button size="icon" variant="ghost" onClick={() => remove(it.id)}>
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button size="icon" variant="ghost">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>¿Eliminar "{it.name}"?</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Esta acción no se puede deshacer. El registro será eliminado permanentemente.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => remove(it.id)}>
+                              Eliminar
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
                     </TableCell>
                   )}
                 </TableRow>

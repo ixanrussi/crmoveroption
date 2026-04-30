@@ -23,6 +23,7 @@ export default function Afiliados() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
+  const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
 
   const empty: any = {

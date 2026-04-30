@@ -27,7 +27,7 @@ export default function Clientes() {
 
   const empty = {
     company_name: "", contact_name: "", email: "", phone: "", website: "",
-    address: "", country_id: null, affiliate_id: null, status: "active", notes: "",
+    address: "", country_id: null, affiliate_id: null, status: "active", notes: "", login: "", senha: "",
   };
   const [form, setForm] = useState<any>(empty);
 
@@ -83,6 +83,8 @@ export default function Clientes() {
           affiliate_id: form.affiliate_id,
           status: form.status,
           notes: form.notes,
+          login: form.login,
+          senha: form.senha,
         },
         software_ids: softwareIds,
       },
@@ -137,6 +139,10 @@ export default function Clientes() {
                   <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Sitio web</Label>
                   <Input value={form.website ?? ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
+                <div className="space-y-1"><Label>Login</Label>
+                  <Input value={form.login ?? ""} onChange={(e) => setForm({ ...form, login: e.target.value })} /></div>
+                <div className="space-y-1"><Label>Senha</Label>
+                  <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
                 <div className="col-span-2 space-y-1"><Label>Dirección</Label>
                   <Input value={form.address ?? ""} onChange={(e) => setForm({ ...form, address: e.target.value })} /></div>
                 <div className="space-y-1">

@@ -419,7 +419,7 @@ export default function Clientes() {
                             onChange={(e) => updatePlan(i, { wager: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Tipo de conversión</Label>
+                          <Label className="text-xs">Condición</Label>
                           <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>

@@ -286,10 +286,46 @@ export default function Clientes() {
           {viewing && (
             <div className="space-y-3 text-sm">
               <div className="grid grid-cols-2 gap-3">
-                <div><span className="text-muted-foreground">Sitio web: </span>{viewing.website || "—"}</div>
+                <div>
+                  <span className="text-muted-foreground">Sitio web: </span>
+                  {viewing.website ? (
+                    <a
+                      href={viewing.website.startsWith("http") ? viewing.website : `https://${viewing.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline break-all"
+                    >
+                      {viewing.website}
+                    </a>
+                  ) : "—"}
+                </div>
                 <div><span className="text-muted-foreground">País: </span>{viewing.country?.name || "—"}</div>
-                <div><span className="text-muted-foreground">Login: </span>{viewing.login || "—"}</div>
-                <div><span className="text-muted-foreground">Senha: </span>{viewing.senha || "—"}</div>
+                <div>
+                  <span className="text-muted-foreground">Login: </span>
+                  {viewing.login ? (
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard.writeText(viewing.login); toast.success("Login copiado"); }}
+                      className="text-primary hover:underline"
+                      title="Clic para copiar"
+                    >
+                      {viewing.login}
+                    </button>
+                  ) : "—"}
+                </div>
+                <div>
+                  <span className="text-muted-foreground">Seña: </span>
+                  {viewing.senha ? (
+                    <button
+                      type="button"
+                      onClick={() => { navigator.clipboard.writeText(viewing.senha); toast.success("Seña copiada"); }}
+                      className="text-primary hover:underline"
+                      title="Clic para copiar"
+                    >
+                      {viewing.senha}
+                    </button>
+                  ) : "—"}
+                </div>
                 <div><span className="text-muted-foreground">Estado: </span><Badge variant={viewing.status === "active" ? "default" : "secondary"}>{viewing.status}</Badge></div>
                 <div><span className="text-muted-foreground">Software: </span>{viewing.client_software_links?.map((l: any) => l.software?.name).join(", ") || "—"}</div>
               </div>

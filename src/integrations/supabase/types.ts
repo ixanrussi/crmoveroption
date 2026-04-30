@@ -199,6 +199,8 @@ export type Database = {
         Row: {
           address: string | null
           affiliate_id: string | null
+          brands: string[]
+          client_type: string | null
           company_name: string
           contact_name: string | null
           country_id: string | null
@@ -217,6 +219,8 @@ export type Database = {
         Insert: {
           address?: string | null
           affiliate_id?: string | null
+          brands?: string[]
+          client_type?: string | null
           company_name: string
           contact_name?: string | null
           country_id?: string | null
@@ -235,6 +239,8 @@ export type Database = {
         Update: {
           address?: string | null
           affiliate_id?: string | null
+          brands?: string[]
+          client_type?: string | null
           company_name?: string
           contact_name?: string | null
           country_id?: string | null

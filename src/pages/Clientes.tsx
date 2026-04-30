@@ -277,6 +277,44 @@ export default function Clientes() {
           </Table>
         </CardContent>
       </Card>
+
+      <Dialog open={!!viewing} onOpenChange={(o) => !o && setViewing(null)}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{viewing?.company_name}</DialogTitle>
+          </DialogHeader>
+          {viewing && (
+            <div className="space-y-3 text-sm">
+              <div className="grid grid-cols-2 gap-3">
+                <div><span className="text-muted-foreground">Sitio web: </span>{viewing.website || "—"}</div>
+                <div><span className="text-muted-foreground">País: </span>{viewing.country?.name || "—"}</div>
+                <div><span className="text-muted-foreground">Login: </span>{viewing.login || "—"}</div>
+                <div><span className="text-muted-foreground">Senha: </span>{viewing.senha || "—"}</div>
+                <div><span className="text-muted-foreground">Estado: </span><Badge variant={viewing.status === "active" ? "default" : "secondary"}>{viewing.status}</Badge></div>
+                <div><span className="text-muted-foreground">Software: </span>{viewing.client_software_links?.map((l: any) => l.software?.name).join(", ") || "—"}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Contactos:</div>
+                {(viewing.client_contacts ?? []).length === 0 && <div className="text-muted-foreground">—</div>}
+                {(viewing.client_contacts ?? []).map((c: any, i: number) => (
+                  <div key={i} className="border rounded px-2 py-1 mb-1">
+                    <strong>{c.name}</strong> · {c.channel}: {c.contact_id}
+                  </div>
+                ))}
+              </div>
+              {viewing.notes && (
+                <div>
+                  <div className="text-muted-foreground mb-1">Notas:</div>
+                  <div className="whitespace-pre-wrap">{viewing.notes}</div>
+                </div>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewing(null)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -31,12 +31,27 @@ type ContactPayload = {
   contact_id?: string;
 };
 
+type CommissionPlanPayload = {
+  plan_start_date?: string | null;
+  currency?: string | null;
+  description?: string | null;
+  country_id?: string | null;
+  brand?: string | null;
+  baseline?: number | string | null;
+  cpa?: number | string | null;
+  rev_share_pct?: number | string | null;
+  cpl?: number | string | null;
+  wager_type?: string | null;
+  cap?: number | string | null;
+};
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
   client?: ClientPayload;
   software_ids?: string[];
   contacts?: ContactPayload[];
+  commission_plans?: CommissionPlanPayload[];
 };
 
 const json = (status: number, body: unknown) =>
@@ -92,6 +107,7 @@ Deno.serve(async (req) => {
       if (!body.id) return json(400, { error: "ID requerido" });
       await sql`delete from public.client_software_links where client_id = ${body.id}`;
       await sql`delete from public.client_contacts where client_id = ${body.id}`;
+      await sql`delete from public.client_commission_plans where client_id = ${body.id}`;
       const deleted = await sql<{ id: string }[]>`delete from public.clients where id = ${body.id} returning id`;
       if (deleted.length === 0) return json(404, { error: "No encontrado" });
       return json(200, { ok: true });
@@ -170,6 +186,42 @@ Deno.serve(async (req) => {
         contact_id: ct.contact_id,
       }));
       await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id")}`;
+    }
+
+    const ALLOWED_WAGER = ["NCO", "NNCO"];
+    const num = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
+    const intOrNull = (v: unknown): number | null => {
+      const n = num(v);
+      return n === null ? null : Math.trunc(n);
+    };
+    const plans = Array.isArray(body.commission_plans)
+      ? body.commission_plans.map((p) => ({
+          plan_start_date: p?.plan_start_date || null,
+          currency: (p?.currency ?? "").toString().trim() || null,
+          description: (p?.description ?? "").toString().trim() || null,
+          country_id: p?.country_id || null,
+          brand: (p?.brand ?? "").toString().trim() || null,
+          baseline: num(p?.baseline),
+          cpa: num(p?.cpa),
+          rev_share_pct: num(p?.rev_share_pct),
+          cpl: num(p?.cpl),
+          wager_type: p?.wager_type && ALLOWED_WAGER.includes(p.wager_type) ? p.wager_type : null,
+          cap: intOrNull(p?.cap),
+        }))
+      : [];
+
+    await sql`delete from public.client_commission_plans where client_id = ${clientId}`;
+    if (plans.length) {
+      const values = plans.map((p) => ({ client_id: clientId!, created_by: userData.user.id, ...p }));
+      await sql`insert into public.client_commission_plans ${sql(
+        values,
+        "client_id", "created_by", "plan_start_date", "currency", "description",
+        "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager_type", "cap"
+      )}`;
     }
 
     return json(200, { ok: true, id: clientId });

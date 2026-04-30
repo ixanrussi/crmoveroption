@@ -23,6 +23,24 @@ const CHANNELS = [
 ] as const;
 
 type Contact = { name: string; channel: string; contact_id: string };
+type CommissionPlan = {
+  plan_start_date: string;
+  currency: string;
+  description: string;
+  country_id: string | null;
+  brand: string;
+  baseline: string;
+  cpa: string;
+  rev_share_pct: string;
+  cpl: string;
+  wager_type: string;
+  cap: string;
+};
+const emptyPlan: CommissionPlan = {
+  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager_type: "", cap: "",
+};
+const WAGER_TYPES = ["NCO", "NNCO"] as const;
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -34,6 +52,7 @@ export default function Clientes() {
   const [editing, setEditing] = useState<any | null>(null);
   const [softwareId, setSoftwareId] = useState<string | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
+  const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
 
   const empty = {
@@ -47,7 +66,7 @@ export default function Clientes() {
   const load = async () => {
     const { data } = await supabase
       .from("clients")
-      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id)")
+      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id), client_commission_plans(*, country:countries(name))")
       .order("created_at", { ascending: false });
     setList(data ?? []);
   };
@@ -68,6 +87,7 @@ export default function Clientes() {
     setForm(empty);
     setSoftwareId(null);
     setContacts([]);
+    setPlans([]);
     setBrandInput("");
     setOpen(true);
   };
@@ -86,6 +106,21 @@ export default function Clientes() {
         contact_id: c.contact_id ?? "",
       })),
     );
+    setPlans(
+      (row.client_commission_plans ?? []).map((p: any) => ({
+        plan_start_date: p.plan_start_date ?? "",
+        currency: p.currency ?? "",
+        description: p.description ?? "",
+        country_id: p.country_id ?? null,
+        brand: p.brand ?? "",
+        baseline: p.baseline?.toString() ?? "",
+        cpa: p.cpa?.toString() ?? "",
+        rev_share_pct: p.rev_share_pct?.toString() ?? "",
+        cpl: p.cpl?.toString() ?? "",
+        wager_type: p.wager_type ?? "",
+        cap: p.cap?.toString() ?? "",
+      })),
+    );
     setBrandInput("");
     setOpen(true);
   };
@@ -96,6 +131,11 @@ export default function Clientes() {
   const updateContact = (i: number, patch: Partial<Contact>) =>
     setContacts((p) => p.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const removeContact = (i: number) => setContacts((p) => p.filter((_, idx) => idx !== i));
+
+  const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
+  const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
+    setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
+  const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
 
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }
@@ -124,6 +164,19 @@ export default function Clientes() {
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
+        commission_plans: plans.map((p) => ({
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: p.baseline === "" ? null : p.baseline,
+          cpa: p.cpa === "" ? null : p.cpa,
+          rev_share_pct: p.rev_share_pct === "" ? null : p.rev_share_pct,
+          cpl: p.cpl === "" ? null : p.cpl,
+          wager_type: p.wager_type || null,
+          cap: p.cap === "" ? null : p.cap,
+        })),
       },
     });
     setSaving(false);
@@ -285,6 +338,97 @@ export default function Clientes() {
                   )}
                 </div>
 
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">Comisiones</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={addPlan}>
+                      <Plus className="h-4 w-4 mr-1" /> Agregar plan
+                    </Button>
+                  </div>
+                  {plans.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
+                  )}
+                  {plans.map((pl, i) => (
+                    <div key={i} className="border rounded-md p-3 space-y-2 bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => removePlan(i)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Plan Start Date</Label>
+                          <Input type="date" value={pl.plan_start_date}
+                            onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Currency</Label>
+                          <Input placeholder="USD, EUR, BRL..." value={pl.currency}
+                            onChange={(e) => updatePlan(i, { currency: e.target.value })} />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Description</Label>
+                          <Input value={pl.description}
+                            onChange={(e) => updatePlan(i, { description: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Country</Label>
+                          <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Brand</Label>
+                          <Select value={pl.brand} onValueChange={(v) => updatePlan(i, { brand: v })}>
+                            <SelectTrigger><SelectValue placeholder={(form.brands ?? []).length ? "Selecciona" : "Agrega marcas arriba"} /></SelectTrigger>
+                            <SelectContent>
+                              {(form.brands ?? []).map((b: string) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Baseline</Label>
+                          <Input type="number" step="0.01" value={pl.baseline}
+                            onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPA</Label>
+                          <Input type="number" step="0.01" value={pl.cpa}
+                            onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Rev Share %</Label>
+                          <Input type="number" step="0.01" value={pl.rev_share_pct}
+                            onChange={(e) => updatePlan(i, { rev_share_pct: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPL</Label>
+                          <Input type="number" step="0.01" value={pl.cpl}
+                            onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Wager</Label>
+                          <Select value={pl.wager_type} onValueChange={(v) => updatePlan(i, { wager_type: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {WAGER_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CAP (conversiones autorizadas)</Label>
+                          <Input type="number" step="1" value={pl.cap}
+                            onChange={(e) => updatePlan(i, { cap: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
                   <Select value={softwareId ?? ""} onValueChange={(v) => setSoftwareId(v || null)}>
@@ -421,6 +565,22 @@ export default function Clientes() {
                 {(viewing.client_contacts ?? []).map((c: any, i: number) => (
                   <div key={i} className="border rounded px-2 py-1 mb-1">
                     <strong>{c.name}</strong> · {c.channel}: {c.contact_id}
+                  </div>
+                ))}
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Comisiones:</div>
+                {(viewing.client_commission_plans ?? []).length === 0 && <div className="text-muted-foreground">—</div>}
+                {(viewing.client_commission_plans ?? []).map((p: any, i: number) => (
+                  <div key={i} className="border rounded px-2 py-1 mb-1 text-xs space-y-0.5">
+                    <div className="font-medium">
+                      {p.brand || "—"} · {p.country?.name || "—"} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
+                    </div>
+                    {p.description && <div className="text-muted-foreground">{p.description}</div>}
+                    <div>
+                      Baseline: {p.baseline ?? "—"} · CPA: {p.cpa ?? "—"} · Rev Share: {p.rev_share_pct ?? "—"}% · CPL: {p.cpl ?? "—"}
+                    </div>
+                    <div>Wager: {p.wager_type || "—"} · CAP: {p.cap ?? "—"}</div>
                   </div>
                 ))}
               </div>

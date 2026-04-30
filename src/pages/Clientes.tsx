@@ -96,8 +96,12 @@ export default function Clientes() {
   };
   const openEdit = (row: any) => {
     setEditing(row);
+    const ids: string[] = Array.isArray(row.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row.country_id ? [row.country_id] : []);
     setForm({
       ...row,
+      country_ids: ids,
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
     });

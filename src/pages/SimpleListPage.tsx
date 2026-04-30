@@ -48,9 +48,20 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
   };
 
   const remove = async (id: string) => {
-    const { error } = await supabase.from(table).delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Eliminado"); load(); }
+    const { error, count } = await supabase
+      .from(table)
+      .delete({ count: "exact" })
+      .eq("id", id);
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    if (!count) {
+      toast.error("No se pudo eliminar (sin permisos o registro en uso)");
+      return;
+    }
+    toast.success("Eliminado");
+    load();
   };
 
   return (

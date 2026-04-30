@@ -162,7 +162,7 @@ export default function Clientes() {
           company_name: form.company_name,
           website: form.website,
           address: form.address,
-          country_id: form.country_id,
+          country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
           status: form.status,
           notes: form.notes,
           login: form.login,

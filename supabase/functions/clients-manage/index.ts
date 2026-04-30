@@ -41,7 +41,8 @@ type CommissionPlanPayload = {
   cpa?: number | string | null;
   rev_share_pct?: number | string | null;
   cpl?: number | string | null;
-  wager_type?: string | null;
+  wager?: number | string | null;
+  conversion_type?: string | null;
   cap?: number | string | null;
 };
 

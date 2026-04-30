@@ -18,14 +18,17 @@ export type Database = {
         Row: {
           affiliate_id: string
           channel_id: string
+          link: string | null
         }
         Insert: {
           affiliate_id: string
           channel_id: string
+          link?: string | null
         }
         Update: {
           affiliate_id?: string
           channel_id?: string
+          link?: string | null
         }
         Relationships: [
           {

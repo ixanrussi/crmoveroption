@@ -25,11 +25,14 @@ type AffiliatePayload = {
   notes?: string | null;
 };
 
+type ChannelLink = { channel_id: string; link?: string | null };
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
   affiliate?: AffiliatePayload;
   channel_ids?: string[];
+  channel_links?: ChannelLink[];
 };
 
 const json = (status: number, body: unknown) =>
@@ -158,10 +161,23 @@ Deno.serve(async (req) => {
         }
       }
 
+      const linksMap = new Map<string, string | null>();
+      if (Array.isArray(body.channel_links)) {
+        for (const cl of body.channel_links) {
+          if (cl && typeof cl.channel_id === "string") {
+            linksMap.set(cl.channel_id, cl.link?.toString().trim() || null);
+          }
+        }
+      }
+
       await tx`delete from public.affiliate_channel_links where affiliate_id = ${affiliateId}`;
       if (channelIds.length) {
-        const values = channelIds.map((cid) => ({ affiliate_id: affiliateId!, channel_id: cid }));
-        await tx`insert into public.affiliate_channel_links ${tx(values, "affiliate_id", "channel_id")}`;
+        const values = channelIds.map((cid) => ({
+          affiliate_id: affiliateId!,
+          channel_id: cid,
+          link: linksMap.get(cid) ?? null,
+        }));
+        await tx`insert into public.affiliate_channel_links ${tx(values, "affiliate_id", "channel_id", "link")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

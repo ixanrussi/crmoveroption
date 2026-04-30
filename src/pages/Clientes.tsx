@@ -31,12 +31,12 @@ export default function Clientes() {
   const [affiliates, setAffiliates] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-  const [softwareIds, setSoftwareIds] = useState<string[]>([]);
+  const [softwareId, setSoftwareId] = useState<string | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   const empty = {
     company_name: "", website: "",
-    address: "", country_id: null, affiliate_id: null, status: "active", notes: "", login: "", senha: "",
+    address: "", country_id: null, status: "active", notes: "", login: "", senha: "",
   };
   const [form, setForm] = useState<any>(empty);
 
@@ -62,14 +62,14 @@ export default function Clientes() {
   const openNew = () => {
     setEditing(null);
     setForm(empty);
-    setSoftwareIds([]);
+    setSoftwareId(null);
     setContacts([]);
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
     setForm({ ...row });
-    setSoftwareIds(row.client_software_links?.map((l: any) => l.software_id) ?? []);
+    setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
       (row.client_contacts ?? []).map((c: any) => ({
         name: c.name ?? "",
@@ -105,13 +105,12 @@ export default function Clientes() {
           website: form.website,
           address: form.address,
           country_id: form.country_id,
-          affiliate_id: form.affiliate_id,
           status: form.status,
           notes: form.notes,
           login: form.login,
           senha: form.senha,
         },
-        software_ids: softwareIds,
+        software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
       },
     });
@@ -132,10 +131,6 @@ export default function Clientes() {
     if (errMsg) { toast.error(errMsg); return; }
     toast.success("Eliminado");
     load();
-  };
-
-  const toggleSw = (id: string) => {
-    setSoftwareIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
   };
 
   return (
@@ -170,13 +165,6 @@ export default function Clientes() {
                   <Select value={form.country_id ?? ""} onValueChange={(v) => setForm({ ...form, country_id: v })}>
                     <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                     <SelectContent>{countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1">
-                  <Label>Afiliado asociado</Label>
-                  <Select value={form.affiliate_id ?? ""} onValueChange={(v) => setForm({ ...form, affiliate_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Ninguno" /></SelectTrigger>
-                    <SelectContent>{affiliates.map((a) => <SelectItem key={a.id} value={a.id}>{a.unique_id} — {a.fixed_name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-1">
@@ -227,12 +215,12 @@ export default function Clientes() {
 
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
-                  <div className="flex flex-wrap gap-2 p-2 border rounded-md max-h-32 overflow-y-auto">
-                    {softwares.map((s) => (
-                      <Badge key={s.id} variant={softwareIds.includes(s.id) ? "default" : "outline"}
-                             className="cursor-pointer" onClick={() => toggleSw(s.id)}>{s.name}</Badge>
-                    ))}
-                  </div>
+                  <Select value={softwareId ?? ""} onValueChange={(v) => setSoftwareId(v || null)}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona un software" /></SelectTrigger>
+                    <SelectContent>
+                      {softwares.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

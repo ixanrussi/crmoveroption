@@ -25,11 +25,14 @@ type AffiliatePayload = {
   notes?: string | null;
 };
 
+type ChannelLink = { channel_id: string; link?: string | null };
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
   affiliate?: AffiliatePayload;
   channel_ids?: string[];
+  channel_links?: ChannelLink[];
 };
 
 const json = (status: number, body: unknown) =>

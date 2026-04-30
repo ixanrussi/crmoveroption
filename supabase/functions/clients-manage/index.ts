@@ -21,6 +21,8 @@ type ClientPayload = {
   notes?: string | null;
   login?: string | null;
   senha?: string | null;
+  client_type?: string | null;
+  brands?: string[] | null;
 };
 
 type ContactPayload = {

@@ -15,13 +15,12 @@ export default function Usuarios() {
   const [users, setUsers] = useState<any[]>([]);
 
   const load = async () => {
-    const { data: profiles } = await supabase.from("profiles").select("*").order("created_at");
-    const { data: rolesData } = await supabase.from("user_roles").select("*");
-    const merged = (profiles ?? []).map((p: any) => ({
-      ...p,
-      roles: (rolesData ?? []).filter((r: any) => r.user_id === p.id).map((r: any) => r.role),
-    }));
-    setUsers(merged);
+    const { data, error } = await supabase.functions.invoke<{ users: any[] }>("admin-users");
+    if (error) {
+      toast.error(error.message);
+      return;
+    }
+    setUsers(data?.users ?? []);
   };
   useEffect(() => { load(); }, []);
 

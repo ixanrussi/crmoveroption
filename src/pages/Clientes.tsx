@@ -588,7 +588,7 @@ export default function Clientes() {
                     <div>
                       Baseline: {p.baseline ?? "—"} · CPA: {p.cpa ?? "—"} · Rev Share: {p.rev_share_pct ?? "—"}% · CPL: {p.cpl ?? "—"}
                     </div>
-                    <div>Wager: {p.wager ?? "—"} · Tipo: {p.conversion_type || "—"} · CAP: {p.cap ?? "—"}</div>
+                    <div>Wager: {p.wager ?? "—"} · Condición: {p.conversion_type || "—"} · CAP: {p.cap ?? "—"}</div>
                   </div>
                 ))}
               </div>

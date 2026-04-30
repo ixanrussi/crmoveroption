@@ -77,6 +77,7 @@ export default function Afiliados() {
         id: editing?.id,
         affiliate: payload,
         channel_ids: channelIds,
+        channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
       },
     });
     setSaving(false);

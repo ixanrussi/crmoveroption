@@ -37,14 +37,18 @@ Deno.serve(async (req) => {
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
     if (!serviceRoleKey) throw new Error("Backend admin no configurado");
 
-    const authClient = createClient(supabaseUrl, anonKey);
-    const { data: userData, error: userError } = await authClient.auth.getUser(token);
-    if (userError || !userData.user) {
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub as string | undefined;
+    if (claimsError || !userId) {
       return new Response(JSON.stringify({ error: "Sesión inválida" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const userData = { user: { id: userId } };
 
     const adminClient = createClient(supabaseUrl, serviceRoleKey);
     const { data: myRoles, error: roleError } = await adminClient

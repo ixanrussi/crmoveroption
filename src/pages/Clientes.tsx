@@ -419,7 +419,7 @@ export default function Clientes() {
                             onChange={(e) => updatePlan(i, { wager: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Tipo de conversión</Label>
+                          <Label className="text-xs">Condición</Label>
                           <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
@@ -588,7 +588,7 @@ export default function Clientes() {
                     <div>
                       Baseline: {p.baseline ?? "—"} · CPA: {p.cpa ?? "—"} · Rev Share: {p.rev_share_pct ?? "—"}% · CPL: {p.cpl ?? "—"}
                     </div>
-                    <div>Wager: {p.wager ?? "—"} · Tipo: {p.conversion_type || "—"} · CAP: {p.cap ?? "—"}</div>
+                    <div>Wager: {p.wager ?? "—"} · Condición: {p.conversion_type || "—"} · CAP: {p.cap ?? "—"}</div>
                   </div>
                 ))}
               </div>

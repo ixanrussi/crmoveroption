@@ -568,6 +568,22 @@ export default function Clientes() {
                   </div>
                 ))}
               </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Comisiones:</div>
+                {(viewing.client_commission_plans ?? []).length === 0 && <div className="text-muted-foreground">—</div>}
+                {(viewing.client_commission_plans ?? []).map((p: any, i: number) => (
+                  <div key={i} className="border rounded px-2 py-1 mb-1 text-xs space-y-0.5">
+                    <div className="font-medium">
+                      {p.brand || "—"} · {p.country?.name || "—"} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
+                    </div>
+                    {p.description && <div className="text-muted-foreground">{p.description}</div>}
+                    <div>
+                      Baseline: {p.baseline ?? "—"} · CPA: {p.cpa ?? "—"} · Rev Share: {p.rev_share_pct ?? "—"}% · CPL: {p.cpl ?? "—"}
+                    </div>
+                    <div>Wager: {p.wager_type || "—"} · CAP: {p.cap ?? "—"}</div>
+                  </div>
+                ))}
+              </div>
               {viewing.notes && (
                 <div>
                   <div className="text-muted-foreground mb-1">Notas:</div>

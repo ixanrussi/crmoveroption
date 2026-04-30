@@ -233,11 +233,47 @@ export default function Clientes() {
                 <div className="space-y-1"><Label>Seña</Label>
                   <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
                 <div className="space-y-1">
-                  <Label>País</Label>
-                  <Select value={form.country_id ?? ""} onValueChange={(v) => setForm({ ...form, country_id: v })}>
-                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                    <SelectContent>{countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
-                  </Select>
+                  <Label>GEO's (países)</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button type="button" variant="outline" className="w-full justify-between font-normal">
+                        <span className="truncate">
+                          {(form.country_ids ?? []).length === 0
+                            ? "Selecciona uno o más"
+                            : countries
+                                .filter((c) => (form.country_ids ?? []).includes(c.id))
+                                .map((c) => c.name)
+                                .join(", ")}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-[280px] p-2 max-h-72 overflow-y-auto" align="start">
+                      <div className="space-y-1">
+                        {countries.map((c) => {
+                          const checked = (form.country_ids ?? []).includes(c.id);
+                          return (
+                            <label key={c.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer">
+                              <Checkbox
+                                checked={checked}
+                                onCheckedChange={(v) => {
+                                  const cur: string[] = form.country_ids ?? [];
+                                  setForm({
+                                    ...form,
+                                    country_ids: v ? [...cur, c.id] : cur.filter((id) => id !== c.id),
+                                  });
+                                }}
+                              />
+                              <span className="text-sm">{c.name}</span>
+                            </label>
+                          );
+                        })}
+                        {countries.length === 0 && (
+                          <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
+                        )}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 </div>
                 <div className="space-y-1">
                   <Label>Estado</Label>

@@ -107,6 +107,7 @@ Deno.serve(async (req) => {
       if (!body.id) return json(400, { error: "ID requerido" });
       await sql`delete from public.client_software_links where client_id = ${body.id}`;
       await sql`delete from public.client_contacts where client_id = ${body.id}`;
+      await sql`delete from public.client_commission_plans where client_id = ${body.id}`;
       const deleted = await sql<{ id: string }[]>`delete from public.clients where id = ${body.id} returning id`;
       if (deleted.length === 0) return json(404, { error: "No encontrado" });
       return json(200, { ok: true });

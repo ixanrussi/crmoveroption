@@ -87,6 +87,7 @@ export default function Clientes() {
     setForm(empty);
     setSoftwareId(null);
     setContacts([]);
+    setPlans([]);
     setBrandInput("");
     setOpen(true);
   };
@@ -105,6 +106,21 @@ export default function Clientes() {
         contact_id: c.contact_id ?? "",
       })),
     );
+    setPlans(
+      (row.client_commission_plans ?? []).map((p: any) => ({
+        plan_start_date: p.plan_start_date ?? "",
+        currency: p.currency ?? "",
+        description: p.description ?? "",
+        country_id: p.country_id ?? null,
+        brand: p.brand ?? "",
+        baseline: p.baseline?.toString() ?? "",
+        cpa: p.cpa?.toString() ?? "",
+        rev_share_pct: p.rev_share_pct?.toString() ?? "",
+        cpl: p.cpl?.toString() ?? "",
+        wager_type: p.wager_type ?? "",
+        cap: p.cap?.toString() ?? "",
+      })),
+    );
     setBrandInput("");
     setOpen(true);
   };
@@ -115,6 +131,11 @@ export default function Clientes() {
   const updateContact = (i: number, patch: Partial<Contact>) =>
     setContacts((p) => p.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const removeContact = (i: number) => setContacts((p) => p.filter((_, idx) => idx !== i));
+
+  const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
+  const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
+    setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
+  const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
 
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }

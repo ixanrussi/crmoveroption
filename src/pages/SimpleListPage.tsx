@@ -30,6 +30,18 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
   const [items, setItems] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  const getFunctionError = async (error: unknown, data?: any) => {
+    if (data?.error) return data.error;
+    const context = (error as { context?: Response } | null)?.context;
+    if (context) {
+      const body = await context.clone().json().catch(() => null);
+      if (body?.error) return body.error;
+    }
+    return (error as Error | null)?.message ?? "No se pudo completar la operación";
+  };
 
   const load = async () => {
     const { data, error } = await supabase.from(table).select("*").order("name");
@@ -40,25 +52,34 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
 
   const add = async () => {
     if (!name.trim()) return;
-    const payload: any = { name: name.trim() };
-    if (withCode && code.trim()) payload.code = code.trim().toUpperCase();
-    const { error } = await supabase.from(table).insert(payload);
-    if (error) toast.error(error.message);
-    else { toast.success("Agregado"); setName(""); setCode(""); load(); }
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("simple-list-items", {
+      body: {
+        action: "insert",
+        table,
+        name: name.trim(),
+        code: withCode ? code.trim().toUpperCase() : undefined,
+      },
+    });
+    setSaving(false);
+    if (error || data?.error) {
+      toast.error(await getFunctionError(error, data));
+      return;
+    }
+    toast.success("Agregado");
+    setName("");
+    setCode("");
+    load();
   };
 
   const remove = async (id: string) => {
-    const { data, error } = await supabase
-      .from(table)
-      .delete()
-      .eq("id", id)
-      .select();
-    if (error) {
-      toast.error(error.message);
-      return;
-    }
-    if (!data || data.length === 0) {
-      toast.error("No se pudo eliminar (sin permisos o registro en uso)");
+    setDeletingId(id);
+    const { data, error } = await supabase.functions.invoke("simple-list-items", {
+      body: { action: "delete", table, id },
+    });
+    setDeletingId(null);
+    if (error || data?.error) {
+      toast.error(await getFunctionError(error, data));
       return;
     }
     toast.success("Eliminado");
@@ -78,7 +99,7 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
           <CardContent className="flex gap-2">
             <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
             {withCode && <Input placeholder="Código" value={code} onChange={(e) => setCode(e.target.value)} className="max-w-[120px]" />}
-            <Button onClick={add}><Plus className="h-4 w-4 mr-1" /> Agregar</Button>
+            <Button onClick={add} disabled={saving}><Plus className="h-4 w-4 mr-1" /> {saving ? "Agregando..." : "Agregar"}</Button>
           </CardContent>
         </Card>
       )}
@@ -115,8 +136,8 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
                           </AlertDialogHeader>
                           <AlertDialogFooter>
                             <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction onClick={() => remove(it.id)}>
-                              Eliminar
+                            <AlertDialogAction onClick={() => remove(it.id)} disabled={deletingId === it.id}>
+                              {deletingId === it.id ? "Eliminando..." : "Eliminar"}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>

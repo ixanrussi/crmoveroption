@@ -49,11 +49,14 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
     setForm({ ...row });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
+    const links: Record<string, string> = {};
+    row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
+    setChannelLinks(links);
     setOpen(true);
   };
 

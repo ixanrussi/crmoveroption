@@ -23,6 +23,7 @@ export default function Afiliados() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
+  const [saving, setSaving] = useState(false);
 
   const empty: any = {
     fixed_name: "", alias: "", email: "", phone: "", country_id: null,
@@ -58,40 +59,39 @@ export default function Afiliados() {
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
     const payload: any = {
+      fixed_name: form.fixed_name,
       alias: form.alias || null, email: form.email || null, phone: form.phone || null,
       country_id: form.country_id || null, status: form.status,
       commission_pct: Number(form.commission_pct) || 0,
       payment_method: form.payment_method || null, bank_details: form.bank_details || null,
       tax_id: form.tax_id || null, notes: form.notes || null,
     };
-    // Only super_admin can change fixed_name on edit; on create it's always set
-    if (!editing) payload.fixed_name = form.fixed_name;
-    else if (isSuperAdmin) payload.fixed_name = form.fixed_name;
-
-    let id = editing?.id;
-    if (editing) {
-      const { error } = await supabase.from("affiliates").update(payload).eq("id", editing.id);
-      if (error) { toast.error(error.message); return; }
-    } else {
-      const { data, error } = await supabase.from("affiliates").insert(payload).select().single();
-      if (error) { toast.error(error.message); return; }
-      id = data.id;
-      toast.success(`Afiliado creado: ${data.unique_id}`);
-    }
-    await supabase.from("affiliate_channel_links").delete().eq("affiliate_id", id);
-    if (channelIds.length) {
-      await supabase.from("affiliate_channel_links").insert(channelIds.map((cid) => ({ affiliate_id: id, channel_id: cid })));
-    }
-    if (editing) toast.success("Guardado");
+    setSaving(true);
+    const { data, error } = await supabase.functions.invoke("affiliates-manage", {
+      body: {
+        action: editing ? "update" : "insert",
+        id: editing?.id,
+        affiliate: payload,
+        channel_ids: channelIds,
+      },
+    });
+    setSaving(false);
+    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
+    if (errMsg) { toast.error(errMsg); return; }
+    toast.success(!editing && (data as any)?.unique_id ? `Afiliado creado: ${(data as any).unique_id}` : "Guardado");
     setOpen(false);
     load();
   };
 
   const remove = async (id: string) => {
     if (!confirm("¿Eliminar afiliado?")) return;
-    const { error } = await supabase.from("affiliates").delete().eq("id", id);
-    if (error) toast.error(error.message);
-    else { toast.success("Eliminado"); load(); }
+    const { data, error } = await supabase.functions.invoke("affiliates-manage", {
+      body: { action: "delete", id },
+    });
+    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
+    if (errMsg) { toast.error(errMsg); return; }
+    toast.success("Eliminado");
+    load();
   };
 
   const toggleCh = (id: string) => setChannelIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
@@ -166,7 +166,7 @@ export default function Afiliados() {
               </div>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
-                <Button onClick={save}>Guardar</Button>
+                <Button onClick={save} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>

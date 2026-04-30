@@ -60,7 +60,7 @@ export default function Clientes() {
 
   const empty = {
     company_name: "", website: "",
-    address: "", country_id: null, status: "active", notes: "", login: "", senha: "",
+    address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
     client_type: "", brands: [] as string[],
   };
   const [form, setForm] = useState<any>(empty);

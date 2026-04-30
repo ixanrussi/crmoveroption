@@ -184,6 +184,15 @@ export default function Clientes() {
                     <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label>Tipo de cliente</Label>
+                  <Select value={form.client_type ?? ""} onValueChange={(v) => setForm({ ...form, client_type: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                    <SelectContent>
+                      {CLIENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">

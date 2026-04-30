@@ -128,11 +128,16 @@ Deno.serve(async (req) => {
       ? c.brands.map((b) => (b ?? "").toString().trim()).filter((b) => b.length > 0)
       : [];
 
+    const countryIds = Array.isArray(c.country_ids)
+      ? c.country_ids.filter((x) => typeof x === "string" && x.length > 0)
+      : [];
+
     const payload = {
       company_name: c.company_name.trim(),
       website: c.website || null,
       address: c.address || null,
-      country_id: c.country_id || null,
+      country_id: c.country_id || (countryIds[0] ?? null),
+      country_ids: countryIds,
       affiliate_id: c.affiliate_id || null,
       status: c.status || "active",
       notes: c.notes || null,

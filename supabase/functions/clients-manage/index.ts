@@ -13,9 +13,6 @@ type AppRole = "super_admin" | "admin" | "user";
 
 type ClientPayload = {
   company_name?: string;
-  contact_name?: string | null;
-  email?: string | null;
-  phone?: string | null;
   website?: string | null;
   address?: string | null;
   country_id?: string | null;
@@ -26,11 +23,18 @@ type ClientPayload = {
   senha?: string | null;
 };
 
+type ContactPayload = {
+  name?: string;
+  channel?: string;
+  contact_id?: string;
+};
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
   client?: ClientPayload;
   software_ids?: string[];
+  contacts?: ContactPayload[];
 };
 
 const json = (status: number, body: unknown) =>

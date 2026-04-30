@@ -415,10 +415,15 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Wager</Label>
-                          <Select value={pl.wager_type} onValueChange={(v) => updatePlan(i, { wager_type: v })}>
+                          <Input type="number" step="0.01" value={pl.wager}
+                            onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tipo de conversión</Label>
+                          <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
-                              {WAGER_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                              {CONVERSION_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>

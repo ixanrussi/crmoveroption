@@ -31,12 +31,12 @@ export default function Clientes() {
   const [affiliates, setAffiliates] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
-  const [softwareIds, setSoftwareIds] = useState<string[]>([]);
+  const [softwareId, setSoftwareId] = useState<string | null>(null);
   const [contacts, setContacts] = useState<Contact[]>([]);
 
   const empty = {
     company_name: "", website: "",
-    address: "", country_id: null, affiliate_id: null, status: "active", notes: "", login: "", senha: "",
+    address: "", country_id: null, status: "active", notes: "", login: "", senha: "",
   };
   const [form, setForm] = useState<any>(empty);
 

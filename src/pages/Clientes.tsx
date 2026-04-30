@@ -539,7 +539,7 @@ export default function Clientes() {
                       <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>
                     ))}
                   </TableCell>
-                  <TableCell>{r.country?.name}</TableCell>
+                  <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
                   <TableCell className="text-xs">{r.affiliate ? `${r.affiliate.unique_id}` : "—"}</TableCell>
                   <TableCell className="text-xs">{r.client_software_links?.map((l: any) => l.software?.name).join(", ")}</TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>

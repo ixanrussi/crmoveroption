@@ -10,10 +10,18 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
+const CHANNELS = [
+  { value: "telegram", label: "Telegram" },
+  { value: "whatsapp", label: "WhatsApp" },
+  { value: "email", label: "Email" },
+  { value: "telefono", label: "Teléfono" },
+] as const;
+
+type Contact = { name: string; channel: string; contact_id: string };
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -24,9 +32,10 @@ export default function Clientes() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [softwareIds, setSoftwareIds] = useState<string[]>([]);
+  const [contacts, setContacts] = useState<Contact[]>([]);
 
   const empty = {
-    company_name: "", contact_name: "", email: "", phone: "", website: "",
+    company_name: "", website: "",
     address: "", country_id: null, affiliate_id: null, status: "active", notes: "", login: "", senha: "",
   };
   const [form, setForm] = useState<any>(empty);
@@ -34,7 +43,7 @@ export default function Clientes() {
   const load = async () => {
     const { data } = await supabase
       .from("clients")
-      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name))")
+      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id)")
       .order("created_at", { ascending: false });
     setList(data ?? []);
   };
@@ -54,19 +63,38 @@ export default function Clientes() {
     setEditing(null);
     setForm(empty);
     setSoftwareIds([]);
+    setContacts([]);
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
     setForm({ ...row });
     setSoftwareIds(row.client_software_links?.map((l: any) => l.software_id) ?? []);
+    setContacts(
+      (row.client_contacts ?? []).map((c: any) => ({
+        name: c.name ?? "",
+        channel: c.channel ?? "email",
+        contact_id: c.contact_id ?? "",
+      })),
+    );
     setOpen(true);
   };
 
   const [saving, setSaving] = useState(false);
 
+  const addContact = () => setContacts((p) => [...p, { name: "", channel: "email", contact_id: "" }]);
+  const updateContact = (i: number, patch: Partial<Contact>) =>
+    setContacts((p) => p.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
+  const removeContact = (i: number) => setContacts((p) => p.filter((_, idx) => idx !== i));
+
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }
+    const cleanContacts = contacts
+      .map((c) => ({ name: c.name.trim(), channel: c.channel, contact_id: c.contact_id.trim() }))
+      .filter((c) => c.name || c.contact_id);
+    for (const c of cleanContacts) {
+      if (!c.name || !c.contact_id) { toast.error("Cada contacto necesita nombre e ID"); return; }
+    }
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("clients-manage", {
       body: {
@@ -74,9 +102,6 @@ export default function Clientes() {
         id: editing?.id,
         client: {
           company_name: form.company_name,
-          contact_name: form.contact_name,
-          email: form.email,
-          phone: form.phone,
           website: form.website,
           address: form.address,
           country_id: form.country_id,
@@ -87,6 +112,7 @@ export default function Clientes() {
           senha: form.senha,
         },
         software_ids: softwareIds,
+        contacts: cleanContacts,
       },
     });
     setSaving(false);
@@ -131,12 +157,6 @@ export default function Clientes() {
                   <Label>Empresa *</Label>
                   <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
                 </div>
-                <div className="space-y-1"><Label>Contacto</Label>
-                  <Input value={form.contact_name ?? ""} onChange={(e) => setForm({ ...form, contact_name: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Email</Label>
-                  <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Teléfono</Label>
-                  <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Sitio web</Label>
                   <Input value={form.website ?? ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Login</Label>
@@ -166,6 +186,45 @@ export default function Clientes() {
                     <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">Contactos</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={addContact}>
+                      <Plus className="h-4 w-4 mr-1" /> Agregar contacto
+                    </Button>
+                  </div>
+                  {contacts.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Sin contactos. Agrega el primero.</p>
+                  )}
+                  {contacts.map((ct, i) => (
+                    <div key={i} className="grid grid-cols-12 gap-2 items-end">
+                      <div className="col-span-4 space-y-1">
+                        <Label className="text-xs">Nombre</Label>
+                        <Input value={ct.name} onChange={(e) => updateContact(i, { name: e.target.value })} />
+                      </div>
+                      <div className="col-span-3 space-y-1">
+                        <Label className="text-xs">Canal</Label>
+                        <Select value={ct.channel} onValueChange={(v) => updateContact(i, { channel: v })}>
+                          <SelectTrigger><SelectValue /></SelectTrigger>
+                          <SelectContent>
+                            {CHANNELS.map((c) => <SelectItem key={c.value} value={c.value}>{c.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="col-span-4 space-y-1">
+                        <Label className="text-xs">ID de contacto</Label>
+                        <Input value={ct.contact_id} onChange={(e) => updateContact(i, { contact_id: e.target.value })} />
+                      </div>
+                      <div className="col-span-1">
+                        <Button type="button" size="icon" variant="ghost" onClick={() => removeContact(i)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
                   <div className="flex flex-wrap gap-2 p-2 border rounded-md max-h-32 overflow-y-auto">
@@ -191,7 +250,7 @@ export default function Clientes() {
         <CardContent className="p-0">
           <Table>
             <TableHeader><TableRow>
-              <TableHead>Empresa</TableHead><TableHead>Contacto</TableHead><TableHead>País</TableHead>
+              <TableHead>Empresa</TableHead><TableHead>Contactos</TableHead><TableHead>País</TableHead>
               <TableHead>Afiliado</TableHead><TableHead>Software</TableHead><TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
@@ -199,7 +258,11 @@ export default function Clientes() {
               {list.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.company_name}</TableCell>
-                  <TableCell>{r.contact_name}</TableCell>
+                  <TableCell className="text-xs">
+                    {(r.client_contacts ?? []).map((c: any, idx: number) => (
+                      <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>
+                    ))}
+                  </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell className="text-xs">{r.affiliate ? `${r.affiliate.unique_id}` : "—"}</TableCell>
                   <TableCell className="text-xs">{r.client_software_links?.map((l: any) => l.software?.name).join(", ")}</TableCell>
@@ -213,7 +276,7 @@ export default function Clientes() {
                 </TableRow>
               ))}
               {list.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableCell></TableRow>
               )}
             </TableBody>
           </Table>

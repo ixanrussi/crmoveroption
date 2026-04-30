@@ -22,6 +22,8 @@ type ClientPayload = {
   affiliate_id?: string | null;
   status?: string;
   notes?: string | null;
+  login?: string | null;
+  senha?: string | null;
 };
 
 type RequestBody = {
@@ -92,6 +94,8 @@ Deno.serve(async (req) => {
       affiliate_id: c.affiliate_id || null,
       status: c.status || "active",
       notes: c.notes || null,
+      login: c.login || null,
+      senha: c.senha || null,
     };
 
     let clientId = body.id;
@@ -100,11 +104,11 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, contact_name, email, phone, website, address,
-          country_id, affiliate_id, status, notes, created_by
+          country_id, affiliate_id, status, notes, login, senha, created_by
         ) values (
           ${payload.company_name}, ${payload.contact_name}, ${payload.email}, ${payload.phone},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.affiliate_id},
-          ${payload.status}::client_status, ${payload.notes}, ${userData.user.id}
+          ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -122,6 +126,8 @@ Deno.serve(async (req) => {
           affiliate_id = ${payload.affiliate_id},
           status = ${payload.status}::client_status,
           notes = ${payload.notes},
+          login = ${payload.login},
+          senha = ${payload.senha},
           updated_at = now()
         where id = ${clientId}
       `;

@@ -66,7 +66,7 @@ Deno.serve(async (req) => {
       from public.user_roles
       where user_id = ${userData.user.id}
     `;
-    const canWrite = roles.some((item) => item.role === "admin" || item.role === "super_admin");
+    const canWrite = roles.some((item: { role: AppRole }) => item.role === "admin" || item.role === "super_admin");
     if (!canWrite) {
       return new Response(JSON.stringify({ error: "Acceso denegado" }), {
         status: 403,

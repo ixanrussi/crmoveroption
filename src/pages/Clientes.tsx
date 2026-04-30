@@ -14,6 +14,7 @@ import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
+const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;
 const CHANNELS = [
   { value: "telegram", label: "Telegram" },
   { value: "whatsapp", label: "WhatsApp" },
@@ -38,8 +39,10 @@ export default function Clientes() {
   const empty = {
     company_name: "", website: "",
     address: "", country_id: null, status: "active", notes: "", login: "", senha: "",
+    client_type: "", brands: [] as string[],
   };
   const [form, setForm] = useState<any>(empty);
+  const [brandInput, setBrandInput] = useState("");
 
   const load = async () => {
     const { data } = await supabase
@@ -65,11 +68,16 @@ export default function Clientes() {
     setForm(empty);
     setSoftwareId(null);
     setContacts([]);
+    setBrandInput("");
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    setForm({
+      ...row,
+      client_type: row.client_type ?? "",
+      brands: Array.isArray(row.brands) ? row.brands : [],
+    });
     setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
       (row.client_contacts ?? []).map((c: any) => ({
@@ -78,6 +86,7 @@ export default function Clientes() {
         contact_id: c.contact_id ?? "",
       })),
     );
+    setBrandInput("");
     setOpen(true);
   };
 
@@ -110,6 +119,8 @@ export default function Clientes() {
           notes: form.notes,
           login: form.login,
           senha: form.senha,
+          client_type: form.client_type || null,
+          brands: Array.isArray(form.brands) ? form.brands : [],
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
@@ -173,6 +184,15 @@ export default function Clientes() {
                     <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label>Tipo de cliente</Label>
+                  <Select value={form.client_type ?? ""} onValueChange={(v) => setForm({ ...form, client_type: v })}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                    <SelectContent>
+                      {CLIENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">
@@ -210,6 +230,59 @@ export default function Clientes() {
                       </div>
                     </div>
                   ))}
+                </div>
+
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <Label className="text-base">Marcas</Label>
+                  <p className="text-xs text-muted-foreground">Agrega las marcas del cliente (cuando tiene más de una).</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nombre de la marca"
+                      value={brandInput}
+                      onChange={(e) => setBrandInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = brandInput.trim();
+                          if (v && !(form.brands ?? []).includes(v)) {
+                            setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                          }
+                          setBrandInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const v = brandInput.trim();
+                        if (v && !(form.brands ?? []).includes(v)) {
+                          setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                        }
+                        setBrandInput("");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Agregar
+                    </Button>
+                  </div>
+                  {(form.brands ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Sin marcas agregadas.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(form.brands ?? []).map((b: string, i: number) => (
+                        <Badge key={`${b}-${i}`} variant="secondary" className="flex items-center gap-1">
+                          {b}
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, brands: form.brands.filter((_: string, idx: number) => idx !== i) })}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
                 <div className="col-span-2 space-y-1">
@@ -327,7 +400,20 @@ export default function Clientes() {
                   ) : "—"}
                 </div>
                 <div><span className="text-muted-foreground">Estado: </span><Badge variant={viewing.status === "active" ? "default" : "secondary"}>{viewing.status}</Badge></div>
+                <div><span className="text-muted-foreground">Tipo: </span>{viewing.client_type || "—"}</div>
                 <div><span className="text-muted-foreground">Software: </span>{viewing.client_software_links?.map((l: any) => l.software?.name).join(", ") || "—"}</div>
+              </div>
+              <div>
+                <div className="text-muted-foreground mb-1">Marcas:</div>
+                {(viewing.brands ?? []).length === 0 ? (
+                  <div className="text-muted-foreground">—</div>
+                ) : (
+                  <div className="flex flex-wrap gap-1">
+                    {viewing.brands.map((b: string, i: number) => (
+                      <Badge key={i} variant="secondary">{b}</Badge>
+                    ))}
+                  </div>
+                )}
               </div>
               <div>
                 <div className="text-muted-foreground mb-1">Contactos:</div>

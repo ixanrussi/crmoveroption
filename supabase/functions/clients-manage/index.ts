@@ -21,6 +21,8 @@ type ClientPayload = {
   notes?: string | null;
   login?: string | null;
   senha?: string | null;
+  client_type?: string | null;
+  brands?: string[] | null;
 };
 
 type ContactPayload = {
@@ -98,6 +100,12 @@ Deno.serve(async (req) => {
     const c = body.client ?? {};
     if (!c.company_name?.trim()) return json(400, { error: "Empresa requerida" });
 
+    const ALLOWED_TYPES = ["Directo", "Agencia", "Network"];
+    const clientType = c.client_type && ALLOWED_TYPES.includes(c.client_type) ? c.client_type : null;
+    const brands = Array.isArray(c.brands)
+      ? c.brands.map((b) => (b ?? "").toString().trim()).filter((b) => b.length > 0)
+      : [];
+
     const payload = {
       company_name: c.company_name.trim(),
       website: c.website || null,
@@ -108,6 +116,8 @@ Deno.serve(async (req) => {
       notes: c.notes || null,
       login: c.login || null,
       senha: c.senha || null,
+      client_type: clientType,
+      brands,
     };
 
     let clientId = body.id;
@@ -116,11 +126,12 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, affiliate_id, status, notes, login, senha, created_by
+          country_id, affiliate_id, status, notes, login, senha, client_type, brands, created_by
         ) values (
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.affiliate_id},
-          ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha}, ${userData.user.id}
+          ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
+          ${payload.client_type}, ${payload.brands}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -137,6 +148,8 @@ Deno.serve(async (req) => {
           notes = ${payload.notes},
           login = ${payload.login},
           senha = ${payload.senha},
+          client_type = ${payload.client_type},
+          brands = ${payload.brands},
           updated_at = now()
         where id = ${clientId}
       `;

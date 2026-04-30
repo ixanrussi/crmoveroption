@@ -68,11 +68,16 @@ export default function Clientes() {
     setForm(empty);
     setSoftwareId(null);
     setContacts([]);
+    setBrandInput("");
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    setForm({
+      ...row,
+      client_type: row.client_type ?? "",
+      brands: Array.isArray(row.brands) ? row.brands : [],
+    });
     setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
       (row.client_contacts ?? []).map((c: any) => ({
@@ -81,6 +86,7 @@ export default function Clientes() {
         contact_id: c.contact_id ?? "",
       })),
     );
+    setBrandInput("");
     setOpen(true);
   };
 

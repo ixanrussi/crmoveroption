@@ -580,7 +580,7 @@ export default function Clientes() {
                     </a>
                   ) : "—"}
                 </div>
-                <div><span className="text-muted-foreground">País: </span>{viewing.country?.name || "—"}</div>
+                <div><span className="text-muted-foreground">GEO's: </span>{countryNames(viewing) || "—"}</div>
                 <div>
                   <span className="text-muted-foreground">Login: </span>
                   {viewing.login ? (

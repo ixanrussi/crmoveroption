@@ -10,12 +10,20 @@ import { useAuth } from "@/hooks/useAuth";
 type Role = "super_admin" | "admin" | "user";
 const ROLES: Role[] = ["super_admin", "admin", "user"];
 
+type UserRow = {
+  id: string;
+  email: string;
+  full_name: string;
+  job_title: string | null;
+  roles: Role[];
+};
+
 export default function Usuarios() {
   const { user: me } = useAuth();
-  const [users, setUsers] = useState<any[]>([]);
+  const [users, setUsers] = useState<UserRow[]>([]);
 
   const load = async () => {
-    const { data, error } = await supabase.functions.invoke<{ users: any[] }>("admin-users");
+    const { data, error } = await supabase.functions.invoke<{ users: UserRow[] }>("admin-users");
     if (error) {
       toast.error(error.message);
       return;

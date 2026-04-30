@@ -36,15 +36,20 @@ Deno.serve(async (req) => {
       throw new Error("Configuración del backend incompleta");
     }
 
-    const authClient = createClient(supabaseUrl, anonKey);
-    const { data: userData, error: userError } = await authClient.auth.getUser(token);
+    const authClient = createClient(supabaseUrl, anonKey, {
+      global: { headers: { Authorization: `Bearer ${token}` } },
+    });
+    const { data: claimsData, error: claimsError } = await authClient.auth.getClaims(token);
+    const userId = claimsData?.claims?.sub as string | undefined;
 
-    if (userError || !userData.user) {
+    if (claimsError || !userId) {
+      console.error("get-auth-context claims error", claimsError);
       return new Response(JSON.stringify({ error: "Sesión inválida" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+    const userData = { user: { id: userId } };
 
     let roles: AppRole[] = ["user"];
 

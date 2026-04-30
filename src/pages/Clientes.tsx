@@ -14,6 +14,7 @@ import { Plus, Pencil, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
+const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;
 const CHANNELS = [
   { value: "telegram", label: "Telegram" },
   { value: "whatsapp", label: "WhatsApp" },

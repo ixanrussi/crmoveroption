@@ -14,16 +14,332 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      affiliate_channel_links: {
+        Row: {
+          affiliate_id: string
+          channel_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          channel_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          channel_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_channel_links_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_channel_links_channel_id_fkey"
+            columns: ["channel_id"]
+            isOneToOne: false
+            referencedRelation: "affiliate_channels"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      affiliate_channels: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      affiliates: {
+        Row: {
+          alias: string | null
+          bank_details: string | null
+          commission_pct: number | null
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          fixed_name: string
+          id: string
+          notes: string | null
+          payment_method: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["affiliate_status"]
+          tax_id: string | null
+          unique_id: string
+          updated_at: string
+        }
+        Insert: {
+          alias?: string | null
+          bank_details?: string | null
+          commission_pct?: number | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          fixed_name: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          tax_id?: string | null
+          unique_id: string
+          updated_at?: string
+        }
+        Update: {
+          alias?: string | null
+          bank_details?: string | null
+          commission_pct?: number | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          fixed_name?: string
+          id?: string
+          notes?: string | null
+          payment_method?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["affiliate_status"]
+          tax_id?: string | null
+          unique_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliates_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      client_software_links: {
+        Row: {
+          client_id: string
+          software_id: string
+        }
+        Insert: {
+          client_id: string
+          software_id: string
+        }
+        Update: {
+          client_id?: string
+          software_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_software_links_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_software_links_software_id_fkey"
+            columns: ["software_id"]
+            isOneToOne: false
+            referencedRelation: "softwares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      clients: {
+        Row: {
+          address: string | null
+          affiliate_id: string | null
+          company_name: string
+          contact_name: string | null
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          email: string | null
+          id: string
+          notes: string | null
+          phone: string | null
+          status: Database["public"]["Enums"]["client_status"]
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          address?: string | null
+          affiliate_id?: string | null
+          company_name: string
+          contact_name?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          address?: string | null
+          affiliate_id?: string | null
+          company_name?: string
+          contact_name?: string | null
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          email?: string | null
+          id?: string
+          notes?: string | null
+          phone?: string | null
+          status?: Database["public"]["Enums"]["client_status"]
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "clients_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      countries: {
+        Row: {
+          code: string | null
+          created_at: string
+          id: string
+          name: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          email: string
+          full_name: string
+          id: string
+          job_title: string | null
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          email: string
+          full_name?: string
+          id: string
+          job_title?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          email?: string
+          full_name?: string
+          id?: string
+          job_title?: string | null
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      softwares: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          name?: string
+        }
+        Relationships: []
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
+      is_admin_or_super: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
-      [_ in never]: never
+      affiliate_status: "active" | "inactive" | "pending"
+      app_role: "super_admin" | "admin" | "user"
+      client_status: "active" | "inactive" | "prospect"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +466,10 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      affiliate_status: ["active", "inactive", "pending"],
+      app_role: ["super_admin", "admin", "user"],
+      client_status: ["active", "inactive", "prospect"],
+    },
   },
 } as const

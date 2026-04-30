@@ -62,14 +62,14 @@ export default function Clientes() {
   const openNew = () => {
     setEditing(null);
     setForm(empty);
-    setSoftwareIds([]);
+    setSoftwareId(null);
     setContacts([]);
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
     setForm({ ...row });
-    setSoftwareIds(row.client_software_links?.map((l: any) => l.software_id) ?? []);
+    setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
       (row.client_contacts ?? []).map((c: any) => ({
         name: c.name ?? "",

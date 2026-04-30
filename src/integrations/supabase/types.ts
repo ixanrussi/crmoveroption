@@ -171,8 +171,10 @@ export type Database = {
           created_by: string | null
           email: string | null
           id: string
+          login: string | null
           notes: string | null
           phone: string | null
+          senha: string | null
           status: Database["public"]["Enums"]["client_status"]
           updated_at: string
           website: string | null
@@ -187,8 +189,10 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           id?: string
+          login?: string | null
           notes?: string | null
           phone?: string | null
+          senha?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           updated_at?: string
           website?: string | null
@@ -203,8 +207,10 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           id?: string
+          login?: string | null
           notes?: string | null
           phone?: string | null
+          senha?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           updated_at?: string
           website?: string | null

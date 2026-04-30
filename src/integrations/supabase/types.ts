@@ -139,6 +139,7 @@ export type Database = {
           brand: string | null
           cap: number | null
           client_id: string
+          conversion_type: string | null
           country_id: string | null
           cpa: number | null
           cpl: number | null
@@ -150,13 +151,14 @@ export type Database = {
           plan_start_date: string | null
           rev_share_pct: number | null
           updated_at: string
-          wager_type: string | null
+          wager: number | null
         }
         Insert: {
           baseline?: number | null
           brand?: string | null
           cap?: number | null
           client_id: string
+          conversion_type?: string | null
           country_id?: string | null
           cpa?: number | null
           cpl?: number | null
@@ -168,13 +170,14 @@ export type Database = {
           plan_start_date?: string | null
           rev_share_pct?: number | null
           updated_at?: string
-          wager_type?: string | null
+          wager?: number | null
         }
         Update: {
           baseline?: number | null
           brand?: string | null
           cap?: number | null
           client_id?: string
+          conversion_type?: string | null
           country_id?: string | null
           cpa?: number | null
           cpl?: number | null
@@ -186,7 +189,7 @@ export type Database = {
           plan_start_date?: string | null
           rev_share_pct?: number | null
           updated_at?: string
-          wager_type?: string | null
+          wager?: number | null
         }
         Relationships: []
       }

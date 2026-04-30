@@ -33,14 +33,15 @@ type CommissionPlan = {
   cpa: string;
   rev_share_pct: string;
   cpl: string;
-  wager_type: string;
+  wager: string;
+  conversion_type: string;
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
-  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager_type: "", cap: "",
+  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
 };
-const WAGER_TYPES = ["NCO", "NNCO"] as const;
+const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -117,7 +118,8 @@ export default function Clientes() {
         cpa: p.cpa?.toString() ?? "",
         rev_share_pct: p.rev_share_pct?.toString() ?? "",
         cpl: p.cpl?.toString() ?? "",
-        wager_type: p.wager_type ?? "",
+        wager: p.wager?.toString() ?? "",
+        conversion_type: p.conversion_type ?? "",
         cap: p.cap?.toString() ?? "",
       })),
     );
@@ -174,7 +176,8 @@ export default function Clientes() {
           cpa: p.cpa === "" ? null : p.cpa,
           rev_share_pct: p.rev_share_pct === "" ? null : p.rev_share_pct,
           cpl: p.cpl === "" ? null : p.cpl,
-          wager_type: p.wager_type || null,
+          wager: p.wager === "" ? null : p.wager,
+          conversion_type: p.conversion_type || null,
           cap: p.cap === "" ? null : p.cap,
         })),
       },
@@ -412,10 +415,15 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Wager</Label>
-                          <Select value={pl.wager_type} onValueChange={(v) => updatePlan(i, { wager_type: v })}>
+                          <Input type="number" step="0.01" value={pl.wager}
+                            onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Tipo de conversión</Label>
+                          <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
-                              {WAGER_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                              {CONVERSION_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>
@@ -580,7 +588,7 @@ export default function Clientes() {
                     <div>
                       Baseline: {p.baseline ?? "—"} · CPA: {p.cpa ?? "—"} · Rev Share: {p.rev_share_pct ?? "—"}% · CPL: {p.cpl ?? "—"}
                     </div>
-                    <div>Wager: {p.wager_type || "—"} · CAP: {p.cap ?? "—"}</div>
+                    <div>Wager: {p.wager ?? "—"} · Tipo: {p.conversion_type || "—"} · CAP: {p.cap ?? "—"}</div>
                   </div>
                 ))}
               </div>

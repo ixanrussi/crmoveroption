@@ -41,7 +41,8 @@ type CommissionPlanPayload = {
   cpa?: number | string | null;
   rev_share_pct?: number | string | null;
   cpl?: number | string | null;
-  wager_type?: string | null;
+  wager?: number | string | null;
+  conversion_type?: string | null;
   cap?: number | string | null;
 };
 
@@ -188,7 +189,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id")}`;
     }
 
-    const ALLOWED_WAGER = ["NCO", "NNCO"];
+    const ALLOWED_CONV = ["NCO", "NNCO"];
     const num = (v: unknown): number | null => {
       if (v === null || v === undefined || v === "") return null;
       const n = Number(v);
@@ -209,7 +210,8 @@ Deno.serve(async (req) => {
           cpa: num(p?.cpa),
           rev_share_pct: num(p?.rev_share_pct),
           cpl: num(p?.cpl),
-          wager_type: p?.wager_type && ALLOWED_WAGER.includes(p.wager_type) ? p.wager_type : null,
+          wager: num(p?.wager),
+          conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
           cap: intOrNull(p?.cap),
         }))
       : [];
@@ -220,7 +222,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager_type", "cap"
+        "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap"
       )}`;
     }
 

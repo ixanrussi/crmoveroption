@@ -153,10 +153,10 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, affiliate_id, status, notes, login, senha, client_type, brands, created_by
+          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, created_by
         ) values (
           ${payload.company_name},
-          ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.affiliate_id},
+          ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
           ${payload.client_type}, ${payload.brands}, ${userData.user.id}
         ) returning id
@@ -170,6 +170,7 @@ Deno.serve(async (req) => {
           website = ${payload.website},
           address = ${payload.address},
           country_id = ${payload.country_id},
+          country_ids = ${payload.country_ids}::uuid[],
           affiliate_id = ${payload.affiliate_id},
           status = ${payload.status}::client_status,
           notes = ${payload.notes},

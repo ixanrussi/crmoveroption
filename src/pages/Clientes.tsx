@@ -119,6 +119,8 @@ export default function Clientes() {
           notes: form.notes,
           login: form.login,
           senha: form.senha,
+          client_type: form.client_type || null,
+          brands: Array.isArray(form.brands) ? form.brands : [],
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,

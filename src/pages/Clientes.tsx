@@ -33,14 +33,15 @@ type CommissionPlan = {
   cpa: string;
   rev_share_pct: string;
   cpl: string;
-  wager_type: string;
+  wager: string;
+  conversion_type: string;
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
-  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager_type: "", cap: "",
+  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
 };
-const WAGER_TYPES = ["NCO", "NNCO"] as const;
+const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();

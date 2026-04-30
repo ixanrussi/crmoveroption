@@ -118,7 +118,8 @@ export default function Clientes() {
         cpa: p.cpa?.toString() ?? "",
         rev_share_pct: p.rev_share_pct?.toString() ?? "",
         cpl: p.cpl?.toString() ?? "",
-        wager_type: p.wager_type ?? "",
+        wager: p.wager?.toString() ?? "",
+        conversion_type: p.conversion_type ?? "",
         cap: p.cap?.toString() ?? "",
       })),
     );

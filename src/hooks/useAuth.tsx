@@ -23,26 +23,50 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [loading, setLoading] = useState(true);
 
   const fetchRoles = async (uid: string) => {
-    const { data, error } = await supabase.from("user_roles").select("role").eq("user_id", uid);
-    console.log("[useAuth] fetchRoles", { uid, data, error });
-    setRoles((data?.map((r: any) => r.role) ?? []) as AppRole[]);
+    for (let attempt = 1; attempt <= 3; attempt += 1) {
+      const [superAdminResult, adminResult] = await Promise.all([
+        (supabase as any).rpc("has_role", { _user_id: uid, _role: "super_admin" }),
+        (supabase as any).rpc("has_role", { _user_id: uid, _role: "admin" }),
+      ]);
+
+      if (!superAdminResult.error && !adminResult.error) {
+        const nextRoles: AppRole[] = superAdminResult.data
+          ? ["super_admin"]
+          : adminResult.data
+            ? ["admin"]
+            : ["user"];
+        setRoles(nextRoles);
+        return;
+      }
+
+      if (attempt < 3) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 600));
+      }
+    }
+
+    setRoles(["user"]);
   };
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, s) => {
+      setLoading(true);
       setSession(s);
       setUser(s?.user ?? null);
       if (s?.user) {
-        setTimeout(() => fetchRoles(s.user.id), 0);
+        setTimeout(() => {
+          fetchRoles(s.user.id).finally(() => setLoading(false));
+        }, 0);
       } else {
         setRoles([]);
+        setLoading(false);
       }
     });
 
-    supabase.auth.getSession().then(({ data: { session: s } }) => {
+    supabase.auth.getSession().then(async ({ data: { session: s } }) => {
       setSession(s);
       setUser(s?.user ?? null);
-      if (s?.user) fetchRoles(s.user.id);
+      if (s?.user) await fetchRoles(s.user.id);
+      else setRoles([]);
       setLoading(false);
     });
 

@@ -133,10 +133,6 @@ export default function Clientes() {
     load();
   };
 
-  const toggleSw = (id: string) => {
-    setSoftwareIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
-  };
-
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">

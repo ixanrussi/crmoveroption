@@ -31,12 +31,27 @@ type ContactPayload = {
   contact_id?: string;
 };
 
+type CommissionPlanPayload = {
+  plan_start_date?: string | null;
+  currency?: string | null;
+  description?: string | null;
+  country_id?: string | null;
+  brand?: string | null;
+  baseline?: number | string | null;
+  cpa?: number | string | null;
+  rev_share_pct?: number | string | null;
+  cpl?: number | string | null;
+  wager_type?: string | null;
+  cap?: number | string | null;
+};
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
   client?: ClientPayload;
   software_ids?: string[];
   contacts?: ContactPayload[];
+  commission_plans?: CommissionPlanPayload[];
 };
 
 const json = (status: number, body: unknown) =>

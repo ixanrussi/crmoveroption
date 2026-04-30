@@ -338,6 +338,97 @@ export default function Clientes() {
                   )}
                 </div>
 
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">Comisiones</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={addPlan}>
+                      <Plus className="h-4 w-4 mr-1" /> Agregar plan
+                    </Button>
+                  </div>
+                  {plans.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
+                  )}
+                  {plans.map((pl, i) => (
+                    <div key={i} className="border rounded-md p-3 space-y-2 bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => removePlan(i)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Plan Start Date</Label>
+                          <Input type="date" value={pl.plan_start_date}
+                            onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Currency</Label>
+                          <Input placeholder="USD, EUR, BRL..." value={pl.currency}
+                            onChange={(e) => updatePlan(i, { currency: e.target.value })} />
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Description</Label>
+                          <Input value={pl.description}
+                            onChange={(e) => updatePlan(i, { description: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Country</Label>
+                          <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Brand</Label>
+                          <Select value={pl.brand} onValueChange={(v) => updatePlan(i, { brand: v })}>
+                            <SelectTrigger><SelectValue placeholder={(form.brands ?? []).length ? "Selecciona" : "Agrega marcas arriba"} /></SelectTrigger>
+                            <SelectContent>
+                              {(form.brands ?? []).map((b: string) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Baseline</Label>
+                          <Input type="number" step="0.01" value={pl.baseline}
+                            onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPA</Label>
+                          <Input type="number" step="0.01" value={pl.cpa}
+                            onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Rev Share %</Label>
+                          <Input type="number" step="0.01" value={pl.rev_share_pct}
+                            onChange={(e) => updatePlan(i, { rev_share_pct: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPL</Label>
+                          <Input type="number" step="0.01" value={pl.cpl}
+                            onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Wager</Label>
+                          <Select value={pl.wager_type} onValueChange={(v) => updatePlan(i, { wager_type: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {WAGER_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CAP (conversiones autorizadas)</Label>
+                          <Input type="number" step="1" value={pl.cap}
+                            onChange={(e) => updatePlan(i, { cap: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
                   <Select value={softwareId ?? ""} onValueChange={(v) => setSoftwareId(v || null)}>

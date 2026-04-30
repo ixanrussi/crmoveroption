@@ -27,7 +27,7 @@ const isAllowedTable = (table: unknown): table is ListTable =>
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  let sql: postgres.Sql | null = null;
+  let sql: any = null;
 
   try {
     const token = (req.headers.get("Authorization") ?? "").replace("Bearer ", "").trim();
@@ -39,7 +39,7 @@ Deno.serve(async (req) => {
     }
 
     const body = (await req.json().catch(() => ({}))) as RequestBody;
-    if (!isAllowedTable(body.table) || !["insert", "delete"].includes(body.action ?? "")) {
+    if (!isAllowedTable(body.table) || (body.action !== "insert" && body.action !== "delete")) {
       return new Response(JSON.stringify({ error: "Solicitud inválida" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -124,7 +124,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     console.error("simple-list-items error", error);
-    const message = error instanceof Error && error.message.includes("foreign key")
+    const message = (error as { code?: string })?.code === "23503" || (error instanceof Error && error.message.includes("foreign key"))
       ? "No se puede eliminar porque el registro está en uso"
       : "No se pudo completar la operación";
     return new Response(JSON.stringify({ error: message }), {

@@ -215,12 +215,12 @@ export default function Clientes() {
 
                 <div className="col-span-2 space-y-1">
                   <Label>Software utilizado</Label>
-                  <div className="flex flex-wrap gap-2 p-2 border rounded-md max-h-32 overflow-y-auto">
-                    {softwares.map((s) => (
-                      <Badge key={s.id} variant={softwareIds.includes(s.id) ? "default" : "outline"}
-                             className="cursor-pointer" onClick={() => toggleSw(s.id)}>{s.name}</Badge>
-                    ))}
-                  </div>
+                  <Select value={softwareId ?? ""} onValueChange={(v) => setSoftwareId(v || null)}>
+                    <SelectTrigger><SelectValue placeholder="Selecciona un software" /></SelectTrigger>
+                    <SelectContent>
+                      {softwares.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>

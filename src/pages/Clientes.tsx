@@ -244,7 +244,15 @@ export default function Clientes() {
             <TableBody>
               {list.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-medium">{r.company_name}</TableCell>
+                  <TableCell className="font-medium">
+                    <button
+                      type="button"
+                      className="text-left hover:underline text-primary"
+                      onClick={() => setViewing(r)}
+                    >
+                      {r.company_name}
+                    </button>
+                  </TableCell>
                   <TableCell className="text-xs">
                     {(r.client_contacts ?? []).map((c: any, idx: number) => (
                       <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>

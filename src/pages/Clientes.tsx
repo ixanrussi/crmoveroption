@@ -276,7 +276,7 @@ export default function Clientes() {
                 </TableRow>
               ))}
               {list.length === 0 && (
-                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableCell></TableRow>
+                <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

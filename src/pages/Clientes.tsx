@@ -164,6 +164,19 @@ export default function Clientes() {
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
+        commission_plans: plans.map((p) => ({
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: p.baseline === "" ? null : p.baseline,
+          cpa: p.cpa === "" ? null : p.cpa,
+          rev_share_pct: p.rev_share_pct === "" ? null : p.rev_share_pct,
+          cpl: p.cpl === "" ? null : p.cpl,
+          wager_type: p.wager_type || null,
+          cap: p.cap === "" ? null : p.cap,
+        })),
       },
     });
     setSaving(false);

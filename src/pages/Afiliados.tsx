@@ -10,10 +10,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Lock } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "pending"] as const;
+const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
+
+type CommissionPlan = {
+  plan_start_date: string;
+  currency: string;
+  description: string;
+  country_id: string | null;
+  brand: string;
+  baseline: string;
+  cpa: string;
+  rev_share_pct: string;
+  cpl: string;
+  wager: string;
+  conversion_type: string;
+  cap: string;
+};
+const emptyPlan: CommissionPlan = {
+  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+};
 
 export default function Afiliados() {
   const { isAdmin, isSuperAdmin } = useAuth();

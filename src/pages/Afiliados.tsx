@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
 import { toast } from "sonner";
 
-const STATUSES = ["active", "inactive", "pending"] as const;
+
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 type CommissionPlan = {
@@ -45,13 +45,11 @@ export default function Afiliados() {
   const [channelIds, setChannelIds] = useState<string[]>([]);
   const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
-  const [brandInput, setBrandInput] = useState("");
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
     fixed_name: "", alias: "", email: "", phone: "", country_id: null,
-    status: "active", commission_pct: 0, payment_method: "", bank_details: "", tax_id: "", notes: "",
-    brands: [] as string[],
+    status: "active", notes: "",
   };
   const [form, setForm] = useState<any>(empty);
 
@@ -72,10 +70,10 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setBrandInput(""); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row, brands: Array.isArray(row.brands) ? row.brands : [] });
+    setForm({ ...row });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
@@ -96,7 +94,6 @@ export default function Afiliados() {
         cap: p.cap?.toString() ?? "",
       })),
     );
-    setBrandInput("");
     setOpen(true);
   };
 
@@ -110,11 +107,8 @@ export default function Afiliados() {
     const payload: any = {
       fixed_name: form.fixed_name,
       alias: form.alias || null, email: form.email || null, phone: form.phone || null,
-      country_id: form.country_id || null, status: form.status,
-      commission_pct: Number(form.commission_pct) || 0,
-      payment_method: form.payment_method || null, bank_details: form.bank_details || null,
-      tax_id: form.tax_id || null, notes: form.notes || null,
-      brands: Array.isArray(form.brands) ? form.brands : [],
+      country_id: form.country_id || null,
+      notes: form.notes || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -201,22 +195,6 @@ export default function Afiliados() {
                     <SelectContent>{countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1">
-                  <Label>Estado</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1"><Label>Comisión %</Label>
-                  <Input type="number" step="0.01" value={form.commission_pct ?? 0}
-                    onChange={(e) => setForm({ ...form, commission_pct: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Método de pago</Label>
-                  <Input value={form.payment_method ?? ""} onChange={(e) => setForm({ ...form, payment_method: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Documento fiscal</Label>
-                  <Input value={form.tax_id ?? ""} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} /></div>
-                <div className="col-span-2 space-y-1"><Label>Datos bancarios</Label>
-                  <Textarea value={form.bank_details ?? ""} onChange={(e) => setForm({ ...form, bank_details: e.target.value })} /></div>
                 <div className="col-span-2 space-y-2">
                   <Label>Canales</Label>
                   <div className="flex flex-wrap gap-2 p-2 border rounded-md">
@@ -249,59 +227,6 @@ export default function Afiliados() {
                 </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
-                  <Label className="text-base">Marcas</Label>
-                  <p className="text-xs text-muted-foreground">Agrega las marcas asociadas al afiliado.</p>
-                  <div className="flex gap-2">
-                    <Input
-                      placeholder="Nombre de la marca"
-                      value={brandInput}
-                      onChange={(e) => setBrandInput(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          e.preventDefault();
-                          const v = brandInput.trim();
-                          if (v && !(form.brands ?? []).includes(v)) {
-                            setForm({ ...form, brands: [...(form.brands ?? []), v] });
-                          }
-                          setBrandInput("");
-                        }
-                      }}
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => {
-                        const v = brandInput.trim();
-                        if (v && !(form.brands ?? []).includes(v)) {
-                          setForm({ ...form, brands: [...(form.brands ?? []), v] });
-                        }
-                        setBrandInput("");
-                      }}
-                    >
-                      <Plus className="h-4 w-4 mr-1" /> Agregar
-                    </Button>
-                  </div>
-                  {(form.brands ?? []).length === 0 ? (
-                    <p className="text-sm text-muted-foreground">Sin marcas agregadas.</p>
-                  ) : (
-                    <div className="flex flex-wrap gap-2">
-                      {(form.brands ?? []).map((b: string, i: number) => (
-                        <Badge key={`${b}-${i}`} variant="secondary" className="flex items-center gap-1">
-                          {b}
-                          <button
-                            type="button"
-                            onClick={() => setForm({ ...form, brands: form.brands.filter((_: string, idx: number) => idx !== i) })}
-                            className="hover:text-destructive"
-                          >
-                            <X className="h-3 w-3" />
-                          </button>
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-base">Comisiones</Label>
                     <Button type="button" size="sm" variant="outline" onClick={addPlan}>
@@ -321,12 +246,12 @@ export default function Afiliados() {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                          <Label className="text-xs">Plan Start Date</Label>
+                          <Label className="text-xs">Fecha de inicio del plan</Label>
                           <Input type="date" value={pl.plan_start_date}
                             onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Currency</Label>
+                          <Label className="text-xs">Moneda</Label>
                           <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
@@ -336,12 +261,12 @@ export default function Afiliados() {
                           </Select>
                         </div>
                         <div className="col-span-2 space-y-1">
-                          <Label className="text-xs">Description</Label>
+                          <Label className="text-xs">Descripción</Label>
                           <Input value={pl.description}
                             onChange={(e) => updatePlan(i, { description: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Country</Label>
+                          <Label className="text-xs">País</Label>
                           <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
@@ -350,16 +275,12 @@ export default function Afiliados() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Brand</Label>
-                          <Select value={pl.brand} onValueChange={(v) => updatePlan(i, { brand: v })}>
-                            <SelectTrigger><SelectValue placeholder={(form.brands ?? []).length ? "Selecciona" : "Agrega marcas arriba"} /></SelectTrigger>
-                            <SelectContent>
-                              {(form.brands ?? []).map((b: string) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                          <Label className="text-xs">Marca</Label>
+                          <Input value={pl.brand} placeholder="Nombre de la marca"
+                            onChange={(e) => updatePlan(i, { brand: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Baseline</Label>
+                          <Label className="text-xs">Línea base</Label>
                           <Input type="number" step="0.01" value={pl.baseline}
                             onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
                         </div>
@@ -379,7 +300,7 @@ export default function Afiliados() {
                             onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Wager</Label>
+                          <Label className="text-xs">Apuesta</Label>
                           <Input type="number" step="0.01" value={pl.wager}
                             onChange={(e) => updatePlan(i, { wager: e.target.value })} />
                         </div>

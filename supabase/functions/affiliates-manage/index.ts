@@ -136,11 +136,11 @@ Deno.serve(async (req) => {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
             fixed_name, alias, email, phone, country_id, status,
-            commission_pct, payment_method, bank_details, tax_id, notes, created_by
+            commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
           ) values (
             ${payload.fixed_name}, ${payload.alias}, ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
-            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${userData.user.id}
+            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;

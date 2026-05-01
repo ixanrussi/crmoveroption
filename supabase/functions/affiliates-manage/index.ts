@@ -161,6 +161,7 @@ Deno.serve(async (req) => {
               bank_details = ${payload.bank_details},
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
+              brands = ${payload.brands},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -177,6 +178,7 @@ Deno.serve(async (req) => {
               bank_details = ${payload.bank_details},
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
+              brands = ${payload.brands},
               updated_at = now()
             where id = ${affiliateId}
           `;

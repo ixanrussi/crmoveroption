@@ -68,10 +68,86 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_commission_plans: {
+        Row: {
+          affiliate_id: string
+          baseline: number | null
+          brand: string | null
+          cap: number | null
+          conversion_type: string | null
+          country_id: string | null
+          cpa: number | null
+          cpl: number | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          plan_start_date: string | null
+          rev_share_pct: number | null
+          updated_at: string
+          wager: number | null
+        }
+        Insert: {
+          affiliate_id: string
+          baseline?: number | null
+          brand?: string | null
+          cap?: number | null
+          conversion_type?: string | null
+          country_id?: string | null
+          cpa?: number | null
+          cpl?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager?: number | null
+        }
+        Update: {
+          affiliate_id?: string
+          baseline?: number | null
+          brand?: string | null
+          cap?: number | null
+          conversion_type?: string | null
+          country_id?: string | null
+          cpa?: number | null
+          cpl?: number | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "affiliate_commission_plans_affiliate_id_fkey"
+            columns: ["affiliate_id"]
+            isOneToOne: false
+            referencedRelation: "affiliates"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commission_plans_country_id_fkey"
+            columns: ["country_id"]
+            isOneToOne: false
+            referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       affiliates: {
         Row: {
           alias: string | null
           bank_details: string | null
+          brands: string[]
           commission_pct: number | null
           country_id: string | null
           created_at: string
@@ -90,6 +166,7 @@ export type Database = {
         Insert: {
           alias?: string | null
           bank_details?: string | null
+          brands?: string[]
           commission_pct?: number | null
           country_id?: string | null
           created_at?: string
@@ -108,6 +185,7 @@ export type Database = {
         Update: {
           alias?: string | null
           bank_details?: string | null
+          brands?: string[]
           commission_pct?: number | null
           country_id?: string | null
           created_at?: string

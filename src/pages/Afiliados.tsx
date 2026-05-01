@@ -10,10 +10,30 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Lock } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "pending"] as const;
+const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
+
+type CommissionPlan = {
+  plan_start_date: string;
+  currency: string;
+  description: string;
+  country_id: string | null;
+  brand: string;
+  baseline: string;
+  cpa: string;
+  rev_share_pct: string;
+  cpl: string;
+  wager: string;
+  conversion_type: string;
+  cap: string;
+};
+const emptyPlan: CommissionPlan = {
+  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+};
 
 export default function Afiliados() {
   const { isAdmin, isSuperAdmin } = useAuth();
@@ -24,18 +44,21 @@ export default function Afiliados() {
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
   const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
+  const [plans, setPlans] = useState<CommissionPlan[]>([]);
+  const [brandInput, setBrandInput] = useState("");
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
     fixed_name: "", alias: "", email: "", phone: "", country_id: null,
     status: "active", commission_pct: 0, payment_method: "", bank_details: "", tax_id: "", notes: "",
+    brands: [] as string[],
   };
   const [form, setForm] = useState<any>(empty);
 
   const load = async () => {
     const { data } = await supabase
       .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name))")
+      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name))")
       .order("created_at", { ascending: false });
     setList(data ?? []);
   };
@@ -49,16 +72,38 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setBrandInput(""); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    setForm({ ...row, brands: Array.isArray(row.brands) ? row.brands : [] });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
     setChannelLinks(links);
+    setPlans(
+      (row.affiliate_commission_plans ?? []).map((p: any) => ({
+        plan_start_date: p.plan_start_date ?? "",
+        currency: p.currency ?? "",
+        description: p.description ?? "",
+        country_id: p.country_id ?? null,
+        brand: p.brand ?? "",
+        baseline: p.baseline?.toString() ?? "",
+        cpa: p.cpa?.toString() ?? "",
+        rev_share_pct: p.rev_share_pct?.toString() ?? "",
+        cpl: p.cpl?.toString() ?? "",
+        wager: p.wager?.toString() ?? "",
+        conversion_type: p.conversion_type ?? "",
+        cap: p.cap?.toString() ?? "",
+      })),
+    );
+    setBrandInput("");
     setOpen(true);
   };
+
+  const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
+  const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
+    setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
+  const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
@@ -69,6 +114,7 @@ export default function Afiliados() {
       commission_pct: Number(form.commission_pct) || 0,
       payment_method: form.payment_method || null, bank_details: form.bank_details || null,
       tax_id: form.tax_id || null, notes: form.notes || null,
+      brands: Array.isArray(form.brands) ? form.brands : [],
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -78,6 +124,20 @@ export default function Afiliados() {
         affiliate: payload,
         channel_ids: channelIds,
         channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
+        commission_plans: plans.map((p) => ({
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: p.baseline === "" ? null : p.baseline,
+          cpa: p.cpa === "" ? null : p.cpa,
+          rev_share_pct: p.rev_share_pct === "" ? null : p.rev_share_pct,
+          cpl: p.cpl === "" ? null : p.cpl,
+          wager: p.wager === "" ? null : p.wager,
+          conversion_type: p.conversion_type || null,
+          cap: p.cap === "" ? null : p.cap,
+        })),
       },
     });
     setSaving(false);
@@ -187,6 +247,161 @@ export default function Afiliados() {
                     )}
                   </div>
                 </div>
+
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <Label className="text-base">Marcas</Label>
+                  <p className="text-xs text-muted-foreground">Agrega las marcas asociadas al afiliado.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nombre de la marca"
+                      value={brandInput}
+                      onChange={(e) => setBrandInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = brandInput.trim();
+                          if (v && !(form.brands ?? []).includes(v)) {
+                            setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                          }
+                          setBrandInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const v = brandInput.trim();
+                        if (v && !(form.brands ?? []).includes(v)) {
+                          setForm({ ...form, brands: [...(form.brands ?? []), v] });
+                        }
+                        setBrandInput("");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Agregar
+                    </Button>
+                  </div>
+                  {(form.brands ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Sin marcas agregadas.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(form.brands ?? []).map((b: string, i: number) => (
+                        <Badge key={`${b}-${i}`} variant="secondary" className="flex items-center gap-1">
+                          {b}
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, brands: form.brands.filter((_: string, idx: number) => idx !== i) })}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-base">Comisiones</Label>
+                    <Button type="button" size="sm" variant="outline" onClick={addPlan}>
+                      <Plus className="h-4 w-4 mr-1" /> Agregar plan
+                    </Button>
+                  </div>
+                  {plans.length === 0 && (
+                    <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
+                  )}
+                  {plans.map((pl, i) => (
+                    <div key={i} className="border rounded-md p-3 space-y-2 bg-muted/30">
+                      <div className="flex items-center justify-between">
+                        <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
+                        <Button type="button" size="icon" variant="ghost" onClick={() => removePlan(i)}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label className="text-xs">Plan Start Date</Label>
+                          <Input type="date" value={pl.plan_start_date}
+                            onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Currency</Label>
+                          <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="USD">USD</SelectItem>
+                              <SelectItem value="EUR">EUR</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Description</Label>
+                          <Input value={pl.description}
+                            onChange={(e) => updatePlan(i, { description: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Country</Label>
+                          <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Brand</Label>
+                          <Select value={pl.brand} onValueChange={(v) => updatePlan(i, { brand: v })}>
+                            <SelectTrigger><SelectValue placeholder={(form.brands ?? []).length ? "Selecciona" : "Agrega marcas arriba"} /></SelectTrigger>
+                            <SelectContent>
+                              {(form.brands ?? []).map((b: string) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Baseline</Label>
+                          <Input type="number" step="0.01" value={pl.baseline}
+                            onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPA</Label>
+                          <Input type="number" step="0.01" value={pl.cpa}
+                            onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Rev Share %</Label>
+                          <Input type="number" step="0.01" value={pl.rev_share_pct}
+                            onChange={(e) => updatePlan(i, { rev_share_pct: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CPL</Label>
+                          <Input type="number" step="0.01" value={pl.cpl}
+                            onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Wager</Label>
+                          <Input type="number" step="0.01" value={pl.wager}
+                            onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Condición</Label>
+                          <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
+                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                            <SelectContent>
+                              {CONVERSION_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">CAP (conversiones autorizadas)</Label>
+                          <Input type="number" step="1" value={pl.cap}
+                            onChange={(e) => updatePlan(i, { cap: e.target.value })} />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
               </div>

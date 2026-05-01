@@ -27,12 +27,28 @@ type AffiliatePayload = {
 
 type ChannelLink = { channel_id: string; link?: string | null };
 
+type CommissionPlan = {
+  plan_start_date?: string | null;
+  currency?: string | null;
+  description?: string | null;
+  country_id?: string | null;
+  brand?: string | null;
+  baseline?: number | string | null;
+  cpa?: number | string | null;
+  rev_share_pct?: number | string | null;
+  cpl?: number | string | null;
+  wager?: number | string | null;
+  conversion_type?: string | null;
+  cap?: number | string | null;
+};
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
-  affiliate?: AffiliatePayload;
+  affiliate?: AffiliatePayload & { brands?: string[] };
   channel_ids?: string[];
   channel_links?: ChannelLink[];
+  commission_plans?: CommissionPlan[];
 };
 
 const json = (status: number, body: unknown) =>
@@ -86,6 +102,7 @@ Deno.serve(async (req) => {
         if (!isSuper) return { response: json(403, { error: "Solo super admin puede eliminar" }) };
         if (!body.id) return { response: json(400, { error: "ID requerido" }) };
         await tx`delete from public.affiliate_channel_links where affiliate_id = ${body.id}`;
+        await tx`delete from public.affiliate_commission_plans where affiliate_id = ${body.id}`;
         const deleted = await tx<{ id: string }[]>`delete from public.affiliates where id = ${body.id} returning id`;
         if (deleted.length === 0) return { response: json(404, { error: "No encontrado" }) };
         return { response: json(200, { ok: true }) };
@@ -109,6 +126,7 @@ Deno.serve(async (req) => {
         bank_details: a.bank_details || null,
         tax_id: a.tax_id || null,
         notes: a.notes || null,
+        brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
       };
 
       let affiliateId = body.id;
@@ -118,11 +136,11 @@ Deno.serve(async (req) => {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
             fixed_name, alias, email, phone, country_id, status,
-            commission_pct, payment_method, bank_details, tax_id, notes, created_by
+            commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
           ) values (
             ${payload.fixed_name}, ${payload.alias}, ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
-            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${userData.user.id}
+            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;
@@ -143,6 +161,7 @@ Deno.serve(async (req) => {
               bank_details = ${payload.bank_details},
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
+              brands = ${payload.brands},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -159,6 +178,7 @@ Deno.serve(async (req) => {
               bank_details = ${payload.bank_details},
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
+              brands = ${payload.brands},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -182,6 +202,31 @@ Deno.serve(async (req) => {
           link: linksMap.get(cid) ?? null,
         }));
         await tx`insert into public.affiliate_channel_links ${tx(values, "affiliate_id", "channel_id", "link")}`;
+      }
+
+      // Replace commission plans
+      await tx`delete from public.affiliate_commission_plans where affiliate_id = ${affiliateId}`;
+      const plans = Array.isArray(body.commission_plans) ? body.commission_plans : [];
+      if (plans.length) {
+        const num = (v: any) => (v === null || v === undefined || v === "" ? null : Number(v));
+        const intOrNull = (v: any) => (v === null || v === undefined || v === "" ? null : Math.trunc(Number(v)));
+        const planValues = plans.map((p) => ({
+          affiliate_id: affiliateId!,
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: num(p.baseline),
+          cpa: num(p.cpa),
+          rev_share_pct: num(p.rev_share_pct),
+          cpl: num(p.cpl),
+          wager: num(p.wager),
+          conversion_type: p.conversion_type || null,
+          cap: intOrNull(p.cap),
+          created_by: userData.user.id,
+        }));
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

@@ -44,11 +44,14 @@ export default function Afiliados() {
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
   const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
+  const [plans, setPlans] = useState<CommissionPlan[]>([]);
+  const [brandInput, setBrandInput] = useState("");
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
     fixed_name: "", alias: "", email: "", phone: "", country_id: null,
     status: "active", commission_pct: 0, payment_method: "", bank_details: "", tax_id: "", notes: "",
+    brands: [] as string[],
   };
   const [form, setForm] = useState<any>(empty);
 

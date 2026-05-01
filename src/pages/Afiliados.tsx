@@ -246,12 +246,12 @@ export default function Afiliados() {
                       </div>
                       <div className="grid grid-cols-2 gap-2">
                         <div className="space-y-1">
-                          <Label className="text-xs">Plan Start Date</Label>
+                          <Label className="text-xs">Fecha de inicio del plan</Label>
                           <Input type="date" value={pl.plan_start_date}
                             onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Currency</Label>
+                          <Label className="text-xs">Moneda</Label>
                           <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
@@ -261,12 +261,12 @@ export default function Afiliados() {
                           </Select>
                         </div>
                         <div className="col-span-2 space-y-1">
-                          <Label className="text-xs">Description</Label>
+                          <Label className="text-xs">Descripción</Label>
                           <Input value={pl.description}
                             onChange={(e) => updatePlan(i, { description: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Country</Label>
+                          <Label className="text-xs">País</Label>
                           <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
@@ -275,16 +275,12 @@ export default function Afiliados() {
                           </Select>
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Brand</Label>
-                          <Select value={pl.brand} onValueChange={(v) => updatePlan(i, { brand: v })}>
-                            <SelectTrigger><SelectValue placeholder={(form.brands ?? []).length ? "Selecciona" : "Agrega marcas arriba"} /></SelectTrigger>
-                            <SelectContent>
-                              {(form.brands ?? []).map((b: string) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                          <Label className="text-xs">Marca</Label>
+                          <Input value={pl.brand} placeholder="Nombre de la marca"
+                            onChange={(e) => updatePlan(i, { brand: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Baseline</Label>
+                          <Label className="text-xs">Línea base</Label>
                           <Input type="number" step="0.01" value={pl.baseline}
                             onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
                         </div>
@@ -304,7 +300,7 @@ export default function Afiliados() {
                             onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Wager</Label>
+                          <Label className="text-xs">Apuesta</Label>
                           <Input type="number" step="0.01" value={pl.wager}
                             onChange={(e) => updatePlan(i, { wager: e.target.value })} />
                         </div>

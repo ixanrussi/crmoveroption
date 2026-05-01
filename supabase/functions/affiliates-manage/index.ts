@@ -102,6 +102,7 @@ Deno.serve(async (req) => {
         if (!isSuper) return { response: json(403, { error: "Solo super admin puede eliminar" }) };
         if (!body.id) return { response: json(400, { error: "ID requerido" }) };
         await tx`delete from public.affiliate_channel_links where affiliate_id = ${body.id}`;
+        await tx`delete from public.affiliate_commission_plans where affiliate_id = ${body.id}`;
         const deleted = await tx<{ id: string }[]>`delete from public.affiliates where id = ${body.id} returning id`;
         if (deleted.length === 0) return { response: json(404, { error: "No encontrado" }) };
         return { response: json(200, { ok: true }) };

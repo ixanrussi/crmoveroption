@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
 import { toast } from "sonner";
 
-const STATUSES = ["active", "inactive", "pending"] as const;
+
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 type CommissionPlan = {

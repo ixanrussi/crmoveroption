@@ -107,11 +107,8 @@ export default function Afiliados() {
     const payload: any = {
       fixed_name: form.fixed_name,
       alias: form.alias || null, email: form.email || null, phone: form.phone || null,
-      country_id: form.country_id || null, status: form.status,
-      commission_pct: Number(form.commission_pct) || 0,
-      payment_method: form.payment_method || null, bank_details: form.bank_details || null,
-      tax_id: form.tax_id || null, notes: form.notes || null,
-      brands: Array.isArray(form.brands) ? form.brands : [],
+      country_id: form.country_id || null,
+      notes: form.notes || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {

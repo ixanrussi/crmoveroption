@@ -126,6 +126,7 @@ Deno.serve(async (req) => {
         bank_details: a.bank_details || null,
         tax_id: a.tax_id || null,
         notes: a.notes || null,
+        brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
       };
 
       let affiliateId = body.id;

@@ -114,6 +114,7 @@ export default function Afiliados() {
       commission_pct: Number(form.commission_pct) || 0,
       payment_method: form.payment_method || null, bank_details: form.bank_details || null,
       tax_id: form.tax_id || null, notes: form.notes || null,
+      brands: Array.isArray(form.brands) ? form.brands : [],
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -123,6 +124,20 @@ export default function Afiliados() {
         affiliate: payload,
         channel_ids: channelIds,
         channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
+        commission_plans: plans.map((p) => ({
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: p.baseline === "" ? null : p.baseline,
+          cpa: p.cpa === "" ? null : p.cpa,
+          rev_share_pct: p.rev_share_pct === "" ? null : p.rev_share_pct,
+          cpl: p.cpl === "" ? null : p.cpl,
+          wager: p.wager === "" ? null : p.wager,
+          conversion_type: p.conversion_type || null,
+          cap: p.cap === "" ? null : p.cap,
+        })),
       },
     });
     setSaving(false);

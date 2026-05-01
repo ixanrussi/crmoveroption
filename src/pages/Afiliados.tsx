@@ -195,22 +195,6 @@ export default function Afiliados() {
                     <SelectContent>{countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}</SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-1">
-                  <Label>Estado</Label>
-                  <Select value={form.status} onValueChange={(v) => setForm({ ...form, status: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
-                    <SelectContent>{STATUSES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}</SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-1"><Label>Comisión %</Label>
-                  <Input type="number" step="0.01" value={form.commission_pct ?? 0}
-                    onChange={(e) => setForm({ ...form, commission_pct: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Método de pago</Label>
-                  <Input value={form.payment_method ?? ""} onChange={(e) => setForm({ ...form, payment_method: e.target.value })} /></div>
-                <div className="space-y-1"><Label>Documento fiscal</Label>
-                  <Input value={form.tax_id ?? ""} onChange={(e) => setForm({ ...form, tax_id: e.target.value })} /></div>
-                <div className="col-span-2 space-y-1"><Label>Datos bancarios</Label>
-                  <Textarea value={form.bank_details ?? ""} onChange={(e) => setForm({ ...form, bank_details: e.target.value })} /></div>
                 <div className="col-span-2 space-y-2">
                   <Label>Canales</Label>
                   <div className="flex flex-wrap gap-2 p-2 border rounded-md">

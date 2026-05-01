@@ -27,12 +27,28 @@ type AffiliatePayload = {
 
 type ChannelLink = { channel_id: string; link?: string | null };
 
+type CommissionPlan = {
+  plan_start_date?: string | null;
+  currency?: string | null;
+  description?: string | null;
+  country_id?: string | null;
+  brand?: string | null;
+  baseline?: number | string | null;
+  cpa?: number | string | null;
+  rev_share_pct?: number | string | null;
+  cpl?: number | string | null;
+  wager?: number | string | null;
+  conversion_type?: string | null;
+  cap?: number | string | null;
+};
+
 type RequestBody = {
   action?: "insert" | "update" | "delete";
   id?: string;
-  affiliate?: AffiliatePayload;
+  affiliate?: AffiliatePayload & { brands?: string[] };
   channel_ids?: string[];
   channel_links?: ChannelLink[];
+  commission_plans?: CommissionPlan[];
 };
 
 const json = (status: number, body: unknown) =>

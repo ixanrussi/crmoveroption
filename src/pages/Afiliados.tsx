@@ -58,7 +58,7 @@ export default function Afiliados() {
   const load = async () => {
     const { data } = await supabase
       .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name))")
+      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name))")
       .order("created_at", { ascending: false });
     setList(data ?? []);
   };

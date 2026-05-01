@@ -70,10 +70,10 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setBrandInput(""); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row, brands: Array.isArray(row.brands) ? row.brands : [] });
+    setForm({ ...row });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
@@ -94,7 +94,6 @@ export default function Afiliados() {
         cap: p.cap?.toString() ?? "",
       })),
     );
-    setBrandInput("");
     setOpen(true);
   };
 

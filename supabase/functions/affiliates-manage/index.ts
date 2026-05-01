@@ -204,6 +204,31 @@ Deno.serve(async (req) => {
         await tx`insert into public.affiliate_channel_links ${tx(values, "affiliate_id", "channel_id", "link")}`;
       }
 
+      // Replace commission plans
+      await tx`delete from public.affiliate_commission_plans where affiliate_id = ${affiliateId}`;
+      const plans = Array.isArray(body.commission_plans) ? body.commission_plans : [];
+      if (plans.length) {
+        const num = (v: any) => (v === null || v === undefined || v === "" ? null : Number(v));
+        const intOrNull = (v: any) => (v === null || v === undefined || v === "" ? null : Math.trunc(Number(v)));
+        const planValues = plans.map((p) => ({
+          affiliate_id: affiliateId!,
+          plan_start_date: p.plan_start_date || null,
+          currency: p.currency || null,
+          description: p.description || null,
+          country_id: p.country_id || null,
+          brand: p.brand || null,
+          baseline: num(p.baseline),
+          cpa: num(p.cpa),
+          rev_share_pct: num(p.rev_share_pct),
+          cpl: num(p.cpl),
+          wager: num(p.wager),
+          conversion_type: p.conversion_type || null,
+          cap: intOrNull(p.cap),
+          created_by: userData.user.id,
+        }));
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
+      }
+
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };
     });
 

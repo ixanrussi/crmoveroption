@@ -72,16 +72,38 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setBrandInput(""); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    setForm({ ...row, brands: Array.isArray(row.brands) ? row.brands : [] });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
     setChannelLinks(links);
+    setPlans(
+      (row.affiliate_commission_plans ?? []).map((p: any) => ({
+        plan_start_date: p.plan_start_date ?? "",
+        currency: p.currency ?? "",
+        description: p.description ?? "",
+        country_id: p.country_id ?? null,
+        brand: p.brand ?? "",
+        baseline: p.baseline?.toString() ?? "",
+        cpa: p.cpa?.toString() ?? "",
+        rev_share_pct: p.rev_share_pct?.toString() ?? "",
+        cpl: p.cpl?.toString() ?? "",
+        wager: p.wager?.toString() ?? "",
+        conversion_type: p.conversion_type ?? "",
+        cap: p.cap?.toString() ?? "",
+      })),
+    );
+    setBrandInput("");
     setOpen(true);
   };
+
+  const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
+  const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
+    setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
+  const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }

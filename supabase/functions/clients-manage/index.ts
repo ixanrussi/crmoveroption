@@ -149,6 +149,54 @@ Deno.serve(async (req) => {
 
     let clientId = body.id;
 
+    // Duplicate validations (case-insensitive). Exclude current row on update.
+    const excludeId = body.action === "update" ? body.id : null;
+
+    const dupName = await sql<{ id: string }[]>`
+      select id from public.clients
+      where lower(company_name) = lower(${payload.company_name})
+        and (${excludeId}::uuid is null or id <> ${excludeId})
+      limit 1
+    `;
+    if (dupName.length) return json(409, { error: "Ya existe un cliente con ese nombre" });
+
+    const dupAff = await sql<{ id: string }[]>`
+      select id from public.affiliates
+      where lower(fixed_name) = lower(${payload.company_name})
+      limit 1
+    `;
+    if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
+
+    if (payload.website) {
+      const dupWeb = await sql<{ id: string }[]>`
+        select id from public.clients
+        where lower(website) = lower(${payload.website})
+          and (${excludeId}::uuid is null or id <> ${excludeId})
+        limit 1
+      `;
+      if (dupWeb.length) return json(409, { error: "Ya existe un cliente con ese sitio web" });
+    }
+
+    if (payload.login) {
+      const dupLogin = await sql<{ id: string }[]>`
+        select id from public.clients
+        where login = ${payload.login}
+          and (${excludeId}::uuid is null or id <> ${excludeId})
+        limit 1
+      `;
+      if (dupLogin.length) return json(409, { error: "Ya existe un cliente con ese login" });
+    }
+
+    if (payload.senha) {
+      const dupSenha = await sql<{ id: string }[]>`
+        select id from public.clients
+        where senha = ${payload.senha}
+          and (${excludeId}::uuid is null or id <> ${excludeId})
+        limit 1
+      `;
+      if (dupSenha.length) return json(409, { error: "Ya existe un cliente con esa contraseña" });
+    }
+
     if (body.action === "insert") {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (

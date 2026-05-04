@@ -558,7 +558,7 @@ export default function Clientes() {
                   </TableCell>
                   <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
                   <TableCell className="text-xs">{r.affiliate ? `${r.affiliate.unique_id}` : "—"}</TableCell>
-                  <TableCell className="text-xs">{r.client_software_links?.map((l: any) => l.software?.name).join(", ")}</TableCell>
+                  <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

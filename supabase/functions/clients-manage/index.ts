@@ -99,13 +99,18 @@ Deno.serve(async (req) => {
 
     const softwareIds = Array.isArray(body.software_ids) ? body.software_ids.filter((x) => typeof x === "string") : [];
     const ALLOWED_CHANNELS = ["telegram", "whatsapp", "email", "telefono"];
+    const ALLOWED_ROLES = ["team_leader", "account_manager", "financial", "technical"];
     const contacts = Array.isArray(body.contacts)
       ? body.contacts
-          .map((ct) => ({
-            name: (ct?.name ?? "").toString().trim(),
-            channel: (ct?.channel ?? "").toString().trim().toLowerCase(),
-            contact_id: (ct?.contact_id ?? "").toString().trim(),
-          }))
+          .map((ct) => {
+            const r = (ct?.role ?? "").toString().trim().toLowerCase();
+            return {
+              name: (ct?.name ?? "").toString().trim(),
+              channel: (ct?.channel ?? "").toString().trim().toLowerCase(),
+              contact_id: (ct?.contact_id ?? "").toString().trim(),
+              role: ALLOWED_ROLES.includes(r) ? r : null,
+            };
+          })
           .filter((ct) => ct.name && ct.contact_id && ALLOWED_CHANNELS.includes(ct.channel))
       : [];
 

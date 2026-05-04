@@ -155,25 +155,17 @@ Deno.serve(async (req) => {
 
     let clientId = body.id;
 
-    // Duplicate validations (case-insensitive). Exclude current row on update.
-    const excludeId = body.action === "update" ? body.id : null;
-
-    const dupName = await sql<{ id: string }[]>`
-      select id from public.clients
-      where lower(company_name) = lower(${payload.company_name})
-        and (${excludeId}::uuid is null or id <> ${excludeId})
-      limit 1
-    `;
-    if (dupName.length) return json(409, { error: "Ya existe un cliente con ese nombre" });
-
-    const dupAff = await sql<{ id: string }[]>`
-      select id from public.affiliates
-      where lower(fixed_name) = lower(${payload.company_name})
-      limit 1
-    `;
-    if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
-
     if (body.action === "insert") {
+      const dupName = await sql<{ id: string }[]>`
+        select id from public.clients where lower(company_name) = lower(${payload.company_name}) limit 1
+      `;
+      if (dupName.length) return json(409, { error: "Ya existe un cliente con ese nombre" });
+
+      const dupAff = await sql<{ id: string }[]>`
+        select id from public.affiliates where lower(fixed_name) = lower(${payload.company_name}) limit 1
+      `;
+      if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
+
       if (payload.website) {
         const dupWeb = await sql<{ id: string }[]>`
           select id from public.clients where lower(website) = lower(${payload.website}) limit 1

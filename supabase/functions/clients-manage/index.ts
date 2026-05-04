@@ -157,14 +157,21 @@ Deno.serve(async (req) => {
 
     if (body.action === "insert") {
       const dupName = await sql<{ id: string }[]>`
-        select id from public.clients where lower(company_name) = lower(${payload.company_name}) limit 1
+        select id from public.clients
+        where lower(company_name) = lower(${payload.company_name})
+          and coalesce(lower(website),'') = coalesce(lower(${payload.website}),'')
+          and coalesce(login,'') = coalesce(${payload.login},'')
+          and coalesce(senha,'') = coalesce(${payload.senha},'')
+          and coalesce(country_id::text,'') = coalesce(${payload.country_id}::text,'')
+        limit 1
       `;
-      if (dupName.length) return json(409, { error: "Ya existe un cliente con ese nombre" });
+      if (dupName.length) return json(409, { error: "Ya existe un cliente con esos mismos datos (nombre, sitio web, login, contraseña y país)" });
 
       const dupAff = await sql<{ id: string }[]>`
         select id from public.affiliates where lower(fixed_name) = lower(${payload.company_name}) limit 1
       `;
       if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
+
 
       if (payload.website) {
         const dupWeb = await sql<{ id: string }[]>`

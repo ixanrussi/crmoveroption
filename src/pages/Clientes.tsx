@@ -24,7 +24,14 @@ const CHANNELS = [
   { value: "telefono", label: "Teléfono" },
 ] as const;
 
-type Contact = { name: string; channel: string; contact_id: string };
+type Contact = { name: string; channel: string; contact_id: string; role: string };
+
+const CONTACT_ROLES = [
+  { value: "team_leader", label: "Team Leader" },
+  { value: "account_manager", label: "Account Manager" },
+  { value: "financial", label: "Financial" },
+  { value: "technical", label: "Technical" },
+];
 type CommissionPlan = {
   plan_start_date: string;
   currency: string;

@@ -533,11 +533,14 @@ export default function Clientes() {
 
       <Card>
         <CardContent className="p-0">
-          <Table>
+          <Table className="w-full table-fixed">
             <TableHeader><TableRow>
-              <TableHead>Empresa</TableHead><TableHead>Contactos</TableHead><TableHead>País</TableHead>
-              <TableHead>Marcas</TableHead><TableHead>Estado</TableHead>
-              {isAdmin && <TableHead className="w-24"></TableHead>}
+              <TableHead className="w-[20%]">Empresa</TableHead>
+              <TableHead className="w-[35%]">Contactos</TableHead>
+              <TableHead className="w-[15%]">País</TableHead>
+              <TableHead className="w-[15%]">Marcas</TableHead>
+              <TableHead className="w-[8%]">Estado</TableHead>
+              {isAdmin && <TableHead className="w-[7%]"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
               {list.map((r) => (

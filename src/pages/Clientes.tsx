@@ -27,10 +27,10 @@ const CHANNELS = [
 type Contact = { name: string; channel: string; contact_id: string; role: string };
 
 const CONTACT_ROLES = [
-  { value: "team_leader", label: "Team Leader" },
-  { value: "account_manager", label: "Account Manager" },
-  { value: "financial", label: "Financial" },
-  { value: "technical", label: "Technical" },
+  { value: "team_leader", label: "Jefe de equipo" },
+  { value: "account_manager", label: "Gerente de cuentas" },
+  { value: "financial", label: "Finanzas" },
+  { value: "technical", label: "Técnico" },
 ];
 type CommissionPlan = {
   plan_start_date: string;

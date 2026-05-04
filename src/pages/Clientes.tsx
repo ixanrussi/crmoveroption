@@ -536,7 +536,7 @@ export default function Clientes() {
           <Table>
             <TableHeader><TableRow>
               <TableHead>Empresa</TableHead><TableHead>Contactos</TableHead><TableHead>País</TableHead>
-              <TableHead>Afiliado</TableHead><TableHead>Software</TableHead><TableHead>Estado</TableHead>
+              <TableHead>Afiliado</TableHead><TableHead>Marcas</TableHead><TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>

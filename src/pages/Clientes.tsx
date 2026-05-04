@@ -536,7 +536,7 @@ export default function Clientes() {
           <Table>
             <TableHeader><TableRow>
               <TableHead>Empresa</TableHead><TableHead>Contactos</TableHead><TableHead>País</TableHead>
-              <TableHead>Afiliado</TableHead><TableHead>Software</TableHead><TableHead>Estado</TableHead>
+              <TableHead>Afiliado</TableHead><TableHead>Marcas</TableHead><TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
@@ -558,7 +558,7 @@ export default function Clientes() {
                   </TableCell>
                   <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
                   <TableCell className="text-xs">{r.affiliate ? `${r.affiliate.unique_id}` : "—"}</TableCell>
-                  <TableCell className="text-xs">{r.client_software_links?.map((l: any) => l.software?.name).join(", ")}</TableCell>
+                  <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

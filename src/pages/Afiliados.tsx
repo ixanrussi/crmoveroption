@@ -139,7 +139,7 @@ export default function Afiliados() {
     if (errMsg) { toast.error(errMsg); return; }
     toast.success(!editing && (data as any)?.unique_id ? `Afiliado creado: ${(data as any).unique_id}` : "Guardado");
     setOpen(false);
-    load();
+    window.location.reload();
   };
 
   const remove = async (id: string) => {

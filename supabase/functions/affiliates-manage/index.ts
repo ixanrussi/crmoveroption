@@ -132,6 +132,20 @@ Deno.serve(async (req) => {
       let affiliateId = body.id;
       let uniqueId: string | null = null;
 
+      const excludeId = body.action === "update" ? body.id : null;
+      const dupAffName = await tx<{ id: string }[]>`
+        select id from public.affiliates
+        where lower(fixed_name) = lower(${payload.fixed_name})
+          and (${excludeId}::uuid is null or id <> ${excludeId})
+        limit 1
+      `;
+      if (dupAffName.length) return { response: json(409, { error: "Ya existe un afiliado con ese nombre" }) };
+
+      const dupCliName = await tx<{ id: string }[]>`
+        select id from public.clients where lower(company_name) = lower(${payload.fixed_name}) limit 1
+      `;
+      if (dupCliName.length) return { response: json(409, { error: "El nombre coincide con un cliente existente" }) };
+
       if (body.action === "insert") {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (

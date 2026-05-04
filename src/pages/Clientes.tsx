@@ -535,11 +535,11 @@ export default function Clientes() {
         <CardContent className="p-0">
           <Table className="w-full table-fixed">
             <TableHeader><TableRow>
-              <TableHead className="w-[20%]">Empresa</TableHead>
-              <TableHead className="w-[35%]">Contactos</TableHead>
+              <TableHead className="w-[18%]">Empresa</TableHead>
               <TableHead className="w-[15%]">País</TableHead>
               <TableHead className="w-[15%]">Marcas</TableHead>
               <TableHead className="w-[8%]">Estado</TableHead>
+              <TableHead className="w-[37%]">Contactos</TableHead>
               {isAdmin && <TableHead className="w-[7%]"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>

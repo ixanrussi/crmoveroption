@@ -321,11 +321,11 @@ export default function Clientes() {
                   )}
                   {contacts.map((ct, i) => (
                     <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <Label className="text-xs">Nombre</Label>
                         <Input value={ct.name} onChange={(e) => updateContact(i, { name: e.target.value })} />
                       </div>
-                      <div className="col-span-3 space-y-1">
+                      <div className="col-span-2 space-y-1">
                         <Label className="text-xs">Canal</Label>
                         <Select value={ct.channel} onValueChange={(v) => updateContact(i, { channel: v })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -334,9 +334,18 @@ export default function Clientes() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <Label className="text-xs">ID de contacto</Label>
                         <Input value={ct.contact_id} onChange={(e) => updateContact(i, { contact_id: e.target.value })} />
+                      </div>
+                      <div className="col-span-3 space-y-1">
+                        <Label className="text-xs">Cargo</Label>
+                        <Select value={ct.role || undefined} onValueChange={(v) => updateContact(i, { role: v })}>
+                          <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                          <SelectContent>
+                            {CONTACT_ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="col-span-1">
                         <Button type="button" size="icon" variant="ghost" onClick={() => removeContact(i)}>

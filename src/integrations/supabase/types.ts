@@ -294,6 +294,7 @@ export type Database = {
           created_at: string
           id: string
           name: string
+          role: string | null
         }
         Insert: {
           channel: string
@@ -302,6 +303,7 @@ export type Database = {
           created_at?: string
           id?: string
           name: string
+          role?: string | null
         }
         Update: {
           channel?: string
@@ -310,6 +312,7 @@ export type Database = {
           created_at?: string
           id?: string
           name?: string
+          role?: string | null
         }
         Relationships: [
           {

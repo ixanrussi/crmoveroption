@@ -165,7 +165,7 @@ export default function Clientes() {
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }
     const cleanContacts = contacts
-      .map((c) => ({ name: c.name.trim(), channel: c.channel, contact_id: c.contact_id.trim() }))
+      .map((c) => ({ name: c.name.trim(), channel: c.channel, contact_id: c.contact_id.trim(), role: c.role || null }))
       .filter((c) => c.name || c.contact_id);
     for (const c of cleanContacts) {
       if (!c.name || !c.contact_id) { toast.error("Cada contacto necesita nombre e ID"); return; }

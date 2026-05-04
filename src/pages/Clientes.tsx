@@ -24,7 +24,14 @@ const CHANNELS = [
   { value: "telefono", label: "Teléfono" },
 ] as const;
 
-type Contact = { name: string; channel: string; contact_id: string };
+type Contact = { name: string; channel: string; contact_id: string; role: string };
+
+const CONTACT_ROLES = [
+  { value: "team_leader", label: "Team Leader" },
+  { value: "account_manager", label: "Account Manager" },
+  { value: "financial", label: "Financial" },
+  { value: "technical", label: "Technical" },
+];
 type CommissionPlan = {
   plan_start_date: string;
   currency: string;
@@ -69,7 +76,7 @@ export default function Clientes() {
   const load = async () => {
     const { data } = await supabase
       .from("clients")
-      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id), client_commission_plans(*, country:countries(name))")
+      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id, role), client_commission_plans(*, country:countries(name))")
       .order("created_at", { ascending: false });
     setList(data ?? []);
   };
@@ -120,6 +127,7 @@ export default function Clientes() {
         name: c.name ?? "",
         channel: c.channel ?? "email",
         contact_id: c.contact_id ?? "",
+        role: c.role ?? "",
       })),
     );
     setPlans(
@@ -144,7 +152,7 @@ export default function Clientes() {
 
   const [saving, setSaving] = useState(false);
 
-  const addContact = () => setContacts((p) => [...p, { name: "", channel: "email", contact_id: "" }]);
+  const addContact = () => setContacts((p) => [...p, { name: "", channel: "email", contact_id: "", role: "" }]);
   const updateContact = (i: number, patch: Partial<Contact>) =>
     setContacts((p) => p.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const removeContact = (i: number) => setContacts((p) => p.filter((_, idx) => idx !== i));
@@ -157,7 +165,7 @@ export default function Clientes() {
   const save = async () => {
     if (!form.company_name?.trim()) { toast.error("Nombre de empresa requerido"); return; }
     const cleanContacts = contacts
-      .map((c) => ({ name: c.name.trim(), channel: c.channel, contact_id: c.contact_id.trim() }))
+      .map((c) => ({ name: c.name.trim(), channel: c.channel, contact_id: c.contact_id.trim(), role: c.role || null }))
       .filter((c) => c.name || c.contact_id);
     for (const c of cleanContacts) {
       if (!c.name || !c.contact_id) { toast.error("Cada contacto necesita nombre e ID"); return; }
@@ -313,11 +321,11 @@ export default function Clientes() {
                   )}
                   {contacts.map((ct, i) => (
                     <div key={i} className="grid grid-cols-12 gap-2 items-end">
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <Label className="text-xs">Nombre</Label>
                         <Input value={ct.name} onChange={(e) => updateContact(i, { name: e.target.value })} />
                       </div>
-                      <div className="col-span-3 space-y-1">
+                      <div className="col-span-2 space-y-1">
                         <Label className="text-xs">Canal</Label>
                         <Select value={ct.channel} onValueChange={(v) => updateContact(i, { channel: v })}>
                           <SelectTrigger><SelectValue /></SelectTrigger>
@@ -326,9 +334,18 @@ export default function Clientes() {
                           </SelectContent>
                         </Select>
                       </div>
-                      <div className="col-span-4 space-y-1">
+                      <div className="col-span-3 space-y-1">
                         <Label className="text-xs">ID de contacto</Label>
                         <Input value={ct.contact_id} onChange={(e) => updateContact(i, { contact_id: e.target.value })} />
+                      </div>
+                      <div className="col-span-3 space-y-1">
+                        <Label className="text-xs">Cargo</Label>
+                        <Select value={ct.role || undefined} onValueChange={(v) => updateContact(i, { role: v })}>
+                          <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                          <SelectContent>
+                            {CONTACT_ROLES.map((r) => <SelectItem key={r.value} value={r.value}>{r.label}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
                       </div>
                       <div className="col-span-1">
                         <Button type="button" size="icon" variant="ghost" onClick={() => removeContact(i)}>

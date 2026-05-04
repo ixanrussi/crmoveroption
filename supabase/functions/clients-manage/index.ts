@@ -30,6 +30,7 @@ type ContactPayload = {
   name?: string;
   channel?: string;
   contact_id?: string;
+  role?: string | null;
 };
 
 type CommissionPlanPayload = {
@@ -98,13 +99,18 @@ Deno.serve(async (req) => {
 
     const softwareIds = Array.isArray(body.software_ids) ? body.software_ids.filter((x) => typeof x === "string") : [];
     const ALLOWED_CHANNELS = ["telegram", "whatsapp", "email", "telefono"];
+    const ALLOWED_ROLES = ["team_leader", "account_manager", "financial", "technical"];
     const contacts = Array.isArray(body.contacts)
       ? body.contacts
-          .map((ct) => ({
-            name: (ct?.name ?? "").toString().trim(),
-            channel: (ct?.channel ?? "").toString().trim().toLowerCase(),
-            contact_id: (ct?.contact_id ?? "").toString().trim(),
-          }))
+          .map((ct) => {
+            const r = (ct?.role ?? "").toString().trim().toLowerCase();
+            return {
+              name: (ct?.name ?? "").toString().trim(),
+              channel: (ct?.channel ?? "").toString().trim().toLowerCase(),
+              contact_id: (ct?.contact_id ?? "").toString().trim(),
+              role: ALLOWED_ROLES.includes(r) ? r : null,
+            };
+          })
           .filter((ct) => ct.name && ct.contact_id && ALLOWED_CHANNELS.includes(ct.channel))
       : [];
 
@@ -235,8 +241,9 @@ Deno.serve(async (req) => {
         name: ct.name,
         channel: ct.channel,
         contact_id: ct.contact_id,
+        role: ct.role,
       }));
-      await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id")}`;
+      await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id", "role")}`;
     }
 
     const ALLOWED_CONV = ["NCO", "NNCO"];

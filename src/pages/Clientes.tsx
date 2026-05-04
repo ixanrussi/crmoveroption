@@ -127,6 +127,7 @@ export default function Clientes() {
         name: c.name ?? "",
         channel: c.channel ?? "email",
         contact_id: c.contact_id ?? "",
+        role: c.role ?? "",
       })),
     );
     setPlans(

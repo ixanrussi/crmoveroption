@@ -535,11 +535,11 @@ export default function Clientes() {
         <CardContent className="p-0">
           <Table className="w-full table-fixed">
             <TableHeader><TableRow>
-              <TableHead className="w-[20%]">Empresa</TableHead>
-              <TableHead className="w-[35%]">Contactos</TableHead>
+              <TableHead className="w-[18%]">Empresa</TableHead>
               <TableHead className="w-[15%]">País</TableHead>
               <TableHead className="w-[15%]">Marcas</TableHead>
               <TableHead className="w-[8%]">Estado</TableHead>
+              <TableHead className="w-[37%]">Contactos</TableHead>
               {isAdmin && <TableHead className="w-[7%]"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
@@ -554,15 +554,14 @@ export default function Clientes() {
                       {r.company_name}
                     </button>
                   </TableCell>
+                  <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
+                  <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
+                  <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   <TableCell className="text-xs">
                     {(r.client_contacts ?? []).map((c: any, idx: number) => (
                       <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>
                     ))}
                   </TableCell>
-                  <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
-                  
-                  <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
-                  <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>

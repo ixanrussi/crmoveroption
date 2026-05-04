@@ -30,6 +30,7 @@ type ContactPayload = {
   name?: string;
   channel?: string;
   contact_id?: string;
+  role?: string | null;
 };
 
 type CommissionPlanPayload = {

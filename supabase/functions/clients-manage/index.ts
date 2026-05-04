@@ -241,8 +241,9 @@ Deno.serve(async (req) => {
         name: ct.name,
         channel: ct.channel,
         contact_id: ct.contact_id,
+        role: ct.role,
       }));
-      await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id")}`;
+      await sql`insert into public.client_contacts ${sql(values, "client_id", "name", "channel", "contact_id", "role")}`;
     }
 
     const ALLOWED_CONV = ["NCO", "NNCO"];

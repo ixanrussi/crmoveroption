@@ -151,7 +151,7 @@ export default function Clientes() {
 
   const [saving, setSaving] = useState(false);
 
-  const addContact = () => setContacts((p) => [...p, { name: "", channel: "email", contact_id: "" }]);
+  const addContact = () => setContacts((p) => [...p, { name: "", channel: "email", contact_id: "", role: "" }]);
   const updateContact = (i: number, patch: Partial<Contact>) =>
     setContacts((p) => p.map((c, idx) => (idx === i ? { ...c, ...patch } : c)));
   const removeContact = (i: number) => setContacts((p) => p.filter((_, idx) => idx !== i));

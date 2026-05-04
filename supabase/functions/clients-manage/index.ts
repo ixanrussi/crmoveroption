@@ -172,25 +172,6 @@ Deno.serve(async (req) => {
       `;
       if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
 
-
-      if (payload.website) {
-        const dupWeb = await sql<{ id: string }[]>`
-          select id from public.clients where lower(website) = lower(${payload.website}) limit 1
-        `;
-        if (dupWeb.length) return json(409, { error: "Ya existe un cliente con ese sitio web" });
-      }
-      if (payload.login) {
-        const dupLogin = await sql<{ id: string }[]>`
-          select id from public.clients where login = ${payload.login} limit 1
-        `;
-        if (dupLogin.length) return json(409, { error: "Ya existe un cliente con ese login" });
-      }
-      if (payload.senha) {
-        const dupSenha = await sql<{ id: string }[]>`
-          select id from public.clients where senha = ${payload.senha} limit 1
-        `;
-        if (dupSenha.length) return json(409, { error: "Ya existe un cliente con esa contraseña" });
-      }
     }
 
     if (body.action === "insert") {

@@ -473,58 +473,82 @@ export type Database = {
       }
       commission_closure_items: {
         Row: {
+          active_accounts: number | null
           affiliate_id: string | null
           brand: string | null
+          casino_ngr: number | null
           closure_id: string
           commission_total: number | null
           cpa_amount: number | null
           created_at: string
           currency: string | null
           id: string
+          is_paid_to_affiliate: boolean | null
           locked_players: number | null
           match_status: string
+          new_accounts: number | null
+          new_purchasing: number | null
           notes: string | null
           qualified_players: number | null
           raw_campaign_id: string | null
           raw_campaign_name: string | null
+          report_type: string | null
           revshare_amount: number | null
+          sports_ngr: number | null
           updated_at: string
+          visits: number | null
         }
         Insert: {
+          active_accounts?: number | null
           affiliate_id?: string | null
           brand?: string | null
+          casino_ngr?: number | null
           closure_id: string
           commission_total?: number | null
           cpa_amount?: number | null
           created_at?: string
           currency?: string | null
           id?: string
+          is_paid_to_affiliate?: boolean | null
           locked_players?: number | null
           match_status?: string
+          new_accounts?: number | null
+          new_purchasing?: number | null
           notes?: string | null
           qualified_players?: number | null
           raw_campaign_id?: string | null
           raw_campaign_name?: string | null
+          report_type?: string | null
           revshare_amount?: number | null
+          sports_ngr?: number | null
           updated_at?: string
+          visits?: number | null
         }
         Update: {
+          active_accounts?: number | null
           affiliate_id?: string | null
           brand?: string | null
+          casino_ngr?: number | null
           closure_id?: string
           commission_total?: number | null
           cpa_amount?: number | null
           created_at?: string
           currency?: string | null
           id?: string
+          is_paid_to_affiliate?: boolean | null
           locked_players?: number | null
           match_status?: string
+          new_accounts?: number | null
+          new_purchasing?: number | null
           notes?: string | null
           qualified_players?: number | null
           raw_campaign_id?: string | null
           raw_campaign_name?: string | null
+          report_type?: string | null
           revshare_amount?: number | null
+          sports_ngr?: number | null
           updated_at?: string
+          visits?: number | null
         }
         Relationships: [
           {
@@ -545,6 +569,7 @@ export type Database = {
           id: string
           notes: string | null
           period: string
+          report_type: string | null
           source_file_name: string | null
           source_file_path: string | null
           status: Database["public"]["Enums"]["closure_status"]
@@ -561,6 +586,7 @@ export type Database = {
           id?: string
           notes?: string | null
           period: string
+          report_type?: string | null
           source_file_name?: string | null
           source_file_path?: string | null
           status?: Database["public"]["Enums"]["closure_status"]
@@ -577,6 +603,7 @@ export type Database = {
           id?: string
           notes?: string | null
           period?: string
+          report_type?: string | null
           source_file_name?: string | null
           source_file_path?: string | null
           status?: Database["public"]["Enums"]["closure_status"]

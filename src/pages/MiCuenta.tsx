@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { ShieldCheck, ShieldAlert } from "lucide-react";
 
 export default function MiCuenta() {
   const { user } = useAuth();

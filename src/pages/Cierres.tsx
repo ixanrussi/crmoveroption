@@ -324,20 +324,27 @@ export default function Cierres() {
       )}
 
       {(() => {
-        // Agrupar por cliente + periodo
-        const groups = new Map<string, { client_id: string; period: string; closures: Closure[] }>();
+        // Agrupar por cliente + año (consolidando todos los meses)
+        const groups = new Map<string, { client_id: string; year: string; closures: Closure[] }>();
         closures.forEach((c) => {
-          const key = `${c.client_id}__${c.period}`;
-          if (!groups.has(key)) groups.set(key, { client_id: c.client_id, period: c.period, closures: [] });
+          const year = (c.period || "").slice(0, 4) || "—";
+          const key = `${c.client_id}__${year}`;
+          if (!groups.has(key)) groups.set(key, { client_id: c.client_id, year, closures: [] });
           groups.get(key)!.closures.push(c);
         });
-        const groupList = Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period));
-        return groupList.map((g) => (
-          <div key={`${g.client_id}-${g.period}`} className="space-y-2">
+        const groupList = Array.from(groups.values())
+          .map((g) => ({ ...g, closures: [...g.closures].sort((a, b) => b.period.localeCompare(a.period)) }))
+          .sort((a, b) => b.year.localeCompare(a.year));
+        return groupList.map((g) => {
+          const periodsInGroup = [...new Set(g.closures.map((c) => c.period))].sort().reverse();
+          return (
+          <div key={`${g.client_id}-${g.year}`} className="space-y-2">
             <div className="flex items-baseline gap-2 px-1">
               <h2 className="text-lg font-semibold">{clientMap.get(g.client_id) ?? "Cliente"}</h2>
-              <span className="text-sm text-muted-foreground">· {g.period}</span>
-              <span className="text-xs text-muted-foreground">({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""})</span>
+              <span className="text-sm text-muted-foreground">· {g.year}</span>
+              <span className="text-xs text-muted-foreground">
+                ({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""} · {periodsInGroup.length} mes{periodsInGroup.length !== 1 ? "es" : ""}: {periodsInGroup.join(", ")})
+              </span>
             </div>
             {g.closures.map((closure) => {
               const its = itemsByClosure.get(closure.id) ?? [];
@@ -348,8 +355,23 @@ export default function Cierres() {
                 byBrand.get(k)!.push(i);
               });
               const isRsType = closure.report_type === "revshare";
+              // Detectar datos pobres: RS sin visitas/activos, o sin comisión, o sin filas, o muchos sin match
+              const totVisits = its.reduce((s, r) => s + (r.visits || 0), 0);
+              const totActives = its.reduce((s, r) => s + (r.active_accounts || 0), 0);
+              const unmatchedCount = its.filter((r) => r.match_status === "unmatched").length;
+              const unmatchedPct = its.length > 0 ? (unmatchedCount / its.length) * 100 : 0;
+              const isPoor =
+                its.length === 0 ||
+                Number(closure.total_commission || 0) === 0 ||
+                (isRsType && totVisits === 0 && totActives === 0) ||
+                unmatchedPct >= 50;
+              const poorReasons: string[] = [];
+              if (its.length === 0) poorReasons.push("sin filas");
+              if (Number(closure.total_commission || 0) === 0) poorReasons.push("comisión 0");
+              if (isRsType && totVisits === 0 && totActives === 0) poorReasons.push("sin visitas/activos");
+              if (unmatchedPct >= 50) poorReasons.push(`${unmatchedCount}/${its.length} sin match`);
               return (
-          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isRsType ? 'info' : 'success'}))` }}>
+          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isPoor ? 'destructive' : isRsType ? 'info' : 'success'}))` }}>
             <Collapsible defaultOpen={false}>
               <div className="flex items-center pr-2">
                 <CollapsibleTrigger asChild>
@@ -360,6 +382,11 @@ export default function Cierres() {
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <CardTitle className="text-base truncate flex items-center gap-2">
+                            {isPoor && (
+                              <span title={`Datos pobres: ${poorReasons.join(", ")}`} className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-destructive/15 text-destructive">
+                                <AlertCircle className="h-3 w-3" /> Alerta
+                              </span>
+                            )}
                             <span
                               className="text-xs font-semibold px-2 py-0.5 rounded"
                               style={{
@@ -603,7 +630,8 @@ export default function Cierres() {
               );
             })}
           </div>
-        ));
+          );
+        });
       })()}
     </div>
   );

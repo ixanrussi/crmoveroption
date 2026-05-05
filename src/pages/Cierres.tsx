@@ -429,4 +429,5 @@ export default function Cierres() {
         ));
       })()}
     </div>
+  );
 }

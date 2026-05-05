@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import { Link } from "react-router-dom";
 
 type Role = "super_admin" | "admin" | "user";
 const ROLES: Role[] = ["super_admin", "admin", "user"];

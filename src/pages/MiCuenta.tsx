@@ -55,6 +55,7 @@ export default function MiCuenta() {
   useEffect(() => {
     (async () => {
       if (!user) return;
+      setLoading(true);
       const { data, error } = await supabase.from("profiles").select("full_name, phone, job_title").eq("id", user.id).maybeSingle();
       if (error) toast.error(error.message);
       if (data) setProfile({

@@ -12,6 +12,7 @@ const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Clientes", url: "/clientes", icon: Users },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
+  { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
 ];
 const listItems = [
   { title: "GEO´s", url: "/listas/paises" },

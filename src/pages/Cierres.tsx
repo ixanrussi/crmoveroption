@@ -19,12 +19,16 @@ type Closure = {
   id: string; client_id: string; period: string; status: string; currency: string | null;
   total_commission: number; total_qualified: number; total_locked: number;
   source_file_name: string | null; source_file_path: string | null; created_at: string;
+  report_type: string;
 };
 type Item = {
   id: string; closure_id: string; affiliate_id: string | null;
   raw_campaign_name: string | null; raw_campaign_id: string | null; brand: string | null;
   qualified_players: number; locked_players: number; commission_total: number;
+  visits: number; new_accounts: number; active_accounts: number; new_purchasing: number;
+  casino_ngr: number; sports_ngr: number;
   currency: string | null; match_status: string;
+  report_type: string; is_paid_to_affiliate: boolean;
 };
 
 export default function Cierres() {

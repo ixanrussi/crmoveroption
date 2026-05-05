@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Afiliados from "./pages/Afiliados";
 import Usuarios from "./pages/Usuarios";
+import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import NotFound from "./pages/NotFound";
 
@@ -28,6 +29,7 @@ const App = () => (
             <Route element={<ProtectedRoute><AppLayout /></ProtectedRoute>}>
               <Route path="/" element={<Dashboard />} />
               <Route path="/clientes" element={<Clientes />} />
+              <Route path="/mi-cuenta" element={<MiCuenta />} />
               <Route path="/afiliados" element={<Afiliados />} />
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />
               <Route path="/listas/software" element={<SimpleListPage table="softwares" title="Software" />} />

@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle } from "lucide-react";
 import logo from "@/assets/overoption-logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -98,6 +98,16 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/mi-cuenta")}>
+              <NavLink to="/mi-cuenta">
+                <UserCircle className="h-4 w-4" />
+                <span>Mi cuenta</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         {!collapsed && (
           <div className="px-2 py-1.5 text-xs text-sidebar-foreground/70 truncate">
             {user?.email}

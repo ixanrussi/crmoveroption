@@ -10,7 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, Lock, X } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X, ChevronDown } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
 
 
@@ -249,89 +250,101 @@ export default function Afiliados() {
                     <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
                   )}
                   {plans.map((pl, i) => (
-                    <div key={i} className="border rounded-md p-3 space-y-2 bg-muted/30">
-                      <div className="flex items-center justify-between">
-                        <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
+                    <Collapsible key={i} defaultOpen={false} className="border rounded-md bg-muted/30">
+                      <div className="flex items-center justify-between p-3">
+                        <CollapsibleTrigger asChild>
+                          <button type="button" className="flex items-center gap-2 flex-1 text-left min-w-0">
+                            <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
+                            <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
+                            <span className="text-sm font-medium truncate">{pl.description || "Sin descripción"}</span>
+                            <div className="flex gap-2 ml-2">
+                              <Badge variant="secondary">CPA: {pl.cpa || "—"}</Badge>
+                              <Badge variant="secondary">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
+                            </div>
+                          </button>
+                        </CollapsibleTrigger>
                         <Button type="button" size="icon" variant="ghost" onClick={() => removePlan(i)}>
                           <X className="h-4 w-4" />
                         </Button>
                       </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label className="text-xs">Fecha de inicio del plan</Label>
-                          <Input type="date" value={pl.plan_start_date}
-                            onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
+                      <CollapsibleContent className="px-3 pb-3">
+                        <div className="grid grid-cols-2 gap-2">
+                          <div className="col-span-2 space-y-1">
+                            <Label className="text-xs">Descripción</Label>
+                            <Input value={pl.description}
+                              onChange={(e) => updatePlan(i, { description: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Fecha de inicio del plan</Label>
+                            <Input type="date" value={pl.plan_start_date}
+                              onChange={(e) => updatePlan(i, { plan_start_date: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Moneda</Label>
+                            <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
+                              <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="USD">USD</SelectItem>
+                                <SelectItem value="EUR">EUR</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">País</Label>
+                            <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
+                              <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                              <SelectContent>
+                                {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Marca</Label>
+                            <Input value={pl.brand} placeholder="Nombre de la marca"
+                              onChange={(e) => updatePlan(i, { brand: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Línea base</Label>
+                            <Input type="number" step="0.01" value={pl.baseline}
+                              onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CPA</Label>
+                            <Input type="number" step="0.01" value={pl.cpa}
+                              onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Rev Share %</Label>
+                            <Input type="number" step="0.01" value={pl.rev_share_pct}
+                              onChange={(e) => updatePlan(i, { rev_share_pct: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CPL</Label>
+                            <Input type="number" step="0.01" value={pl.cpl}
+                              onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Apuesta</Label>
+                            <Input type="number" step="0.01" value={pl.wager}
+                              onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Condición</Label>
+                            <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
+                              <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+                              <SelectContent>
+                                {CONVERSION_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CAP (conversiones autorizadas)</Label>
+                            <Input type="number" step="1" value={pl.cap}
+                              onChange={(e) => updatePlan(i, { cap: e.target.value })} />
+                          </div>
                         </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Moneda</Label>
-                          <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
-                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="USD">USD</SelectItem>
-                              <SelectItem value="EUR">EUR</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="col-span-2 space-y-1">
-                          <Label className="text-xs">Descripción</Label>
-                          <Input value={pl.description}
-                            onChange={(e) => updatePlan(i, { description: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">País</Label>
-                          <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
-                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                            <SelectContent>
-                              {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Marca</Label>
-                          <Input value={pl.brand} placeholder="Nombre de la marca"
-                            onChange={(e) => updatePlan(i, { brand: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Línea base</Label>
-                          <Input type="number" step="0.01" value={pl.baseline}
-                            onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">CPA</Label>
-                          <Input type="number" step="0.01" value={pl.cpa}
-                            onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Rev Share %</Label>
-                          <Input type="number" step="0.01" value={pl.rev_share_pct}
-                            onChange={(e) => updatePlan(i, { rev_share_pct: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">CPL</Label>
-                          <Input type="number" step="0.01" value={pl.cpl}
-                            onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Apuesta</Label>
-                          <Input type="number" step="0.01" value={pl.wager}
-                            onChange={(e) => updatePlan(i, { wager: e.target.value })} />
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">Condición</Label>
-                          <Select value={pl.conversion_type} onValueChange={(v) => updatePlan(i, { conversion_type: v })}>
-                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                            <SelectContent>
-                              {CONVERSION_TYPES.map((w) => <SelectItem key={w} value={w}>{w}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-1">
-                          <Label className="text-xs">CAP (conversiones autorizadas)</Label>
-                          <Input type="number" step="1" value={pl.cap}
-                            onChange={(e) => updatePlan(i, { cap: e.target.value })} />
-                        </div>
-                      </div>
-                    </div>
+                      </CollapsibleContent>
+                    </Collapsible>
                   ))}
                 </div>
 

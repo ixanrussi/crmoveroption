@@ -36,7 +36,7 @@ type CommissionPlan = {
   plan_start_date: string;
   currency: string;
   description: string;
-  country_id: string | null;
+  country_ids: string[];
   brand: string;
   baseline: string;
   cpa: string;
@@ -47,7 +47,7 @@ type CommissionPlan = {
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
-  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;

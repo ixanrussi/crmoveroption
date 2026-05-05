@@ -137,6 +137,47 @@ export default function MiCuenta() {
           </Button>
         </CardContent>
       </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            {factors.length > 0 ? <ShieldCheck className="h-5 w-5 text-success" /> : <ShieldAlert className="h-5 w-5 text-warning" />}
+            Autenticación de dos factores (2FA)
+          </CardTitle>
+          <CardDescription>
+            {factors.length > 0 ? "Tu cuenta está protegida con 2FA." : "Agrega una capa extra de seguridad a tu cuenta."}
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {factors.length === 0 && !enrolling && (
+            <Button onClick={startEnroll}>Activar 2FA</Button>
+          )}
+          {enrolling && (
+            <div className="space-y-3">
+              <p className="text-sm">Escanea este QR con tu app autenticadora (Google Authenticator, Authy, etc.):</p>
+              <img src={enrolling.qr} alt="QR 2FA" className="border rounded" />
+              <p className="text-xs text-muted-foreground">O ingresa el código: <code className="font-mono">{enrolling.secret}</code></p>
+              <div className="space-y-2 max-w-xs">
+                <Label>Código de 6 dígitos</Label>
+                <Input value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
+              </div>
+              <div className="flex gap-2">
+                <Button onClick={verifyEnroll}>Verificar y activar</Button>
+                <Button variant="outline" onClick={() => setEnrolling(null)}>Cancelar</Button>
+              </div>
+            </div>
+          )}
+          {factors.map((f) => (
+            <div key={f.id} className="flex items-center justify-between p-3 rounded-md bg-muted">
+              <div>
+                <p className="text-sm font-medium">{f.friendly_name || "Authenticator"}</p>
+                <p className="text-xs text-muted-foreground">Estado: {f.status}</p>
+              </div>
+              <Button variant="destructive" size="sm" onClick={() => removeFactor(f.id)}>Desactivar</Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
     </div>
   );
 }

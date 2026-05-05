@@ -76,6 +76,7 @@ export type Database = {
           cap: number | null
           conversion_type: string | null
           country_id: string | null
+          country_ids: string[]
           cpa: number | null
           cpl: number | null
           created_at: string
@@ -95,6 +96,7 @@ export type Database = {
           cap?: number | null
           conversion_type?: string | null
           country_id?: string | null
+          country_ids?: string[]
           cpa?: number | null
           cpl?: number | null
           created_at?: string
@@ -114,6 +116,7 @@ export type Database = {
           cap?: number | null
           conversion_type?: string | null
           country_id?: string | null
+          country_ids?: string[]
           cpa?: number | null
           cpl?: number | null
           created_at?: string
@@ -150,6 +153,7 @@ export type Database = {
           brands: string[]
           commission_pct: number | null
           country_id: string | null
+          country_ids: string[]
           created_at: string
           created_by: string | null
           email: string | null
@@ -169,6 +173,7 @@ export type Database = {
           brands?: string[]
           commission_pct?: number | null
           country_id?: string | null
+          country_ids?: string[]
           created_at?: string
           created_by?: string | null
           email?: string | null
@@ -188,6 +193,7 @@ export type Database = {
           brands?: string[]
           commission_pct?: number | null
           country_id?: string | null
+          country_ids?: string[]
           created_at?: string
           created_by?: string | null
           email?: string | null

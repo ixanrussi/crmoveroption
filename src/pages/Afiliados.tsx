@@ -10,6 +10,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Lock, X, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { toast } from "sonner";
@@ -21,7 +23,7 @@ type CommissionPlan = {
   plan_start_date: string;
   currency: string;
   description: string;
-  country_id: string | null;
+  country_ids: string[];
   brand: string;
   baseline: string;
   cpa: string;
@@ -32,7 +34,7 @@ type CommissionPlan = {
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
-  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
 };
 
@@ -49,7 +51,7 @@ export default function Afiliados() {
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
-    fixed_name: "", alias: "", email: "", phone: "", country_id: null,
+    fixed_name: "", alias: "", email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "",
   };
   const [form, setForm] = useState<any>(empty);
@@ -74,7 +76,10 @@ export default function Afiliados() {
   const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    const affIds: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row?.country_id ? [row.country_id] : []);
+    setForm({ ...row, country_ids: affIds });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
@@ -84,7 +89,7 @@ export default function Afiliados() {
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
-        country_id: p.country_id ?? null,
+        country_ids: Array.isArray(p.country_ids) && p.country_ids.length > 0 ? p.country_ids : (p.country_id ? [p.country_id] : []),
         brand: p.brand ?? "",
         baseline: p.baseline?.toString() ?? "",
         cpa: p.cpa?.toString() ?? "",
@@ -108,7 +113,7 @@ export default function Afiliados() {
     const payload: any = {
       fixed_name: form.fixed_name,
       alias: form.alias || null, email: form.email || null, phone: form.phone || null,
-      country_id: form.country_id || null,
+      country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
     };
     setSaving(true);
@@ -123,7 +128,7 @@ export default function Afiliados() {
           plan_start_date: p.plan_start_date || null,
           currency: p.currency || null,
           description: p.description || null,
-          country_id: p.country_id || null,
+          country_ids: Array.isArray(p.country_ids) ? p.country_ids : [],
           brand: p.brand || null,
           baseline: p.baseline === "" ? null : p.baseline,
           cpa: p.cpa === "" ? null : p.cpa,

@@ -1,0 +1,2 @@
+ALTER TABLE public.affiliates ADD COLUMN IF NOT EXISTS country_ids uuid[] NOT NULL DEFAULT '{}'::uuid[];
+ALTER TABLE public.affiliate_commission_plans ADD COLUMN IF NOT EXISTS country_ids uuid[] NOT NULL DEFAULT '{}'::uuid[];

@@ -89,6 +89,34 @@ export default function Cierres() {
     return m;
   }, [items]);
 
+  const feedbackByClosure = useMemo(() => {
+    const m = new Map<string, Feedback[]>();
+    feedback.forEach((f) => {
+      if (!m.has(f.closure_id)) m.set(f.closure_id, []);
+      m.get(f.closure_id)!.push(f);
+    });
+    return m;
+  }, [feedback]);
+
+  const addFeedback = async (closureId: string) => {
+    const msg = (newFeedback[closureId] ?? "").trim();
+    if (!msg) return;
+    const { data, error } = await supabase
+      .from("commission_closure_feedback")
+      .insert({ closure_id: closureId, kind: "issue", source: "user", message: msg })
+      .select("*")
+      .single();
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    setFeedback((p) => [data as Feedback, ...p]);
+    setNewFeedback((p) => ({ ...p, [closureId]: "" }));
+  };
+
+  const deleteFeedback = async (id: string) => {
+    const { error } = await supabase.from("commission_closure_feedback").delete().eq("id", id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    setFeedback((p) => p.filter((f) => f.id !== id));
+  };
+
   const handleUpload = async () => {
     if (!newClient || !newPeriod || !file) {
       toast({ title: "Faltan datos", description: "Selecciona cliente, periodo y archivo PDF", variant: "destructive" });

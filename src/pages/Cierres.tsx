@@ -52,16 +52,18 @@ export default function Cierres() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [{ data: cl }, { data: af }, { data: cs }, { data: it }] = await Promise.all([
+    const [{ data: cl }, { data: af }, { data: cs }, { data: it }, { data: fb }] = await Promise.all([
       supabase.from("clients").select("id, company_name").order("company_name"),
       supabase.from("affiliates").select("id, fixed_name, alias").order("fixed_name"),
       supabase.from("commission_closures").select("*").order("created_at", { ascending: false }),
       supabase.from("commission_closure_items").select("*").order("brand"),
+      supabase.from("commission_closure_feedback").select("*").order("created_at", { ascending: false }),
     ]);
     setClients(cl ?? []);
     setAffiliates(af ?? []);
     setClosures((cs ?? []) as Closure[]);
     setItems((it ?? []) as Item[]);
+    setFeedback((fb ?? []) as Feedback[]);
     setLoading(false);
   };
 

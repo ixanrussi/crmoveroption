@@ -385,13 +385,40 @@ export default function ComisionesDashboard() {
       </div>
 
       {/* Funnel mini-cards */}
-      <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Visitas</p><p className="text-lg font-bold">{fmtN(totals.visits)}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Cuentas nuevas</p><p className="text-lg font-bold">{fmtN(totals.newAccounts)}</p><p className="text-xs text-muted-foreground">{pct(visitToAccount)} conv.</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Cuentas activas</p><p className="text-lg font-bold">{fmtN(totals.activeAccounts)}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Nuevos depositantes</p><p className="text-lg font-bold">{fmtN(totals.newPurchasing)}</p></CardContent></Card>
-        <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">NGR / activo</p><p className="text-lg font-bold">{fmt(ngrPerActive)}</p></CardContent></Card>
-      </div>
+      {(() => {
+        // "Insostenible" = ratio > 100% por datos faltantes de algún cliente
+        const visitsUnsust = visitToAccount > 100;
+        const activeUnsust = accountToActive > 100;
+        const purchUnsust = totals.activeAccounts > 0 && totals.newPurchasing > totals.activeAccounts;
+        const warnCls = "text-warning";
+        const mutedCls = "text-muted-foreground";
+        const tip = "Dato insostenible: probablemente falten datos de algún cliente para este período.";
+        return (
+          <div className="grid gap-4 grid-cols-2 md:grid-cols-5">
+            <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">Visitas</p><p className="text-lg font-bold">{fmtN(totals.visits)}</p></CardContent></Card>
+            <Card><CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Cuentas nuevas</p>
+              <p className={`text-lg font-bold ${visitsUnsust ? warnCls : ""}`}>{fmtN(totals.newAccounts)}</p>
+              <p className={`text-xs ${visitsUnsust ? warnCls : mutedCls}`} title={visitsUnsust ? tip : undefined}>
+                {pct(visitToAccount)} conv.{visitsUnsust ? " ⚠" : ""}
+              </p>
+            </CardContent></Card>
+            <Card><CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Cuentas activas</p>
+              <p className={`text-lg font-bold ${activeUnsust ? warnCls : ""}`}>{fmtN(totals.activeAccounts)}</p>
+              <p className={`text-xs ${activeUnsust ? warnCls : mutedCls}`} title={activeUnsust ? tip : undefined}>
+                {pct(accountToActive)} conv.{activeUnsust ? " ⚠" : ""}
+              </p>
+            </CardContent></Card>
+            <Card><CardContent className="p-4">
+              <p className="text-xs text-muted-foreground">Nuevos depositantes</p>
+              <p className={`text-lg font-bold ${purchUnsust ? warnCls : ""}`}>{fmtN(totals.newPurchasing)}</p>
+              {purchUnsust && <p className={`text-xs ${warnCls}`} title={tip}>insostenible ⚠</p>}
+            </CardContent></Card>
+            <Card><CardContent className="p-4"><p className="text-xs text-muted-foreground">NGR / activo</p><p className="text-lg font-bold">{fmt(ngrPerActive)}</p></CardContent></Card>
+          </div>
+        );
+      })()}
 
       {/* Alerts */}
       {alerts.length > 0 && (

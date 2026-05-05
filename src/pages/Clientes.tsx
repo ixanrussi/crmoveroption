@@ -36,7 +36,7 @@ type CommissionPlan = {
   plan_start_date: string;
   currency: string;
   description: string;
-  country_id: string | null;
+  country_ids: string[];
   brand: string;
   baseline: string;
   cpa: string;
@@ -47,7 +47,7 @@ type CommissionPlan = {
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
-  plan_start_date: "", currency: "", description: "", country_id: null, brand: "",
+  plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
@@ -146,7 +146,7 @@ export default function Clientes() {
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
-        country_id: p.country_id ?? null,
+        country_ids: Array.isArray(p.country_ids) && p.country_ids.length > 0 ? p.country_ids : (p.country_id ? [p.country_id] : []),
         brand: p.brand ?? "",
         baseline: p.baseline?.toString() ?? "",
         cpa: p.cpa?.toString() ?? "",
@@ -204,7 +204,7 @@ export default function Clientes() {
           plan_start_date: p.plan_start_date || null,
           currency: p.currency || null,
           description: p.description || null,
-          country_id: p.country_id || null,
+          country_ids: Array.isArray(p.country_ids) ? p.country_ids : [],
           brand: p.brand || null,
           baseline: p.baseline === "" ? null : p.baseline,
           cpa: p.cpa === "" ? null : p.cpa,
@@ -477,14 +477,17 @@ export default function Clientes() {
                             onChange={(e) => updatePlan(i, { description: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Country</Label>
+                          <Label className="text-xs">GEO's (países)</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button type="button" variant="outline" className="w-full justify-between font-normal">
                                 <span className="truncate">
-                                  {pl.country_id
-                                    ? countries.find((c) => c.id === pl.country_id)?.name ?? "Selecciona"
-                                    : "Selecciona"}
+                                  {(pl.country_ids ?? []).length === 0
+                                    ? "Selecciona uno o más"
+                                    : countries
+                                        .filter((c) => (pl.country_ids ?? []).includes(c.id))
+                                        .map((c) => c.name)
+                                        .join(", ")}
                                 </span>
                                 <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
                               </Button>
@@ -496,16 +499,23 @@ export default function Clientes() {
                               onTouchMove={(e) => e.stopPropagation()}
                             >
                               <div className="space-y-1">
-                                {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
-                                  <button
-                                    type="button"
-                                    key={c.id}
-                                    onClick={() => updatePlan(i, { country_id: c.id })}
-                                    className={`w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent ${pl.country_id === c.id ? "bg-accent" : ""}`}
-                                  >
-                                    {c.name}
-                                  </button>
-                                ))}
+                                {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
+                                  const checked = (pl.country_ids ?? []).includes(c.id);
+                                  return (
+                                    <label key={c.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer">
+                                      <Checkbox
+                                        checked={checked}
+                                        onCheckedChange={(v) => {
+                                          const cur: string[] = pl.country_ids ?? [];
+                                          updatePlan(i, {
+                                            country_ids: v ? [...cur, c.id] : cur.filter((id) => id !== c.id),
+                                          });
+                                        }}
+                                      />
+                                      <span className="text-sm">{c.name}</span>
+                                    </label>
+                                  );
+                                })}
                                 {countries.length === 0 && (
                                   <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
                                 )}
@@ -735,7 +745,7 @@ export default function Clientes() {
                 {(viewing.client_commission_plans ?? []).map((p: any, i: number) => (
                   <div key={i} className="border rounded px-2 py-1 mb-1 text-xs space-y-0.5">
                     <div className="font-medium">
-                      {p.brand || "—"} · {p.country?.name || "—"} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
+                      {p.brand || "—"} · {(Array.isArray(p.country_ids) && p.country_ids.length > 0 ? countries.filter((c) => p.country_ids.includes(c.id)).map((c) => c.name).join(", ") : (p.country?.name || "—"))} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
                     </div>
                     {p.description && <div className="text-muted-foreground">{p.description}</div>}
                     <div>

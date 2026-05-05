@@ -38,6 +38,7 @@ type CommissionPlanPayload = {
   currency?: string | null;
   description?: string | null;
   country_id?: string | null;
+  country_ids?: string[] | null;
   brand?: string | null;
   baseline?: number | string | null;
   cpa?: number | string | null;
@@ -237,20 +238,26 @@ Deno.serve(async (req) => {
       return n === null ? null : Math.trunc(n);
     };
     const plans = Array.isArray(body.commission_plans)
-      ? body.commission_plans.map((p) => ({
-          plan_start_date: p?.plan_start_date || null,
-          currency: (p?.currency ?? "").toString().trim() || null,
-          description: (p?.description ?? "").toString().trim() || null,
-          country_id: p?.country_id || null,
-          brand: (p?.brand ?? "").toString().trim() || null,
-          baseline: num(p?.baseline),
-          cpa: num(p?.cpa),
-          rev_share_pct: num(p?.rev_share_pct),
-          cpl: num(p?.cpl),
-          wager: num(p?.wager),
-          conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
-          cap: intOrNull(p?.cap),
-        }))
+      ? body.commission_plans.map((p) => {
+          const cids = Array.isArray(p?.country_ids)
+            ? p!.country_ids!.filter((x): x is string => typeof x === "string" && x.length > 0)
+            : [];
+          return {
+            plan_start_date: p?.plan_start_date || null,
+            currency: (p?.currency ?? "").toString().trim() || null,
+            description: (p?.description ?? "").toString().trim() || null,
+            country_id: (cids[0] ?? p?.country_id) || null,
+            country_ids: cids,
+            brand: (p?.brand ?? "").toString().trim() || null,
+            baseline: num(p?.baseline),
+            cpa: num(p?.cpa),
+            rev_share_pct: num(p?.rev_share_pct),
+            cpl: num(p?.cpl),
+            wager: num(p?.wager),
+            conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
+            cap: intOrNull(p?.cap),
+          };
+        })
       : [];
 
     await sql`delete from public.client_commission_plans where client_id = ${clientId}`;
@@ -259,7 +266,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap"
       )}`;
     }
 

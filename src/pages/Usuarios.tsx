@@ -65,7 +65,11 @@ export default function Usuarios() {
                 const isSelf = u.id === me?.id;
                 return (
                   <TableRow key={u.id}>
-                    <TableCell className="font-medium">{u.full_name || "—"}</TableCell>
+                    <TableCell className="font-medium">
+                      {isSelf ? (
+                        <Link to="/mi-cuenta" className="text-primary hover:underline">{u.full_name || "—"}</Link>
+                      ) : (u.full_name || "—")}
+                    </TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>{u.job_title || "—"}</TableCell>
                     <TableCell><Badge>{current}</Badge></TableCell>

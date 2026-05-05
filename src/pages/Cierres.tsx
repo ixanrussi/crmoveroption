@@ -368,3 +368,209 @@ export default function Cierres() {
     </div>
   );
 }
+
+// ============== Dashboard Section ==============
+const CHART_COLORS = [
+  "hsl(var(--primary))",
+  "hsl(var(--chart-2, 173 58% 39%))",
+  "hsl(var(--chart-3, 197 37% 44%))",
+  "hsl(var(--chart-4, 43 74% 66%))",
+  "hsl(var(--chart-5, 27 87% 67%))",
+  "hsl(220 70% 50%)",
+  "hsl(280 65% 60%)",
+  "hsl(340 75% 55%)",
+  "hsl(160 60% 45%)",
+  "hsl(30 80% 55%)",
+];
+
+type DashProps = {
+  closures: Closure[];
+  items: Item[];
+  affMap: Map<string, Affiliate>;
+  clientMap: Map<string, string>;
+  clients: Client[];
+  dashPeriod: string;
+  setDashPeriod: (v: string) => void;
+  dashClient: string;
+  setDashClient: (v: string) => void;
+  fmtMoney: (n: number, cur?: string | null) => string;
+};
+
+function DashboardSection({
+  closures, items, affMap, clientMap, clients,
+  dashPeriod, setDashPeriod, dashClient, setDashClient, fmtMoney,
+}: DashProps) {
+  const periods = useMemoUnique(closures.map((c) => c.period));
+  const filteredClosures = closures.filter((c) =>
+    (dashPeriod === "all" || c.period === dashPeriod) &&
+    (dashClient === "all" || c.client_id === dashClient)
+  );
+  const closureIds = new Set(filteredClosures.map((c) => c.id));
+  const filteredItems = items.filter((i) => closureIds.has(i.closure_id));
+
+  const currency = filteredClosures[0]?.currency ?? "EUR";
+
+  // Aggregate by affiliate
+  const byAffMap = new Map<string, { name: string; total: number; reg: number; dep: number }>();
+  let unmatchedTotal = 0;
+  filteredItems.forEach((i) => {
+    const amt = Number(i.commission_total) || 0;
+    if (!i.affiliate_id) {
+      unmatchedTotal += amt;
+      return;
+    }
+    const aff = affMap.get(i.affiliate_id);
+    const name = aff?.fixed_name ?? "Desconocido";
+    const cur = byAffMap.get(i.affiliate_id) ?? { name, total: 0, reg: 0, dep: 0 };
+    cur.total += amt;
+    cur.reg += i.qualified_players;
+    cur.dep += i.locked_players;
+    byAffMap.set(i.affiliate_id, cur);
+  });
+  const byAffArr = Array.from(byAffMap.values()).sort((a, b) => b.total - a.total);
+  const grandTotal = byAffArr.reduce((s, a) => s + a.total, 0) + unmatchedTotal;
+  const totalReg = filteredItems.reduce((s, i) => s + i.qualified_players, 0);
+  const totalDep = filteredItems.reduce((s, i) => s + i.locked_players, 0);
+
+  const pieData = byAffArr.slice(0, 9).map((a) => ({ name: a.name, value: a.total }));
+  const otherTotal = byAffArr.slice(9).reduce((s, a) => s + a.total, 0) + unmatchedTotal;
+  if (otherTotal > 0) pieData.push({ name: "Otros / Sin asignar", value: otherTotal });
+
+  return (
+    <Card>
+      <CardHeader>
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <CardTitle className="flex items-center gap-2 text-base">
+            <BarChart3 className="h-4 w-4" /> Dashboard de cierre
+          </CardTitle>
+          <div className="flex gap-2">
+            <Select value={dashClient} onValueChange={setDashClient}>
+              <SelectTrigger className="w-44 h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los clientes</SelectItem>
+                {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+              </SelectContent>
+            </Select>
+            <Select value={dashPeriod} onValueChange={setDashPeriod}>
+              <SelectTrigger className="w-36 h-8"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los periodos</SelectItem>
+                {periods.map((p) => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        {/* KPIs */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <KPI label="Comisión total" value={fmtMoney(grandTotal, currency)} />
+          <KPI label="Afiliados activos" value={String(byAffArr.length)} />
+          <KPI label="Registros" value={String(totalReg)} />
+          <KPI label="Depositantes" value={String(totalDep)} />
+        </div>
+
+        {filteredItems.length === 0 ? (
+          <p className="text-sm text-muted-foreground text-center py-8">Sin datos para los filtros seleccionados.</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* Bar chart */}
+            <div className="border rounded-md p-4">
+              <h3 className="text-sm font-semibold mb-2">Comisión por afiliado</h3>
+              <ResponsiveContainer width="100%" height={Math.max(260, byAffArr.length * 32)}>
+                <BarChart data={byAffArr.slice(0, 15)} layout="vertical" margin={{ left: 20 }}>
+                  <XAxis type="number" tick={{ fontSize: 11 }} />
+                  <YAxis dataKey="name" type="category" width={140} tick={{ fontSize: 11 }} />
+                  <RTooltip formatter={(v: any) => fmtMoney(Number(v), currency)} />
+                  <Bar dataKey="total" fill="hsl(var(--primary))" radius={[0, 4, 4, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            {/* Pie chart */}
+            <div className="border rounded-md p-4">
+              <h3 className="text-sm font-semibold mb-2">% de impacto</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    outerRadius={100}
+                    label={(e: any) => `${((e.value / grandTotal) * 100).toFixed(1)}%`}
+                  >
+                    {pieData.map((_, i) => <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />)}
+                  </Pie>
+                  <RTooltip formatter={(v: any) => fmtMoney(Number(v), currency)} />
+                  <Legend wrapperStyle={{ fontSize: 11 }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+        )}
+
+        {/* Ranking table */}
+        {byAffArr.length > 0 && (
+          <div className="border rounded-md overflow-hidden">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-12">#</TableHead>
+                  <TableHead>Afiliado</TableHead>
+                  <TableHead className="text-right">Registros</TableHead>
+                  <TableHead className="text-right">Depositantes</TableHead>
+                  <TableHead className="text-right">Comisión</TableHead>
+                  <TableHead className="text-right w-24">% Total</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {byAffArr.map((a, i) => (
+                  <TableRow key={a.name + i}>
+                    <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                    <TableCell className="font-medium">{a.name}</TableCell>
+                    <TableCell className="text-right">{a.reg}</TableCell>
+                    <TableCell className="text-right">{a.dep}</TableCell>
+                    <TableCell className="text-right">{fmtMoney(a.total, currency)}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="secondary">
+                        {grandTotal > 0 ? ((a.total / grandTotal) * 100).toFixed(1) : "0.0"}%
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))}
+                {unmatchedTotal > 0 && (
+                  <TableRow className="bg-muted/30">
+                    <TableCell />
+                    <TableCell className="italic text-muted-foreground">Sin asignar</TableCell>
+                    <TableCell />
+                    <TableCell />
+                    <TableCell className="text-right">{fmtMoney(unmatchedTotal, currency)}</TableCell>
+                    <TableCell className="text-right">
+                      <Badge variant="destructive">
+                        {grandTotal > 0 ? ((unmatchedTotal / grandTotal) * 100).toFixed(1) : "0.0"}%
+                      </Badge>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function KPI({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="border rounded-md p-3">
+      <div className="text-xs text-muted-foreground">{label}</div>
+      <div className="text-xl font-bold mt-1">{value}</div>
+    </div>
+  );
+}
+
+function useMemoUnique(arr: string[]) {
+  return useMemo(() => Array.from(new Set(arr)).sort().reverse(), [arr.join("|")]);
+}

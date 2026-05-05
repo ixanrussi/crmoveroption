@@ -27,7 +27,6 @@ const Dashboard = () => {
     { label: "Clientes", value: stats.clients, icon: Users, color: "text-primary" },
     { label: "Afiliados", value: stats.affiliates, icon: UserPlus, color: "text-success" },
     { label: "Países", value: stats.countries, icon: Globe, color: "text-warning" },
-    { label: "Usuarios", value: stats.users, icon: Layers, color: "text-primary-glow" },
   ];
 
   return (

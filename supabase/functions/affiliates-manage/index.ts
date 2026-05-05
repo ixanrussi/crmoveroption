@@ -233,23 +233,29 @@ Deno.serve(async (req) => {
       if (plans.length) {
         const num = (v: any) => (v === null || v === undefined || v === "" ? null : Number(v));
         const intOrNull = (v: any) => (v === null || v === undefined || v === "" ? null : Math.trunc(Number(v)));
-        const planValues = plans.map((p) => ({
-          affiliate_id: affiliateId!,
-          plan_start_date: p.plan_start_date || null,
-          currency: p.currency || null,
-          description: p.description || null,
-          country_id: p.country_id || null,
-          brand: p.brand || null,
-          baseline: num(p.baseline),
-          cpa: num(p.cpa),
-          rev_share_pct: num(p.rev_share_pct),
-          cpl: num(p.cpl),
-          wager: num(p.wager),
-          conversion_type: p.conversion_type || null,
-          cap: intOrNull(p.cap),
-          created_by: userData.user.id,
-        }));
-        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
+        const planValues = plans.map((p) => {
+          const cIds = Array.isArray((p as any).country_ids)
+            ? (p as any).country_ids.filter((x: any) => typeof x === "string")
+            : [];
+          return {
+            affiliate_id: affiliateId!,
+            plan_start_date: p.plan_start_date || null,
+            currency: p.currency || null,
+            description: p.description || null,
+            country_id: p.country_id || (cIds[0] ?? null),
+            country_ids: cIds,
+            brand: p.brand || null,
+            baseline: num(p.baseline),
+            cpa: num(p.cpa),
+            rev_share_pct: num(p.rev_share_pct),
+            cpl: num(p.cpl),
+            wager: num(p.wager),
+            conversion_type: p.conversion_type || null,
+            cap: intOrNull(p.cap),
+            created_by: userData.user.id,
+          };
+        });
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

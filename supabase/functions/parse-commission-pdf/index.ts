@@ -15,10 +15,15 @@ type ParsedRow = {
   brand: string;
   campaign_name: string;
   campaign_id: string;
-  qualified_players: number;
-  locked_players: number;
+  qualified_players?: number;
+  locked_players?: number;
+  visits?: number;
+  new_accounts?: number;
+  active_accounts?: number;
+  new_purchasing?: number;
+  casino_ngr?: number;
+  sports_ngr?: number;
   commission_total: number;
-  currency?: string | null;
 };
 
 Deno.serve(async (req) => {
@@ -35,7 +40,6 @@ Deno.serve(async (req) => {
     const anonKey = Deno.env.get("SUPABASE_PUBLISHABLE_KEY") ?? Deno.env.get("SUPABASE_ANON_KEY")!;
     const lovableKey = Deno.env.get("LOVABLE_API_KEY")!;
 
-    // Verify user
     const userClient = createClient(supabaseUrl, anonKey, {
       global: { headers: { Authorization: `Bearer ${token}` } },
     });
@@ -45,19 +49,16 @@ Deno.serve(async (req) => {
 
     const admin = createClient(supabaseUrl, serviceKey);
 
-    // Check admin role
     const { data: roles } = await admin.from("user_roles").select("role").eq("user_id", userId);
     const isAdmin = (roles ?? []).some((r: any) => r.role === "admin" || r.role === "super_admin");
     if (!isAdmin) return json(403, { error: "Acceso denegado" });
 
-    // Download PDF
     const { data: file, error: dlErr } = await admin.storage.from("commission-reports").download(storage_path);
     if (dlErr || !file) return json(400, { error: `No se pudo leer el PDF: ${dlErr?.message}` });
 
     const arrayBuf = await file.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
 
-    // Send PDF to Lovable AI with tool calling for structured extraction
     const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -70,14 +71,18 @@ Deno.serve(async (req) => {
           {
             role: "system",
             content:
-              "Eres un extractor de datos de reportes de comisiones de operadores de iGaming. Extrae cada fila como objeto separado, manteniendo la marca (Brand) a la que pertenece. Ignora filas de totales o subtotales.",
+              "Eres un extractor de datos de reportes de comisiones de operadores de iGaming (Betway y similares). " +
+              "Existen DOS tipos de reportes: " +
+              "1) CPA: columnas Campaign, Campaign ID, Locked Players, Qualified Players, Commission. " +
+              "2) Revenue Share (RS): columnas Campaign, Campaign ID, Visits, New Open Accounts, Locked Players, Active Accounts, New Active Purchasing, Currency, Casino Net Revenue, Sports Net Revenue, Commission. " +
+              "Detecta el tipo y extrae cada fila (ignora filas de totales o subtotales por brand). Asigna el brand al que pertenece cada fila.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Extrae todas las filas de comisiones del reporte adjunto. Para cada fila identifica: brand (ej Betway MLT, Betway.es ES, Betway.mx MX), campaign (nombre del afiliado), campaign_id, qualified_players, locked_players y commission. Devuelve también la moneda si la detectas.",
+                text: "Extrae todas las filas. Devuelve report_type ('cpa' o 'revshare'), currency y rows con todos los campos disponibles según el tipo.",
               },
               {
                 type: "file",
@@ -95,6 +100,7 @@ Deno.serve(async (req) => {
               parameters: {
                 type: "object",
                 properties: {
+                  report_type: { type: "string", enum: ["cpa", "revshare"], description: "Tipo de reporte detectado" },
                   currency: { type: "string", description: "Moneda detectada (EUR, USD, MXN…)" },
                   rows: {
                     type: "array",
@@ -106,14 +112,20 @@ Deno.serve(async (req) => {
                         campaign_id: { type: "string" },
                         qualified_players: { type: "number" },
                         locked_players: { type: "number" },
+                        visits: { type: "number" },
+                        new_accounts: { type: "number" },
+                        active_accounts: { type: "number" },
+                        new_purchasing: { type: "number" },
+                        casino_ngr: { type: "number" },
+                        sports_ngr: { type: "number" },
                         commission_total: { type: "number" },
                       },
-                      required: ["brand", "campaign_name", "campaign_id", "qualified_players", "locked_players", "commission_total"],
+                      required: ["brand", "campaign_name", "campaign_id", "commission_total"],
                       additionalProperties: false,
                     },
                   },
                 },
-                required: ["rows"],
+                required: ["report_type", "rows"],
                 additionalProperties: false,
               },
             },
@@ -136,10 +148,11 @@ Deno.serve(async (req) => {
     const args = JSON.parse(toolCall.function.arguments);
     const rows: ParsedRow[] = args.rows ?? [];
     const detectedCurrency: string | null = args.currency ?? null;
+    const reportType: string = args.report_type ?? "cpa";
+    const isPaid = reportType === "cpa"; // RS no se paga al afiliado
 
     if (rows.length === 0) return json(400, { error: "No se detectaron filas en el PDF" });
 
-    // Match affiliates: by operator_campaign_id (priority) then alias/fixed_name
     const { data: opMap } = await admin
       .from("affiliate_operator_ids")
       .select("affiliate_id, operator_campaign_id")
@@ -154,7 +167,6 @@ Deno.serve(async (req) => {
       if (a.fixed_name) aliasToAff.set(a.fixed_name.toLowerCase().trim(), a.id);
     });
 
-    // Create closure
     const sourceName = storage_path.split("/").pop() ?? storage_path;
     const totalCommission = rows.reduce((s, r) => s + (Number(r.commission_total) || 0), 0);
     const totalQualified = rows.reduce((s, r) => s + (Number(r.qualified_players) || 0), 0);
@@ -172,13 +184,13 @@ Deno.serve(async (req) => {
         total_commission: totalCommission,
         total_qualified: totalQualified,
         total_locked: totalLocked,
+        report_type: reportType,
         created_by: userId,
       })
       .select("id")
       .single();
     if (cErr || !closure) return json(500, { error: cErr?.message ?? "No se pudo crear el cierre" });
 
-    // Auto-create operator_id mappings for new IDs we matched by alias
     const items = rows.map((r) => {
       const idKey = (r.campaign_id || "").toLowerCase().trim();
       const nameKey = (r.campaign_name || "").toLowerCase().trim();
@@ -197,8 +209,16 @@ Deno.serve(async (req) => {
         raw_campaign_name: r.campaign_name,
         raw_campaign_id: r.campaign_id,
         brand: r.brand,
+        report_type: reportType,
+        is_paid_to_affiliate: isPaid,
         qualified_players: Math.trunc(Number(r.qualified_players) || 0),
         locked_players: Math.trunc(Number(r.locked_players) || 0),
+        visits: Math.trunc(Number(r.visits) || 0),
+        new_accounts: Math.trunc(Number(r.new_accounts) || 0),
+        active_accounts: Math.trunc(Number(r.active_accounts) || 0),
+        new_purchasing: Math.trunc(Number(r.new_purchasing) || 0),
+        casino_ngr: Number(r.casino_ngr) || 0,
+        sports_ngr: Number(r.sports_ngr) || 0,
         commission_total: Number(r.commission_total) || 0,
         currency: detectedCurrency,
         match_status,
@@ -214,6 +234,7 @@ Deno.serve(async (req) => {
     return json(200, {
       ok: true,
       closure_id: closure.id,
+      report_type: reportType,
       rows_count: items.length,
       matched: items.filter((i) => i.affiliate_id).length,
     });

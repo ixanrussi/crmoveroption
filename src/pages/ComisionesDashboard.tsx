@@ -207,11 +207,25 @@ export default function ComisionesDashboard() {
     return [...m.entries()].map(([name, v]) => ({ name, ...v, roi: v.cpa > 0 ? v.ngr / v.cpa : 0 })).sort((a, b) => (b.cpa + b.ngr) - (a.cpa + a.ngr)).slice(0, 10);
   }, [enriched, affMap, countryMap]);
 
-  // By brand
+  // By brand (normalizada: agrupa variantes con sufijo de país alpha-2 y MLT=LATAM)
+  const normalizeBrand = (raw: string | null | undefined): string => {
+    if (!raw) return "—";
+    let s = String(raw).trim();
+    // Quita sufijo país alpha-2 al final: "Betway.es ES" -> "Betway.es", "Betway.mx MX" -> "Betway.mx"
+    s = s.replace(/\s+[A-Z]{2}$/, "").trim();
+    // Mapeos explícitos
+    const lower = s.toLowerCase();
+    if (lower === "betway.es") return "Betway España";
+    if (lower === "betway.mx") return "Betway México";
+    if (lower === "betway mlt" || lower === "betway.mlt") return "Betway LATAM";
+    if (lower === "betway") return "Betway LATAM";
+    return s;
+  };
+
   const byBrand = useMemo(() => {
     const m = new Map<string, { cpa: number; ngr: number; visits: number; active: number }>();
     enriched.forEach(i => {
-      const k = i.brand ?? "—";
+      const k = normalizeBrand(i.brand);
       const cur = m.get(k) ?? { cpa: 0, ngr: 0, visits: 0, active: 0 };
       if (i.report_type === "cpa") cur.cpa += Number(i.commission_total || 0);
       else {

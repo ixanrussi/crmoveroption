@@ -478,12 +478,40 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Country</Label>
-                          <Select value={pl.country_id ?? ""} onValueChange={(v) => updatePlan(i, { country_id: v })}>
-                            <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                            <SelectContent>
-                              {countries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
-                            </SelectContent>
-                          </Select>
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button type="button" variant="outline" className="w-full justify-between font-normal">
+                                <span className="truncate">
+                                  {pl.country_id
+                                    ? countries.find((c) => c.id === pl.country_id)?.name ?? "Selecciona"
+                                    : "Selecciona"}
+                                </span>
+                                <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent
+                              className="w-[260px] p-2 max-h-72 overflow-y-auto overscroll-contain"
+                              align="start"
+                              onWheel={(e) => e.stopPropagation()}
+                              onTouchMove={(e) => e.stopPropagation()}
+                            >
+                              <div className="space-y-1">
+                                {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
+                                  <button
+                                    type="button"
+                                    key={c.id}
+                                    onClick={() => updatePlan(i, { country_id: c.id })}
+                                    className={`w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent ${pl.country_id === c.id ? "bg-accent" : ""}`}
+                                  >
+                                    {c.name}
+                                  </button>
+                                ))}
+                                {countries.length === 0 && (
+                                  <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
+                                )}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Brand</Label>

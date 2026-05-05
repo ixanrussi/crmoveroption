@@ -455,10 +455,11 @@ export default function Clientes() {
                     <Collapsible key={i} defaultOpen={false} className="border rounded-md bg-muted/30">
                       <div className="flex items-center justify-between gap-2 p-3">
                         <CollapsibleTrigger asChild>
-                          <button type="button" className="flex items-center gap-2 flex-1 text-left">
-                            <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
-                            <span className="text-xs font-medium text-muted-foreground">Plan #{i + 1}</span>
-                            <div className="flex gap-2 ml-2">
+                          <button type="button" className="flex items-center gap-2 flex-1 text-left min-w-0">
+                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform [[data-state=closed]>&]:-rotate-90" />
+                            <span className="text-xs font-medium text-muted-foreground shrink-0">Plan #{i + 1}</span>
+                            <span className="text-sm font-medium truncate">{pl.description || "Sin nombre"}</span>
+                            <div className="flex gap-2 ml-2 shrink-0">
                               <Badge variant="secondary" className="font-normal">CPA: {pl.cpa || "—"}</Badge>
                               <Badge variant="secondary" className="font-normal">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
                             </div>
@@ -470,6 +471,12 @@ export default function Clientes() {
                       </div>
                       <CollapsibleContent className="px-3 pb-3 space-y-2">
                       <div className="grid grid-cols-2 gap-2">
+                        <div className="col-span-2 space-y-1">
+                          <Label className="text-xs">Nombre</Label>
+                          <Input value={pl.description}
+                            onChange={(e) => updatePlan(i, { description: e.target.value })}
+                            placeholder="Ej: Comisiones LATAM" />
+                        </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Plan Start Date</Label>
                           <Input type="date" value={pl.plan_start_date}
@@ -484,11 +491,6 @@ export default function Clientes() {
                               <SelectItem value="EUR">EUR</SelectItem>
                             </SelectContent>
                           </Select>
-                        </div>
-                        <div className="col-span-2 space-y-1">
-                          <Label className="text-xs">Description</Label>
-                          <Input value={pl.description}
-                            onChange={(e) => updatePlan(i, { description: e.target.value })} />
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">GEO's (países)</Label>

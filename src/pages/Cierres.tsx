@@ -289,14 +289,6 @@ export default function Cierres() {
 
       {loading && <p className="text-sm text-muted-foreground">Cargando…</p>}
       {!loading && closures.length === 0 && (
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
-      </div>
-
-      {loading && <p className="text-sm text-muted-foreground">Cargando…</p>}
-      {!loading && closures.length === 0 && (
         <Card><CardContent className="p-8 text-center text-muted-foreground">
           Aún no hay cierres. Sube tu primer reporte en PDF.
         </CardContent></Card>

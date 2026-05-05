@@ -103,6 +103,15 @@ export default function Clientes() {
     return ids.map((id) => map.get(id) ?? "").filter(Boolean).join(", ");
   };
 
+  const filteredList = list.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    if (r.company_name?.toLowerCase().includes(q)) return true;
+    if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
+    if (countryNames(r).toLowerCase().includes(q)) return true;
+    return false;
+  });
+
   const openNew = () => {
     setEditing(null);
     setForm(empty);

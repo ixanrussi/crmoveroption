@@ -165,9 +165,21 @@ export default function Afiliados() {
           <p className="text-muted-foreground text-sm">El ID único se genera automáticamente al crear el afiliado.</p>
         </div>
         {isAdmin && (
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(v) => {
+              if (!v && open) {
+                if (!window.confirm("¿Cerrar el formulario? Se perderán los cambios no guardados.")) return;
+              }
+              setOpen(v);
+            }}
+          >
             <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Nuevo afiliado</Button></DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent
+              className="max-w-2xl max-h-[90vh] overflow-y-auto"
+              onPointerDownOutside={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
+            >
               <DialogHeader>
                 <DialogTitle>{editing ? `Editar afiliado ${editing.unique_id}` : "Nuevo afiliado"}</DialogTitle>
               </DialogHeader>

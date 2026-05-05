@@ -232,11 +232,23 @@ export default function Clientes() {
           <p className="text-muted-foreground text-sm">Gestión de clientes de Overoption</p>
         </div>
         {isAdmin && (
-          <Dialog open={open} onOpenChange={setOpen}>
+          <Dialog
+            open={open}
+            onOpenChange={(v) => {
+              if (!v && open) {
+                if (!window.confirm("¿Cerrar el formulario? Se perderán los cambios no guardados.")) return;
+              }
+              setOpen(v);
+            }}
+          >
             <DialogTrigger asChild>
               <Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Nuevo cliente</Button>
             </DialogTrigger>
-            <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+            <DialogContent
+              className="max-w-2xl max-h-[90vh] overflow-y-auto"
+              onPointerDownOutside={(e) => e.preventDefault()}
+              onInteractOutside={(e) => e.preventDefault()}
+            >
               <DialogHeader><DialogTitle>{editing ? "Editar cliente" : "Nuevo cliente"}</DialogTitle></DialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">

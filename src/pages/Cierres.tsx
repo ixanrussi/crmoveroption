@@ -336,6 +336,62 @@ export default function Cierres() {
                     </div>
                   )}
 
+                  {/* Feedback panel */}
+                  <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <MessageSquare className="h-4 w-4" />
+                      Feedback del procesamiento
+                      <Badge variant="outline" className="ml-auto">{(feedbackByClosure.get(closure.id) ?? []).length}</Badge>
+                    </div>
+                    <div className="space-y-1.5 max-h-48 overflow-auto">
+                      {(feedbackByClosure.get(closure.id) ?? []).length === 0 && (
+                        <p className="text-xs text-muted-foreground">Sin observaciones aún.</p>
+                      )}
+                      {(feedbackByClosure.get(closure.id) ?? []).map((f) => {
+                        const colorVar =
+                          f.kind === "warning" ? "warning" :
+                          f.kind === "issue" ? "destructive" :
+                          f.kind === "suggestion" ? "info" : "muted-foreground";
+                        const Icon = f.kind === "info" ? Info : AlertCircle;
+                        return (
+                          <div
+                            key={f.id}
+                            className="flex items-start gap-2 text-xs p-2 rounded border"
+                            style={{ backgroundColor: `hsl(var(--${colorVar}) / 0.08)`, borderColor: `hsl(var(--${colorVar}) / 0.3)` }}
+                          >
+                            <Icon className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: `hsl(var(--${colorVar}))` }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium uppercase" style={{ color: `hsl(var(--${colorVar}))` }}>{f.kind}</span>
+                                <span className="text-muted-foreground">· {f.source === "auto" ? "automático" : "usuario"}</span>
+                                <span className="text-muted-foreground">· {new Date(f.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="mt-0.5 break-words">{f.message}</p>
+                            </div>
+                            {isAdmin && (
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => deleteFeedback(f.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-2 pt-1">
+                        <Textarea
+                          placeholder="Reportar limitación, sugerencia o problema en el parseo de este archivo…"
+                          value={newFeedback[closure.id] ?? ""}
+                          onChange={(e) => setNewFeedback((p) => ({ ...p, [closure.id]: e.target.value }))}
+                          className="min-h-[60px] text-xs"
+                        />
+                        <Button size="sm" onClick={() => addFeedback(closure.id)} className="self-end">
+                          <Send className="h-3.5 w-3.5 mr-1" />Añadir
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+
                   {Array.from(byBrand.entries()).map(([brand, rows]) => {
                     const isRs = closure.report_type === "revshare";
                     const totReg = rows.reduce((s, r) => s + r.qualified_players, 0);

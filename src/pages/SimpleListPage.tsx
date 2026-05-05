@@ -105,6 +105,8 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
         </Card>
       )}
 
+      {table === "countries" && <WorldActivityMap />}
+
       <Card>
         <CardContent className="p-0">
           <Table>

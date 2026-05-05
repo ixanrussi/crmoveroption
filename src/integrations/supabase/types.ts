@@ -219,6 +219,7 @@ export type Database = {
           client_id: string
           conversion_type: string | null
           country_id: string | null
+          country_ids: string[]
           cpa: number | null
           cpl: number | null
           created_at: string
@@ -238,6 +239,7 @@ export type Database = {
           client_id: string
           conversion_type?: string | null
           country_id?: string | null
+          country_ids?: string[]
           cpa?: number | null
           cpl?: number | null
           created_at?: string
@@ -257,6 +259,7 @@ export type Database = {
           client_id?: string
           conversion_type?: string | null
           country_id?: string | null
+          country_ids?: string[]
           cpa?: number | null
           cpl?: number | null
           created_at?: string

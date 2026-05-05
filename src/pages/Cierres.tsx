@@ -293,9 +293,6 @@ export default function Cierres() {
                           <SelectItem value="paid">Pagado</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="ghost" size="sm" onClick={() => deleteClosure(closure)}>
-                        <Trash2 className="h-4 w-4 mr-1" />Eliminar
-                      </Button>
                     </div>
                   )}
 

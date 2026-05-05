@@ -155,10 +155,11 @@ Deno.serve(async (req) => {
       if (body.action === "insert") {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
-            fixed_name, alias, email, phone, country_id, status,
+            fixed_name, alias, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
           ) values (
             ${payload.fixed_name}, ${payload.alias}, ${payload.email}, ${payload.phone}, ${payload.country_id},
+            ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
           ) returning id, unique_id
@@ -175,6 +176,7 @@ Deno.serve(async (req) => {
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},
+              country_ids = ${payload.country_ids}::uuid[],
               status = ${payload.status}::affiliate_status,
               commission_pct = ${payload.commission_pct},
               payment_method = ${payload.payment_method},
@@ -192,6 +194,7 @@ Deno.serve(async (req) => {
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},
+              country_ids = ${payload.country_ids}::uuid[],
               status = ${payload.status}::affiliate_status,
               commission_pct = ${payload.commission_pct},
               payment_method = ${payload.payment_method},

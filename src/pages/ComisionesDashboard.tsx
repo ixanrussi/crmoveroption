@@ -187,6 +187,23 @@ export default function ComisionesDashboard() {
   const totalCostShare = rankingByCost.reduce((s, r) => s + r.cpaCost, 0) || 1;
   const totalNgrShare = rankingByNgr.reduce((s, r) => s + Math.max(0, r.ngr), 0) || 1;
 
+  // Deriva país desde la marca: sufijo alpha-2 (ES/MX/...), o mapeos conocidos
+  const countryFromBrand = (raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    const m = s.match(/\s+([A-Z]{2})$/);
+    if (m) {
+      const code = m[1];
+      const map: Record<string, string> = { ES: "España", MX: "México", AR: "Argentina", CL: "Chile", CO: "Colombia", PE: "Perú", BR: "Brasil", US: "Estados Unidos" };
+      return map[code] ?? code;
+    }
+    const lower = s.toLowerCase();
+    if (lower.endsWith(".es")) return "España";
+    if (lower.endsWith(".mx")) return "México";
+    if (lower === "betway mlt" || lower === "betway.mlt" || lower === "betway") return "LATAM";
+    return null;
+  };
+
   // By country
   const byCountry = useMemo(() => {
     const m = new Map<string, { cpa: number; ngr: number }>();
@@ -198,6 +215,10 @@ export default function ComisionesDashboard() {
     enriched.forEach(i => {
       const cpa = i.report_type === "cpa" ? Number(i.commission_total || 0) : 0;
       const ngr = i.report_type === "revshare" ? Number(i.casino_ngr || 0) + Number(i.sports_ngr || 0) : 0;
+      // 1) País desde la marca (prioritario, viene del propio reporte)
+      const fromBrand = countryFromBrand(i.brand);
+      if (fromBrand) { add(fromBrand, cpa, ngr); return; }
+      // 2) Fallback: países del afiliado
       const aff = i.affiliate_id ? affMap.get(i.affiliate_id) : null;
       const cids = aff?.country_ids?.length ? aff.country_ids : [];
       if (!cids.length) { add("Sin país", cpa, ngr); return; }

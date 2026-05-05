@@ -461,9 +461,11 @@ export type Database = {
           avatar_url: string | null
           created_at: string
           email: string
+          first_name: string | null
           full_name: string
           id: string
           job_title: string | null
+          last_name: string | null
           phone: string | null
           updated_at: string
         }
@@ -471,9 +473,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email: string
+          first_name?: string | null
           full_name?: string
           id: string
           job_title?: string | null
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }
@@ -481,9 +485,11 @@ export type Database = {
           avatar_url?: string | null
           created_at?: string
           email?: string
+          first_name?: string | null
           full_name?: string
           id?: string
           job_title?: string | null
+          last_name?: string | null
           phone?: string | null
           updated_at?: string
         }

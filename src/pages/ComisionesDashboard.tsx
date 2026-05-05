@@ -122,11 +122,15 @@ export default function ComisionesDashboard() {
       cpaCost: 0, qualified: 0, locked: 0,
       visits: 0, newAccounts: 0, activeAccounts: 0, newPurchasing: 0,
       casinoNgr: 0, sportsNgr: 0, ngr: 0, rsCommission: 0,
+      affCost: 0, // costo CPA pagado a afiliados
     };
     cpaItems.forEach(i => {
       t.cpaCost += Number(i.commission_total || 0);
       t.qualified += i.qualified_players || 0;
       t.locked += i.locked_players || 0;
+      const c = closureMap.get(i.closure_id);
+      const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
+      if (cpa != null) t.affCost += cpa * (i.qualified_players || 0);
     });
     rsItems.forEach(i => {
       t.visits += i.visits || 0;
@@ -139,7 +143,14 @@ export default function ComisionesDashboard() {
     });
     t.ngr = t.casinoNgr + t.sportsNgr;
     return t;
-  }, [cpaItems, rsItems]);
+  }, [cpaItems, rsItems, affCpaFor, closureMap]);
+
+  // Overoption profitability: CPA margin (cliente − afiliado) + Revenue Share completo (Overoption se queda con todo)
+  const cpaMargin = totals.cpaCost - totals.affCost;
+  const overoptionNet = cpaMargin + totals.rsCommission;
+  const overoptionMarginPct = (totals.cpaCost + totals.rsCommission) > 0
+    ? (overoptionNet / (totals.cpaCost + totals.rsCommission)) * 100
+    : 0;
 
   const prevCpaCost = useMemo(() => prevEnriched.filter(i => i.report_type === "cpa").reduce((s, i) => s + Number(i.commission_total || 0), 0), [prevEnriched]);
   const prevNgr = useMemo(() => prevEnriched.filter(i => i.report_type === "revshare").reduce((s, i) => s + Number(i.casino_ngr || 0) + Number(i.sports_ngr || 0), 0), [prevEnriched]);
@@ -153,10 +164,12 @@ export default function ComisionesDashboard() {
   // Per-affiliate aggregation across both report types
   type AffRow = {
     id: string; name: string;
-    cpaCost: number; qualified: number; locked: number;
+    cpaCost: number; affCost: number; margin: number;
+    qualified: number; locked: number;
     visits: number; newAccounts: number; activeAccounts: number; newPurchasing: number;
     casinoNgr: number; sportsNgr: number; ngr: number;
     brands: Set<string>; prevCpa: number; prevNgr: number;
+    fraudScore: number; fraudReasons: string[];
   };
   const ranking = useMemo(() => {
     const m = new Map<string, AffRow>();

@@ -113,7 +113,7 @@ export default function Afiliados() {
     const payload: any = {
       fixed_name: form.fixed_name,
       alias: form.alias || null, email: form.email || null, phone: form.phone || null,
-      country_id: form.country_id || null,
+      country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
     };
     setSaving(true);

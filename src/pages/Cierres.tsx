@@ -18,7 +18,7 @@ type Affiliate = { id: string; fixed_name: string; alias: string | null };
 type Closure = {
   id: string; client_id: string; period: string; status: string; currency: string | null;
   total_commission: number; total_qualified: number; total_locked: number;
-  source_file_name: string | null; created_at: string;
+  source_file_name: string | null; source_file_path: string | null; created_at: string;
 };
 type Item = {
   id: string; closure_id: string; affiliate_id: string | null;

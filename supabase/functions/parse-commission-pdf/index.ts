@@ -154,12 +154,34 @@ Deno.serve(async (req) => {
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) return json(500, { error: "La IA no devolvió datos estructurados" });
     const args = JSON.parse(toolCall.function.arguments);
-    const rows: ParsedRow[] = args.rows ?? [];
+    const rawRows: ParsedRow[] = args.rows ?? [];
     const detectedCurrency: string | null = args.currency ?? null;
     const reportType: string = args.report_type ?? "cpa";
     const isPaid = reportType === "cpa"; // RS no se paga al afiliado
 
-    if (rows.length === 0) return json(400, { error: "No se detectaron filas en el PDF" });
+    // Filtrar subtotales/totales: deben tener Campaign Y Campaign ID válidos
+    const rows = rawRows.filter((r) => {
+      const name = (r.campaign_name || "").trim();
+      const id = (r.campaign_id || "").trim();
+      if (!name || !id) return false;
+      const lower = (name + " " + id).toLowerCase();
+      if (lower.includes("total") || lower.includes("subtotal")) return false;
+      return true;
+    });
+
+    // Validación RS: marcar inconsistencias evidentes (new_accounts > visits)
+    const warnings: string[] = [];
+    if (reportType === "revshare") {
+      rows.forEach((r) => {
+        const v = Number(r.visits) || 0;
+        const n = Number(r.new_accounts) || 0;
+        if (n > v && v > 0) {
+          warnings.push(`${r.brand} / ${r.campaign_name}: new_accounts (${n}) > visits (${v})`);
+        }
+      });
+    }
+
+    if (rows.length === 0) return json(400, { error: "No se detectaron filas válidas en el PDF" });
 
     const { data: opMap } = await admin
       .from("affiliate_operator_ids")

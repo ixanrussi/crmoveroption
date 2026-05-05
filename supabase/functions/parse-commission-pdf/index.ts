@@ -66,23 +66,31 @@ Deno.serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-2.5-pro",
         messages: [
           {
             role: "system",
             content:
-              "Eres un extractor de datos de reportes de comisiones de operadores de iGaming (Betway y similares). " +
-              "Existen DOS tipos de reportes: " +
-              "1) CPA: columnas Campaign, Campaign ID, Locked Players, Qualified Players, Commission. " +
-              "2) Revenue Share (RS): columnas Campaign, Campaign ID, Visits, New Open Accounts, Locked Players, Active Accounts, New Active Purchasing, Currency, Casino Net Revenue, Sports Net Revenue, Commission. " +
-              "Detecta el tipo y extrae cada fila (ignora filas de totales o subtotales por brand). Asigna el brand al que pertenece cada fila.",
+              "Eres un extractor de datos PRECISO de reportes de comisiones de iGaming (Betway y similares). " +
+              "Los reportes están agrupados por BRAND (ej: 'Betway', 'Betway MLT', 'Betway.es', 'Betway.es ES', 'Betway.mx', 'Betway.mx MX'). " +
+              "Cada brand tiene una fila de SUBTOTAL (sin Campaign ni Campaign ID, solo agregados) que DEBES IGNORAR. " +
+              "También hay una fila de TOTAL GENERAL al final que DEBES IGNORAR. " +
+              "Solo extrae filas que tengan un Campaign (nombre de afiliado) Y un Campaign ID válidos. " +
+              "\n\nDOS tipos de reporte:\n" +
+              "1) CPA: columnas exactas en orden = [Campaign, Campaign ID, Locked Players, Qualified Players, Commission]. " +
+              "Mapea: locked_players=Locked Players, qualified_players=Qualified Players, commission_total=Commission. " +
+              "NO inventes valores para visits/new_accounts/active_accounts/casino_ngr/sports_ngr (déjalos en 0). \n" +
+              "2) Revenue Share (RS): columnas exactas en orden = [Campaign, Campaign ID, Visits, New Open Accounts, Locked Players, Active Accounts, New Active Purchasing, Currency, Casino Net Revenue, Sports Net Revenue, Commission]. " +
+              "Mapea ESTRICTAMENTE por posición: visits=Visits, new_accounts=New Open Accounts, locked_players=Locked Players, active_accounts=Active Accounts, new_purchasing=New Active Purchasing, casino_ngr=Casino Net Revenue, sports_ngr=Sports Net Revenue, commission_total=Commission. " +
+              "\n\nVALIDACIÓN CRÍTICA: en RS, new_accounts NUNCA puede ser mayor que visits para una fila individual de afiliado. Si lo es, casi seguro confundiste columnas — revísalo. " +
+              "Asigna el brand correcto a cada fila según la sección donde aparece. NO uses los valores del subtotal del brand como si fueran de un afiliado.",
           },
           {
             role: "user",
             content: [
               {
                 type: "text",
-                text: "Extrae todas las filas. Devuelve report_type ('cpa' o 'revshare'), currency y rows con todos los campos disponibles según el tipo.",
+                text: "Extrae SOLO las filas de afiliados individuales (con Campaign + Campaign ID). Ignora subtotales por brand y total general. Devuelve report_type ('cpa' o 'revshare'), currency y rows mapeando estrictamente por posición de columna.",
               },
               {
                 type: "file",
@@ -146,12 +154,34 @@ Deno.serve(async (req) => {
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];
     if (!toolCall) return json(500, { error: "La IA no devolvió datos estructurados" });
     const args = JSON.parse(toolCall.function.arguments);
-    const rows: ParsedRow[] = args.rows ?? [];
+    const rawRows: ParsedRow[] = args.rows ?? [];
     const detectedCurrency: string | null = args.currency ?? null;
     const reportType: string = args.report_type ?? "cpa";
     const isPaid = reportType === "cpa"; // RS no se paga al afiliado
 
-    if (rows.length === 0) return json(400, { error: "No se detectaron filas en el PDF" });
+    // Filtrar subtotales/totales: deben tener Campaign Y Campaign ID válidos
+    const rows = rawRows.filter((r) => {
+      const name = (r.campaign_name || "").trim();
+      const id = (r.campaign_id || "").trim();
+      if (!name || !id) return false;
+      const lower = (name + " " + id).toLowerCase();
+      if (lower.includes("total") || lower.includes("subtotal")) return false;
+      return true;
+    });
+
+    // Validación RS: marcar inconsistencias evidentes (new_accounts > visits)
+    const warnings: string[] = [];
+    if (reportType === "revshare") {
+      rows.forEach((r) => {
+        const v = Number(r.visits) || 0;
+        const n = Number(r.new_accounts) || 0;
+        if (n > v && v > 0) {
+          warnings.push(`${r.brand} / ${r.campaign_name}: new_accounts (${n}) > visits (${v})`);
+        }
+      });
+    }
+
+    if (rows.length === 0) return json(400, { error: "No se detectaron filas válidas en el PDF" });
 
     const { data: opMap } = await admin
       .from("affiliate_operator_ids")
@@ -237,6 +267,7 @@ Deno.serve(async (req) => {
       report_type: reportType,
       rows_count: items.length,
       matched: items.filter((i) => i.affiliate_id).length,
+      warnings,
     });
   } catch (e) {
     console.error("parse-commission-pdf error", e);

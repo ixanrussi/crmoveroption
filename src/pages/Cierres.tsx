@@ -572,17 +572,27 @@ export default function Cierres() {
 
                   {Array.from(byBrand.entries()).map(([brand, rows]) => {
                     const isRs = closure.report_type === "revshare";
+                    const rowCalc = rows.map((r) => {
+                      const affCpa = !isRs ? affPlanCpa(r.affiliate_id, r.brand ?? brand, closure.period) : null;
+                      const qualified = r.qualified_players || 0;
+                      const affCost = !isRs && affCpa != null ? affCpa * qualified : null;
+                      const clientPaid = Number(r.commission_total || 0);
+                      const margin = affCost != null ? clientPaid - affCost : null;
+                      return { row: r, affCpa, affCost, clientPaid, margin };
+                    });
                     const totReg = rows.reduce((s, r) => s + r.qualified_players, 0);
                     const totDep = rows.reduce((s, r) => s + r.locked_players, 0);
                     const totVis = rows.reduce((s, r) => s + (r.visits || 0), 0);
                     const totAct = rows.reduce((s, r) => s + (r.active_accounts || 0), 0);
                     const totNgr = rows.reduce((s, r) => s + Number(r.casino_ngr || 0) + Number(r.sports_ngr || 0), 0);
                     const totCom = rows.reduce((s, r) => s + Number(r.commission_total), 0);
+                    const totAffCost = rowCalc.reduce((s, c) => s + (c.affCost ?? 0), 0);
+                    const totMargin = totCom - totAffCost;
                     return (
                       <div key={brand} className="border rounded-md overflow-hidden">
                         <div className="bg-muted px-3 py-2 font-semibold text-sm flex justify-between">
                           <span>{brand}</span>
-                          {isRs && <span className="text-xs text-muted-foreground font-normal">Revenue Share — no se reparte con afiliado</span>}
+                          {isRs && <span className="text-xs text-muted-foreground font-normal">Revenue Share — ganancia 100% Overoption</span>}
                         </div>
                         <Table>
                           <TableHeader>
@@ -595,20 +605,22 @@ export default function Cierres() {
                                   <TableHead className="text-right">Cuentas</TableHead>
                                   <TableHead className="text-right">Activas</TableHead>
                                   <TableHead className="text-right">NGR</TableHead>
-                                  <TableHead className="text-right">Comisión</TableHead>
+                                  <TableHead className="text-right">RS Overoption</TableHead>
                                 </>
                               ) : (
                                 <>
                                   <TableHead className="text-right">Calificados</TableHead>
                                   <TableHead className="text-right">Bloqueados</TableHead>
-                                  <TableHead className="text-right">Comisión CPA</TableHead>
+                                  <TableHead className="text-right" title="Lo que paga el cliente a Overoption">CPA cliente</TableHead>
+                                  <TableHead className="text-right" title="Lo que Overoption paga al afiliado (plan CPA × calificados)">CPA afiliado</TableHead>
+                                  <TableHead className="text-right" title="Ganancia neta de Overoption">Margen Overoption</TableHead>
                                 </>
                               )}
                               <TableHead>Match</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
-                            {rows.map((it) => {
+                            {rowCalc.map(({ row: it, affCpa, affCost, clientPaid, margin }) => {
                               const aff = it.affiliate_id ? affMap.get(it.affiliate_id) : null;
                               const ngr = Number(it.casino_ngr || 0) + Number(it.sports_ngr || 0);
                               return (
@@ -645,13 +657,26 @@ export default function Cierres() {
                                       <TableCell className="text-right">{it.new_accounts || 0}</TableCell>
                                       <TableCell className="text-right">{it.active_accounts || 0}</TableCell>
                                       <TableCell className={`text-right ${ngr < 0 ? "text-destructive" : ""}`}>{fmtMoney(ngr, it.currency)}</TableCell>
-                                      <TableCell className="text-right font-medium">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
+                                      <TableCell className="text-right font-medium text-success">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
                                     </>
                                   ) : (
                                     <>
                                       <TableCell className="text-right">{it.qualified_players}</TableCell>
                                       <TableCell className="text-right">{it.locked_players}</TableCell>
-                                      <TableCell className="text-right font-medium">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
+                                      <TableCell className="text-right font-medium">{fmtMoney(clientPaid, it.currency)}</TableCell>
+                                      <TableCell className="text-right">
+                                        {affCost != null ? (
+                                          <div>
+                                            <div>{fmtMoney(affCost, it.currency)}</div>
+                                            <div className="text-[10px] text-muted-foreground">{fmtMoney(affCpa!, it.currency)}/CPA</div>
+                                          </div>
+                                        ) : (
+                                          <span className="text-xs text-muted-foreground" title="Sin plan CPA configurado para este afiliado/marca">—</span>
+                                        )}
+                                      </TableCell>
+                                      <TableCell className={`text-right font-semibold ${margin == null ? "" : margin > 0 ? "text-success" : margin < 0 ? "text-destructive" : ""}`}>
+                                        {margin != null ? fmtMoney(margin, it.currency) : <span className="text-xs text-muted-foreground">—</span>}
+                                      </TableCell>
                                     </>
                                   )}
                                   <TableCell>
@@ -677,13 +702,15 @@ export default function Cierres() {
                                   <TableCell className="text-right">{rows.reduce((s,r)=>s+(r.new_accounts||0),0)}</TableCell>
                                   <TableCell className="text-right">{totAct}</TableCell>
                                   <TableCell className={`text-right ${totNgr < 0 ? "text-destructive" : ""}`}>{fmtMoney(totNgr, closure.currency)}</TableCell>
-                                  <TableCell className="text-right">{fmtMoney(totCom, closure.currency)}</TableCell>
+                                  <TableCell className="text-right text-success">{fmtMoney(totCom, closure.currency)}</TableCell>
                                 </>
                               ) : (
                                 <>
                                   <TableCell className="text-right">{totReg}</TableCell>
                                   <TableCell className="text-right">{totDep}</TableCell>
                                   <TableCell className="text-right">{fmtMoney(totCom, closure.currency)}</TableCell>
+                                  <TableCell className="text-right">{fmtMoney(totAffCost, closure.currency)}</TableCell>
+                                  <TableCell className={`text-right ${totMargin > 0 ? "text-success" : totMargin < 0 ? "text-destructive" : ""}`}>{fmtMoney(totMargin, closure.currency)}</TableCell>
                                 </>
                               )}
                               <TableCell />

@@ -66,14 +66,6 @@ export default function Clientes() {
   const [viewing, setViewing] = useState<any | null>(null);
   const [search, setSearch] = useState("");
 
-  const filteredList = list.filter((r) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
-    if (r.company_name?.toLowerCase().includes(q)) return true;
-    if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
-    if (countryNames(r).toLowerCase().includes(q)) return true;
-    return false;
-  });
 
   const empty = {
     company_name: "", website: "",

@@ -9,7 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { AlertCircle, ChevronDown, FileText, Info, MessageSquare, Plus, Send, Trash2, Upload } from "lucide-react";
+import { AlertCircle, ChevronDown, FileText, Info, Loader2, MessageSquare, Plus, Send, Trash2, Upload } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
@@ -49,6 +49,14 @@ export default function Cierres() {
   const [newPeriod, setNewPeriod] = useState(() => new Date().toISOString().slice(0, 7));
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!uploading) { setElapsed(0); return; }
+    const start = Date.now();
+    const t = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 250);
+    return () => clearInterval(t);
+  }, [uploading]);
 
   const loadAll = async () => {
     setLoading(true);
@@ -227,13 +235,57 @@ export default function Cierres() {
                   <Input type="file" accept="application/pdf" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
                 </div>
                 <Button onClick={handleUpload} disabled={uploading} className="w-full">
-                  <Upload className="h-4 w-4 mr-2" />{uploading ? "Procesando con IA…" : "Subir y procesar"}
+                  {uploading ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Procesando con IA… {elapsed}s
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Subir y procesar
+                    </>
+                  )}
                 </Button>
+                {uploading && (
+                  <div className="rounded-md border border-info/30 bg-info/5 p-3 space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <span className="relative flex h-2.5 w-2.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-info opacity-75" />
+                        <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-info" />
+                      </span>
+                      <span className="font-medium">Extrayendo datos del PDF</span>
+                      <span className="ml-auto tabular-nums text-muted-foreground">{elapsed}s</span>
+                    </div>
+                    <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
+                      <div className="h-full w-1/3 rounded-full bg-info animate-[slide-in-right_1.5s_ease-in-out_infinite_alternate]" />
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      El proceso puede tardar hasta 2 minutos según el tamaño del archivo.
+                    </p>
+                  </div>
+                )}
               </div>
             </DialogContent>
           </Dialog>
         )}
       </div>
+
+      {uploading && (
+        <Card className="border-info/40 bg-info/5">
+          <CardContent className="p-4 flex items-center gap-3">
+            <Loader2 className="h-5 w-5 animate-spin text-info" />
+            <div className="flex-1">
+              <p className="text-sm font-medium">Procesando reporte con IA…</p>
+              <p className="text-xs text-muted-foreground">Tiempo transcurrido: {elapsed}s</p>
+            </div>
+            <span className="relative flex h-3 w-3">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-info opacity-75" />
+              <span className="relative inline-flex rounded-full h-3 w-3 bg-info" />
+            </span>
+          </CardContent>
+        </Card>
+      )}
 
       {loading && <p className="text-sm text-muted-foreground">Cargando…</p>}
       {!loading && closures.length === 0 && (

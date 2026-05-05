@@ -208,48 +208,78 @@ export default function Cierres() {
         </CardContent></Card>
       )}
 
-      {closures.map((closure) => {
-        const its = itemsByClosure.get(closure.id) ?? [];
-        const byBrand = new Map<string, Item[]>();
-        its.forEach((i) => {
-          const k = i.brand ?? "—";
-          if (!byBrand.has(k)) byBrand.set(k, []);
-          byBrand.get(k)!.push(i);
+      {(() => {
+        // Agrupar por cliente + periodo
+        const groups = new Map<string, { client_id: string; period: string; closures: Closure[] }>();
+        closures.forEach((c) => {
+          const key = `${c.client_id}__${c.period}`;
+          if (!groups.has(key)) groups.set(key, { client_id: c.client_id, period: c.period, closures: [] });
+          groups.get(key)!.closures.push(c);
         });
-        return (
-          <Card key={closure.id}>
+        const groupList = Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period));
+        return groupList.map((g) => (
+          <div key={`${g.client_id}-${g.period}`} className="space-y-2">
+            <div className="flex items-baseline gap-2 px-1">
+              <h2 className="text-lg font-semibold">{clientMap.get(g.client_id) ?? "Cliente"}</h2>
+              <span className="text-sm text-muted-foreground">· {g.period}</span>
+              <span className="text-xs text-muted-foreground">({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""})</span>
+            </div>
+            {g.closures.map((closure) => {
+              const its = itemsByClosure.get(closure.id) ?? [];
+              const byBrand = new Map<string, Item[]>();
+              its.forEach((i) => {
+                const k = i.brand ?? "—";
+                if (!byBrand.has(k)) byBrand.set(k, []);
+                byBrand.get(k)!.push(i);
+              });
+              const isRsType = closure.report_type === "revshare";
+              return (
+          <Card key={closure.id} className={isRsType ? "border-l-4 border-l-secondary" : "border-l-4 border-l-primary"}>
             <Collapsible defaultOpen={false}>
-              <CollapsibleTrigger asChild>
-                <CardHeader className="cursor-pointer hover:bg-accent/40">
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
-                      <FileText className="h-4 w-4 text-muted-foreground" />
-                      <div className="min-w-0">
-                        <CardTitle className="text-base truncate">
-                          {clientMap.get(closure.client_id) ?? "Cliente"} · {closure.period}
-                        </CardTitle>
-                        <p className="text-xs text-muted-foreground truncate">{closure.source_file_name}</p>
+              <div className="flex items-center pr-2">
+                <CollapsibleTrigger asChild>
+                  <CardHeader className="cursor-pointer hover:bg-accent/40 flex-1">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
+                        <FileText className="h-4 w-4 text-muted-foreground" />
+                        <div className="min-w-0">
+                          <CardTitle className="text-base truncate flex items-center gap-2">
+                            <Badge variant={isRsType ? "secondary" : "default"} className="text-xs">
+                              {isRsType ? "RS" : "CPA"}
+                            </Badge>
+                            <span className="truncate">{closure.source_file_name}</span>
+                          </CardTitle>
+                          <p className="text-xs text-muted-foreground">{its.length} filas</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {closure.report_type === "cpa" ? (
+                          <>
+                            <Badge variant="secondary">Calif: {closure.total_qualified}</Badge>
+                            <Badge variant="secondary">Lock: {closure.total_locked}</Badge>
+                          </>
+                        ) : null}
+                        <Badge>{fmtMoney(closure.total_commission, closure.currency)}</Badge>
+                        <Badge variant={closure.status === "paid" ? "default" : closure.status === "confirmed" ? "secondary" : "outline"}>
+                          {closure.status}
+                        </Badge>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant={closure.report_type === "revshare" ? "secondary" : "outline"} className="text-xs">
-                        {closure.report_type === "revshare" ? "Revenue Share" : "CPA"}
-                      </Badge>
-                      {closure.report_type === "cpa" ? (
-                        <>
-                          <Badge variant="secondary">Calif: {closure.total_qualified}</Badge>
-                          <Badge variant="secondary">Lock: {closure.total_locked}</Badge>
-                        </>
-                      ) : null}
-                      <Badge>{fmtMoney(closure.total_commission, closure.currency)}</Badge>
-                      <Badge variant={closure.status === "paid" ? "default" : closure.status === "confirmed" ? "secondary" : "outline"}>
-                        {closure.status}
-                      </Badge>
-                    </div>
-                  </div>
-                </CardHeader>
-              </CollapsibleTrigger>
+                  </CardHeader>
+                </CollapsibleTrigger>
+                {isAdmin && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={(e) => { e.stopPropagation(); deleteClosure(closure); }}
+                    title="Eliminar parseo"
+                    className="text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
               <CollapsibleContent>
                 <CardContent className="space-y-4">
                   {isAdmin && (
@@ -263,9 +293,6 @@ export default function Cierres() {
                           <SelectItem value="paid">Pagado</SelectItem>
                         </SelectContent>
                       </Select>
-                      <Button variant="ghost" size="sm" onClick={() => deleteClosure(closure)}>
-                        <Trash2 className="h-4 w-4 mr-1" />Eliminar
-                      </Button>
                     </div>
                   )}
 
@@ -396,8 +423,11 @@ export default function Cierres() {
               </CollapsibleContent>
             </Collapsible>
           </Card>
-        );
-      })}
+              );
+            })}
+          </div>
+        ));
+      })()}
     </div>
   );
 }

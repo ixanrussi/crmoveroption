@@ -75,6 +75,9 @@
     --border: 217 30% 20%;
     --input: 217 30% 20%;
     --ring: 210 80% 70%;
+    --success: 142 60% 50%;
+    --warning: 38 92% 55%;
+    --info: 210 90% 60%;
     --sidebar-background: 217 50% 10%;
     --sidebar-foreground: 210 40% 96%;
     --sidebar-primary: 210 40% 98%;

@@ -11,6 +11,7 @@ import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Afiliados from "./pages/Afiliados";
 import Usuarios from "./pages/Usuarios";
+import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import NotFound from "./pages/NotFound";
 

@@ -556,7 +556,7 @@ export default function Clientes() {
 
       <div className="max-w-sm">
         <Input
-          placeholder="Buscar por nombre o marca..."
+          placeholder="Buscar por nombre, marca o país..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

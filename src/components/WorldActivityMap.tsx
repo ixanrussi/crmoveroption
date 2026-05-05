@@ -28,7 +28,7 @@ export default function WorldActivityMap() {
     (async () => {
       const [{ data: countries }, { data: clients }] = await Promise.all([
         supabase.from("countries").select("id, name, code"),
-        supabase.from("clients").select("brands, country_ids, status"),
+        supabase.from("clients").select("company_name, brands, country_ids, status"),
       ]);
       if (!countries) return;
 
@@ -40,7 +40,8 @@ export default function WorldActivityMap() {
 
       (clients ?? []).forEach((cl: any) => {
         if (cl.status === "inactive") return;
-        const brands: string[] = cl.brands ?? [];
+        const rawBrands: string[] = (cl.brands ?? []).filter((b: string) => b && b.trim());
+        const brands: string[] = rawBrands.length > 0 ? rawBrands : (cl.company_name ? [cl.company_name] : []);
         const countryIds: string[] = cl.country_ids ?? [];
         countryIds.forEach((cid) => {
           const entry = byCountryId.get(cid);

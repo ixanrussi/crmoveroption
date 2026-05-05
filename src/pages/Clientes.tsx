@@ -66,13 +66,6 @@ export default function Clientes() {
   const [viewing, setViewing] = useState<any | null>(null);
   const [search, setSearch] = useState("");
 
-  const filteredList = list.filter((r) => {
-    const q = search.trim().toLowerCase();
-    if (!q) return true;
-    if (r.company_name?.toLowerCase().includes(q)) return true;
-    if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
-    return false;
-  });
 
   const empty = {
     company_name: "", website: "",
@@ -109,6 +102,15 @@ export default function Clientes() {
     const map = new Map(countries.map((c) => [c.id, c.name]));
     return ids.map((id) => map.get(id) ?? "").filter(Boolean).join(", ");
   };
+
+  const filteredList = list.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    if (r.company_name?.toLowerCase().includes(q)) return true;
+    if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
+    if (countryNames(r).toLowerCase().includes(q)) return true;
+    return false;
+  });
 
   const openNew = () => {
     setEditing(null);
@@ -554,7 +556,7 @@ export default function Clientes() {
 
       <div className="max-w-sm">
         <Input
-          placeholder="Buscar por nombre o marca..."
+          placeholder="Buscar por nombre, marca o país..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />

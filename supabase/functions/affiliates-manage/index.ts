@@ -116,12 +116,16 @@ Deno.serve(async (req) => {
       const ALLOWED_STATUSES = ["active", "inactive", "pending"];
       const status = a.status && ALLOWED_STATUSES.includes(a.status) ? a.status : "active";
       const commissionPct = Number(a.commission_pct) || 0;
+      const affCountryIds = Array.isArray((a as any).country_ids)
+        ? (a as any).country_ids.filter((x: any) => typeof x === "string")
+        : [];
       const payload = {
         fixed_name: a.fixed_name.trim(),
         alias: a.alias || null,
         email: a.email || null,
         phone: a.phone || null,
-        country_id: a.country_id || null,
+        country_id: a.country_id || (affCountryIds[0] ?? null),
+        country_ids: affCountryIds,
         status,
         commission_pct: commissionPct,
         payment_method: a.payment_method || null,

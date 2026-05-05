@@ -71,6 +71,7 @@ export default function Clientes() {
     if (!q) return true;
     if (r.company_name?.toLowerCase().includes(q)) return true;
     if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
+    if (countryNames(r).toLowerCase().includes(q)) return true;
     return false;
   });
 

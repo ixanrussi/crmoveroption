@@ -423,8 +423,13 @@ export default function Cierres() {
               </CollapsibleContent>
             </Collapsible>
           </Card>
-        );
-      })}
+              );
+            })}
+          </div>
+        ));
+      })()}
+    </div>
+  );
     </div>
   );
 }

@@ -337,16 +337,60 @@ export default function Cierres() {
           .sort((a, b) => b.year.localeCompare(a.year));
         return groupList.map((g) => {
           const periodsInGroup = [...new Set(g.closures.map((c) => c.period))].sort().reverse();
+          // Subgrupos por mes
+          const byMonth = new Map<string, Closure[]>();
+          g.closures.forEach((c) => {
+            const m = c.period;
+            if (!byMonth.has(m)) byMonth.set(m, []);
+            byMonth.get(m)!.push(c);
+          });
+          const monthList = [...byMonth.entries()].sort((a, b) => b[0].localeCompare(a[0]));
+          const monthName = (p: string) => {
+            const [, mm] = p.split("-");
+            const names = ["Enero","Febrero","Marzo","Abril","Mayo","Junio","Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"];
+            const idx = parseInt(mm || "0", 10) - 1;
+            return names[idx] ?? p;
+          };
+          const totalCommissionYear = g.closures.reduce((s, c) => s + Number(c.total_commission || 0), 0);
+          const currencyYear = g.closures.find((c) => c.currency)?.currency ?? null;
           return (
-          <div key={`${g.client_id}-${g.year}`} className="space-y-2">
-            <div className="flex items-baseline gap-2 px-1">
-              <h2 className="text-lg font-semibold">{clientMap.get(g.client_id) ?? "Cliente"}</h2>
-              <span className="text-sm text-muted-foreground">· {g.year}</span>
-              <span className="text-xs text-muted-foreground">
-                ({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""} · {periodsInGroup.length} mes{periodsInGroup.length !== 1 ? "es" : ""}: {periodsInGroup.join(", ")})
-              </span>
-            </div>
-            {g.closures.map((closure) => {
+          <Card key={`${g.client_id}-${g.year}`} className="overflow-hidden">
+            <Collapsible defaultOpen={false}>
+              <CollapsibleTrigger asChild>
+                <CardHeader className="cursor-pointer hover:bg-accent/40">
+                  <div className="flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
+                      <CardTitle className="text-lg">{clientMap.get(g.client_id) ?? "Cliente"} · {g.year}</CardTitle>
+                      <span className="text-xs text-muted-foreground">
+                        {g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""} · {monthList.length} mes{monthList.length !== 1 ? "es" : ""}
+                      </span>
+                    </div>
+                    <Badge variant="secondary">{fmtMoney(totalCommissionYear, currencyYear)}</Badge>
+                  </div>
+                </CardHeader>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <CardContent className="space-y-3">
+                {monthList.map(([month, monthClosures]) => {
+                  const monthCommission = monthClosures.reduce((s, c) => s + Number(c.total_commission || 0), 0);
+                  const monthCurrency = monthClosures.find((c) => c.currency)?.currency ?? null;
+                  return (
+                  <div key={month} className="border rounded-md overflow-hidden">
+                    <Collapsible defaultOpen={false}>
+                      <CollapsibleTrigger asChild>
+                        <div className="cursor-pointer hover:bg-accent/40 px-3 py-2 flex items-center justify-between gap-2 bg-muted/40">
+                          <div className="flex items-center gap-2 min-w-0">
+                            <ChevronDown className="h-3.5 w-3.5 transition-transform [[data-state=closed]>&]:-rotate-90" />
+                            <span className="font-medium text-sm">{monthName(month)} · {month}</span>
+                            <span className="text-xs text-muted-foreground">({monthClosures.length} archivo{monthClosures.length !== 1 ? "s" : ""})</span>
+                          </div>
+                          <Badge variant="outline">{fmtMoney(monthCommission, monthCurrency)}</Badge>
+                        </div>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="p-2 space-y-2">
+                          {monthClosures.map((closure) => {
               const its = itemsByClosure.get(closure.id) ?? [];
               const byBrand = new Map<string, Item[]>();
               its.forEach((i) => {
@@ -629,7 +673,16 @@ export default function Cierres() {
           </Card>
               );
             })}
-          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                  );
+                })}
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
           );
         });
       })()}

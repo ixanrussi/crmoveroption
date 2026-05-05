@@ -178,10 +178,12 @@ export default function ComisionesDashboard() {
         const a = affMap.get(id);
         m.set(id, {
           id, name: a?.fixed_name || a?.alias || "—",
-          cpaCost: 0, qualified: 0, locked: 0,
+          cpaCost: 0, affCost: 0, margin: 0,
+          qualified: 0, locked: 0,
           visits: 0, newAccounts: 0, activeAccounts: 0, newPurchasing: 0,
           casinoNgr: 0, sportsNgr: 0, ngr: 0,
           brands: new Set(), prevCpa: 0, prevNgr: 0,
+          fraudScore: 0, fraudReasons: [],
         });
       }
       return m.get(id)!;
@@ -194,6 +196,9 @@ export default function ComisionesDashboard() {
         r.cpaCost += Number(i.commission_total || 0);
         r.qualified += i.qualified_players || 0;
         r.locked += i.locked_players || 0;
+        const c = closureMap.get(i.closure_id);
+        const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
+        if (cpa != null) r.affCost += cpa * (i.qualified_players || 0);
       } else {
         r.visits += i.visits || 0;
         r.newAccounts += i.new_accounts || 0;
@@ -203,7 +208,17 @@ export default function ComisionesDashboard() {
         r.sportsNgr += Number(i.sports_ngr || 0);
       }
     });
-    m.forEach(r => { r.ngr = r.casinoNgr + r.sportsNgr; });
+    m.forEach(r => {
+      r.ngr = r.casinoNgr + r.sportsNgr;
+      r.margin = r.cpaCost - r.affCost;
+      // Fraud signals
+      const lockedRatio = (r.qualified + r.locked) > 0 ? r.locked / (r.qualified + r.locked) : 0;
+      const v2a = r.visits > 0 ? r.newAccounts / r.visits : 0;
+      const ngrPerActive = r.activeAccounts > 0 ? r.ngr / r.activeAccounts : 0;
+      if (lockedRatio > 0.3) { r.fraudScore++; r.fraudReasons.push(`${(lockedRatio*100).toFixed(0)}% jugadores bloqueados`); }
+      if (r.visits > 200 && v2a > 0.5) { r.fraudScore++; r.fraudReasons.push(`Conv. visita→cuenta ${(v2a*100).toFixed(0)}% (anómala)`); }
+      if (r.activeAccounts >= 5 && ngrPerActive > 0 && ngrPerActive < 5) { r.fraudScore++; r.fraudReasons.push(`NGR/activo bajo: ${ngrPerActive.toFixed(1)}`); }
+    });
     prevEnriched.forEach(i => {
       if (!i.affiliate_id) return;
       const r = m.get(i.affiliate_id);
@@ -212,7 +227,7 @@ export default function ComisionesDashboard() {
       else r.prevNgr += Number(i.casino_ngr || 0) + Number(i.sports_ngr || 0);
     });
     return [...m.values()];
-  }, [enriched, prevEnriched, affMap]);
+  }, [enriched, prevEnriched, affMap, affCpaFor, closureMap]);
 
   const rankingByCost = useMemo(() => [...ranking].filter(r => r.cpaCost > 0).sort((a, b) => b.cpaCost - a.cpaCost), [ranking]);
   const rankingByNgr = useMemo(() => [...ranking].filter(r => r.ngr !== 0).sort((a, b) => b.ngr - a.ngr), [ranking]);

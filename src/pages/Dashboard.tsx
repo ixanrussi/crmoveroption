@@ -10,6 +10,13 @@ const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
   const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0, users: 0 });
   const [showMap, setShowMap] = useState(false);
+  const [displayName, setDisplayName] = useState<string>("");
+
+  useEffect(() => {
+    if (!user) return;
+    supabase.from("profiles").select("first_name, full_name").eq("id", user.id).maybeSingle()
+      .then(({ data }) => setDisplayName(data?.first_name || data?.full_name || user.email?.split("@")[0] || ""));
+  }, [user]);
 
   const loadStats = async () => {
     const [c, a, co, u] = await Promise.all([

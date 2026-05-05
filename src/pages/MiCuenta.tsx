@@ -13,7 +13,9 @@ export default function MiCuenta() {
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [profile, setProfile] = useState({ full_name: "", phone: "", job_title: "" });
+  const [profile, setProfile] = useState({ first_name: "", last_name: "", phone: "", job_title: "", avatar_url: "" });
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPwd, setChangingPwd] = useState(false);

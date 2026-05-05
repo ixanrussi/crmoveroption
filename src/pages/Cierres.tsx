@@ -86,6 +86,28 @@ export default function Cierres() {
     affiliates.forEach((a) => m.set(a.id, a));
     return m;
   }, [affiliates]);
+
+  // Look up affiliate CPA cost for a given (affiliate_id, brand, period). Picks the most recent plan that matches.
+  const affPlanCpa = useMemo(() => {
+    return (affiliateId: string | null, brand: string | null, period: string) => {
+      if (!affiliateId) return null;
+      const candidates = affPlans.filter((p) => p.affiliate_id === affiliateId && p.cpa != null);
+      if (candidates.length === 0) return null;
+      const brandLower = (brand || "").toLowerCase();
+      const matchBrand = (p: AffPlan) => {
+        if (!p.brand) return true; // generic plan
+        const pb = p.brand.toLowerCase();
+        return brandLower.includes(pb) || pb.includes(brandLower);
+      };
+      const periodDate = period ? `${period}-01` : null;
+      const eligible = candidates
+        .filter(matchBrand)
+        .filter((p) => !periodDate || !p.plan_start_date || p.plan_start_date <= periodDate)
+        .sort((a, b) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+      return eligible[0]?.cpa ?? null;
+    };
+  }, [affPlans]);
+
   const clientMap = useMemo(() => {
     const m = new Map<string, string>();
     clients.forEach((c) => m.set(c.id, c.company_name));

@@ -205,6 +205,20 @@ export default function Cierres() {
         )}
       </div>
 
+      {/* Dashboard */}
+      <DashboardSection
+        closures={closures}
+        items={items}
+        affMap={affMap}
+        clientMap={clientMap}
+        dashPeriod={dashPeriod}
+        setDashPeriod={setDashPeriod}
+        dashClient={dashClient}
+        setDashClient={setDashClient}
+        clients={clients}
+        fmtMoney={fmtMoney}
+      />
+
       {loading && <p className="text-sm text-muted-foreground">Cargando…</p>}
       {!loading && closures.length === 0 && (
         <Card><CardContent className="p-8 text-center text-muted-foreground">

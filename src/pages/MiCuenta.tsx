@@ -130,7 +130,7 @@ export default function MiCuenta() {
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
             <Avatar className="h-20 w-20">
-              <AvatarImage src={profile.avatar_url} alt="Avatar" />
+              <AvatarImage src={profile.avatar_url} alt="Avatar" className="object-cover" />
               <AvatarFallback>{(profile.first_name?.[0] ?? user?.email?.[0] ?? "?").toUpperCase()}</AvatarFallback>
             </Avatar>
             <div>

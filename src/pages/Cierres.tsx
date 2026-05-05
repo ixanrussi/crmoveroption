@@ -324,20 +324,27 @@ export default function Cierres() {
       )}
 
       {(() => {
-        // Agrupar por cliente + periodo
-        const groups = new Map<string, { client_id: string; period: string; closures: Closure[] }>();
+        // Agrupar por cliente + año (consolidando todos los meses)
+        const groups = new Map<string, { client_id: string; year: string; closures: Closure[] }>();
         closures.forEach((c) => {
-          const key = `${c.client_id}__${c.period}`;
-          if (!groups.has(key)) groups.set(key, { client_id: c.client_id, period: c.period, closures: [] });
+          const year = (c.period || "").slice(0, 4) || "—";
+          const key = `${c.client_id}__${year}`;
+          if (!groups.has(key)) groups.set(key, { client_id: c.client_id, year, closures: [] });
           groups.get(key)!.closures.push(c);
         });
-        const groupList = Array.from(groups.values()).sort((a, b) => b.period.localeCompare(a.period));
-        return groupList.map((g) => (
-          <div key={`${g.client_id}-${g.period}`} className="space-y-2">
+        const groupList = Array.from(groups.values())
+          .map((g) => ({ ...g, closures: [...g.closures].sort((a, b) => b.period.localeCompare(a.period)) }))
+          .sort((a, b) => b.year.localeCompare(a.year));
+        return groupList.map((g) => {
+          const periodsInGroup = [...new Set(g.closures.map((c) => c.period))].sort().reverse();
+          return (
+          <div key={`${g.client_id}-${g.year}`} className="space-y-2">
             <div className="flex items-baseline gap-2 px-1">
               <h2 className="text-lg font-semibold">{clientMap.get(g.client_id) ?? "Cliente"}</h2>
-              <span className="text-sm text-muted-foreground">· {g.period}</span>
-              <span className="text-xs text-muted-foreground">({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""})</span>
+              <span className="text-sm text-muted-foreground">· {g.year}</span>
+              <span className="text-xs text-muted-foreground">
+                ({g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""} · {periodsInGroup.length} mes{periodsInGroup.length !== 1 ? "es" : ""}: {periodsInGroup.join(", ")})
+              </span>
             </div>
             {g.closures.map((closure) => {
               const its = itemsByClosure.get(closure.id) ?? [];

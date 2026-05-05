@@ -12,7 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Checkbox } from "@/components/ui/checkbox";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
@@ -558,13 +558,27 @@ export default function Clientes() {
               {list.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">
-                    <button
-                      type="button"
-                      className="text-left hover:underline text-primary"
-                      onClick={() => setViewing(r)}
-                    >
-                      {r.company_name}
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        className="text-left hover:underline text-primary"
+                        onClick={() => setViewing(r)}
+                      >
+                        {r.company_name}
+                      </button>
+                      {r.website && (
+                        <a
+                          href={/^https?:\/\//i.test(r.website) ? r.website : `https://${r.website}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-muted-foreground hover:text-primary"
+                          title="Abrir sitio web"
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <ExternalLink className="h-4 w-4" />
+                        </a>
+                      )}
+                    </div>
                   </TableCell>
                   <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
                   <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>

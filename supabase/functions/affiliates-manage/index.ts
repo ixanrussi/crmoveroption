@@ -17,6 +17,7 @@ type AffiliatePayload = {
   email?: string | null;
   phone?: string | null;
   country_id?: string | null;
+  country_ids?: string[];
   status?: string;
   commission_pct?: number | string | null;
   payment_method?: string | null;
@@ -32,6 +33,7 @@ type CommissionPlan = {
   currency?: string | null;
   description?: string | null;
   country_id?: string | null;
+  country_ids?: string[];
   brand?: string | null;
   baseline?: number | string | null;
   cpa?: number | string | null;

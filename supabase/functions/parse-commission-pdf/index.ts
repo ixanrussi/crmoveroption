@@ -267,6 +267,7 @@ Deno.serve(async (req) => {
       report_type: reportType,
       rows_count: items.length,
       matched: items.filter((i) => i.affiliate_id).length,
+      warnings,
     });
   } catch (e) {
     console.error("parse-commission-pdf error", e);

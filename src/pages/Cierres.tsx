@@ -31,6 +31,7 @@ type Item = {
   currency: string | null; match_status: string;
   report_type: string; is_paid_to_affiliate: boolean;
 };
+type Feedback = { id: string; closure_id: string; kind: string; source: string; message: string; created_at: string };
 
 export default function Cierres() {
   const { isAdmin } = useAuth();

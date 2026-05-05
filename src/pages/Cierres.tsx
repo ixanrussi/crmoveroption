@@ -233,8 +233,15 @@ export default function Cierres() {
                       </div>
                     </div>
                     <div className="flex items-center gap-2 flex-wrap">
-                      <Badge variant="secondary">Reg: {closure.total_qualified}</Badge>
-                      <Badge variant="secondary">Dep: {closure.total_locked}</Badge>
+                      <Badge variant={closure.report_type === "revshare" ? "secondary" : "outline"} className="text-xs">
+                        {closure.report_type === "revshare" ? "Revenue Share" : "CPA"}
+                      </Badge>
+                      {closure.report_type === "cpa" ? (
+                        <>
+                          <Badge variant="secondary">Calif: {closure.total_qualified}</Badge>
+                          <Badge variant="secondary">Lock: {closure.total_locked}</Badge>
+                        </>
+                      ) : null}
                       <Badge>{fmtMoney(closure.total_commission, closure.currency)}</Badge>
                       <Badge variant={closure.status === "paid" ? "default" : closure.status === "confirmed" ? "secondary" : "outline"}>
                         {closure.status}

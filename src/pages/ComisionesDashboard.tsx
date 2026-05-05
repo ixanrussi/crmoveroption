@@ -616,12 +616,145 @@ export default function ComisionesDashboard() {
       </div>
 
       {/* Rankings */}
-      <Tabs defaultValue="roi" className="space-y-4">
-        <TabsList>
+      <Tabs defaultValue="margin" className="space-y-4">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="margin">💰 Margen Overoption</TabsTrigger>
+          <TabsTrigger value="clients">🏢 Top Clientes</TabsTrigger>
+          <TabsTrigger value="fraud">🚨 Riesgo de fraude</TabsTrigger>
           <TabsTrigger value="roi">Por ROI</TabsTrigger>
           <TabsTrigger value="ngr">Por NGR (calidad)</TabsTrigger>
           <TabsTrigger value="cpa">Por CPA (volumen)</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="margin">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ranking de afiliados por margen Overoption (CPA cliente − CPA afiliado)</CardTitle>
+              <p className="text-xs text-muted-foreground">Solo incluye afiliados con plan CPA configurado.</p>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>Afiliado</TableHead>
+                    <TableHead className="text-right">CPAs entregados</TableHead>
+                    <TableHead className="text-right">CPA cliente</TableHead>
+                    <TableHead className="text-right">CPA afiliado</TableHead>
+                    <TableHead className="text-right">Margen Overoption</TableHead>
+                    <TableHead className="text-right">Margen %</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rankingByMargin.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground py-8">Sin datos. Configura planes CPA en Afiliados para ver el margen.</TableCell></TableRow>}
+                  {rankingByMargin.map((r, i) => {
+                    const pctMargin = r.cpaCost > 0 ? (r.margin / r.cpaCost) * 100 : 0;
+                    return (
+                      <TableRow key={r.id}>
+                        <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                        <TableCell className="font-medium">{r.name}</TableCell>
+                        <TableCell className="text-right">{fmtN(r.qualified)}</TableCell>
+                        <TableCell className="text-right">{fmt(r.cpaCost)}</TableCell>
+                        <TableCell className="text-right text-warning">{fmt(r.affCost)}</TableCell>
+                        <TableCell className={`text-right font-bold ${r.margin > 0 ? "text-success" : r.margin < 0 ? "text-destructive" : ""}`}>{fmt(r.margin)}</TableCell>
+                        <TableCell className="text-right">
+                          <Badge variant={pctMargin >= 25 ? "default" : pctMargin >= 10 ? "secondary" : "destructive"}>{pctMargin.toFixed(0)}%</Badge>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="clients">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base">Ranking de clientes por ganancia neta Overoption</CardTitle>
+              <p className="text-xs text-muted-foreground">Margen CPA + Revenue Share generado · LTV = NGR / cuentas activas</p>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-12">#</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead className="text-right">CPA cobrado</TableHead>
+                    <TableHead className="text-right">CPA pagado</TableHead>
+                    <TableHead className="text-right">Margen CPA</TableHead>
+                    <TableHead className="text-right">RevShare</TableHead>
+                    <TableHead className="text-right">NGR</TableHead>
+                    <TableHead className="text-right">LTV/activo</TableHead>
+                    <TableHead className="text-right">Ganancia Overoption</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {clientRanking.length === 0 && <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sin datos</TableCell></TableRow>}
+                  {clientRanking.map((r, i) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="text-muted-foreground">{i + 1}</TableCell>
+                      <TableCell className="font-medium">{r.name}</TableCell>
+                      <TableCell className="text-right">{fmt(r.cpaCost)}</TableCell>
+                      <TableCell className="text-right text-warning">{fmt(r.affCost)}</TableCell>
+                      <TableCell className={`text-right ${r.cpaMargin > 0 ? "text-success" : r.cpaMargin < 0 ? "text-destructive" : ""}`}>{fmt(r.cpaMargin)}</TableCell>
+                      <TableCell className="text-right text-success">{fmt(r.rsCommission)}</TableCell>
+                      <TableCell className="text-right">{fmt(r.ngr)}</TableCell>
+                      <TableCell className="text-right">{fmt(r.ltv)}</TableCell>
+                      <TableCell className={`text-right font-bold ${r.overoptionNet >= 0 ? "text-success" : "text-destructive"}`}>{fmt(r.overoptionNet)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="fraud">
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-base flex items-center gap-2"><ShieldAlert className="h-4 w-4 text-destructive" /> Afiliados con señales de mala calidad / riesgo de fraude</CardTitle>
+              <p className="text-xs text-muted-foreground">Señales: % de jugadores bloqueados alto, conversión visita→cuenta anómala, NGR/activo muy bajo.</p>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Afiliado</TableHead>
+                    <TableHead className="text-right">Riesgo</TableHead>
+                    <TableHead>Señales detectadas</TableHead>
+                    <TableHead className="text-right">CPA pagado</TableHead>
+                    <TableHead className="text-right">NGR generado</TableHead>
+                    <TableHead className="text-right">Bloqueados</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {fraudList.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin señales de riesgo en este período. ✅</TableCell></TableRow>}
+                  {fraudList.map((r) => (
+                    <TableRow key={r.id}>
+                      <TableCell className="font-medium">{r.name}</TableCell>
+                      <TableCell className="text-right">
+                        <Badge variant={r.fraudScore >= 3 ? "destructive" : r.fraudScore >= 2 ? "destructive" : "secondary"}>
+                          {r.fraudScore >= 3 ? "Alto" : r.fraudScore === 2 ? "Medio" : "Bajo"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <ul className="text-xs space-y-0.5">
+                          {r.fraudReasons.map((x, j) => <li key={j}>• {x}</li>)}
+                        </ul>
+                      </TableCell>
+                      <TableCell className="text-right">{fmt(r.cpaCost)}</TableCell>
+                      <TableCell className="text-right">{fmt(r.ngr)}</TableCell>
+                      <TableCell className="text-right">{fmtN(r.locked)}</TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
 
         <TabsContent value="roi">
           <Card>

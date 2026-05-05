@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, UserPlus, Globe, Layers, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Users, UserPlus, Globe, Layers, ShieldCheck, ShieldAlert, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
+import WorldActivityMap from "@/components/WorldActivityMap";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
@@ -14,6 +15,7 @@ const Dashboard = () => {
   const [factors, setFactors] = useState<any[]>([]);
   const [enrolling, setEnrolling] = useState<{ qr: string; secret: string; factorId: string } | null>(null);
   const [otp, setOtp] = useState("");
+  const [showMap, setShowMap] = useState(false);
 
   const loadStats = async () => {
     const [c, a, co, u] = await Promise.all([
@@ -86,6 +88,23 @@ const Dashboard = () => {
           </Card>
         ))}
       </div>
+
+      {showMap ? (
+        <WorldActivityMap />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapIcon className="h-5 w-5 text-primary" />
+              Mapa de actividad
+            </CardTitle>
+            <CardDescription>Visualiza los países donde tenemos clientes activos.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" onClick={() => setShowMap(true)}>Ver mapa</Button>
+          </CardContent>
+        </Card>
+      )}
 
       <Card>
         <CardHeader>

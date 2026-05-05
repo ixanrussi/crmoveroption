@@ -288,9 +288,14 @@ export default function Clientes() {
                         <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-[280px] p-2 max-h-72 overflow-y-auto" align="start">
+                    <PopoverContent
+                      className="w-[280px] p-2 max-h-72 overflow-y-auto overscroll-contain"
+                      align="start"
+                      onWheel={(e) => e.stopPropagation()}
+                      onTouchMove={(e) => e.stopPropagation()}
+                    >
                       <div className="space-y-1">
-                        {countries.map((c) => {
+                        {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
                           const checked = (form.country_ids ?? []).includes(c.id);
                           return (
                             <label key={c.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer">

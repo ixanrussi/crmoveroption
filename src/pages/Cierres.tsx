@@ -166,7 +166,7 @@ export default function Cierres() {
       affiliate_id: affiliateId,
       match_status: "manual",
     });
-    // Also save the operator id mapping for future imports
+    // Save the operator id mapping for future imports
     if (item.raw_campaign_id) {
       const closure = closures.find((c) => c.id === item.closure_id);
       if (closure) {
@@ -179,6 +179,35 @@ export default function Cierres() {
           },
           { onConflict: "client_id,operator_campaign_id" },
         );
+      }
+    }
+    // Add raw_campaign_name as alias to the affiliate (append if alias already exists)
+    const rawName = (item.raw_campaign_name || "").trim();
+    if (rawName) {
+      const { data: aff } = await supabase
+        .from("affiliates")
+        .select("alias, fixed_name")
+        .eq("id", affiliateId)
+        .maybeSingle();
+      if (aff && rawName.toLowerCase() !== (aff.fixed_name || "").toLowerCase()) {
+        const existing = (aff.alias || "")
+          .split(/[,;|]/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+        const lower = existing.map((s) => s.toLowerCase());
+        if (!lower.includes(rawName.toLowerCase())) {
+          const newAlias = [...existing, rawName].join(", ");
+          const { error: aliasErr } = await supabase
+            .from("affiliates")
+            .update({ alias: newAlias })
+            .eq("id", affiliateId);
+          if (!aliasErr) {
+            setAffiliates((prev) =>
+              prev.map((a) => (a.id === affiliateId ? { ...a, alias: newAlias } : a)),
+            );
+            toast({ title: "Alias agregado", description: `"${rawName}" añadido al afiliado` });
+          }
+        }
       }
     }
   };

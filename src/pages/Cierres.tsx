@@ -39,6 +39,8 @@ export default function Cierres() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [closures, setClosures] = useState<Closure[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [newFeedback, setNewFeedback] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   // New closure dialog state

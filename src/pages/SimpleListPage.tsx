@@ -18,6 +18,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import WorldActivityMap from "@/components/WorldActivityMap";
 
 interface Props {
   table: "countries" | "softwares" | "affiliate_channels";

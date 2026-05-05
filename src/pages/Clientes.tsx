@@ -23,6 +23,7 @@ const CHANNELS = [
   { value: "whatsapp", label: "WhatsApp" },
   { value: "email", label: "Email" },
   { value: "telefono", label: "Teléfono" },
+  { value: "teams", label: "Teams" },
 ] as const;
 
 type Contact = { name: string; channel: string; contact_id: string; role: string };

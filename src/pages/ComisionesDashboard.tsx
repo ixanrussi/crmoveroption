@@ -296,7 +296,7 @@ export default function ComisionesDashboard() {
         <Card>
           <CardContent className="p-6 flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">CPA pagado a afiliados</p>
+              <p className="text-sm text-muted-foreground">CPA total</p>
               <p className="text-2xl font-bold mt-1">{fmt(totals.cpaCost)}</p>
               {periodFilter !== "all" && prevCpaCost > 0 && (
                 <p className={`text-xs mt-1 flex items-center gap-1 ${cpaDelta >= 0 ? "text-success" : "text-destructive"}`}>

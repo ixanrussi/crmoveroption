@@ -134,15 +134,36 @@ Deno.serve(async (req) => {
           },
         ],
         tool_choice: { type: "function", function: { name: "save_commission_rows" } },
-      }),
-    });
+      });
 
-    if (!aiRes.ok) {
-      const errText = await aiRes.text();
-      if (aiRes.status === 429) return json(429, { error: "Límite de uso de IA excedido, reintenta en un momento" });
-      if (aiRes.status === 402) return json(402, { error: "Sin créditos de IA, agrega fondos a tu workspace de Lovable" });
-      console.error("AI error", aiRes.status, errText);
-      return json(500, { error: "Error al procesar PDF con IA" });
+    let aiRes: Response | null = null;
+    let lastErrText = "";
+    let lastStatus = 0;
+    for (let attempt = 0; attempt < 4; attempt++) {
+      aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${lovableKey}`,
+          "Content-Type": "application/json",
+        },
+        body: aiBody,
+      });
+      if (aiRes.ok) break;
+      lastStatus = aiRes.status;
+      lastErrText = await aiRes.text();
+      if (aiRes.status === 429 || aiRes.status === 402 || aiRes.status === 401 || aiRes.status === 403) break;
+      if (aiRes.status >= 500 && attempt < 3) {
+        await new Promise((r) => setTimeout(r, 1000 * Math.pow(2, attempt)));
+        continue;
+      }
+      break;
+    }
+
+    if (!aiRes || !aiRes.ok) {
+      if (lastStatus === 429) return json(429, { error: "Límite de uso de IA excedido, reintenta en un momento" });
+      if (lastStatus === 402) return json(402, { error: "Sin créditos de IA, agrega fondos a tu workspace de Lovable" });
+      console.error("AI error", lastStatus, lastErrText.slice(0, 500));
+      return json(502, { error: `Servicio de IA temporalmente no disponible (${lastStatus}). Reintenta en unos segundos.` });
     }
     const aiData = await aiRes.json();
     const toolCall = aiData.choices?.[0]?.message?.tool_calls?.[0];

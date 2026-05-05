@@ -51,7 +51,7 @@ export default function Afiliados() {
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
-    fixed_name: "", alias: "", email: "", phone: "", country_id: null,
+    fixed_name: "", alias: "", email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "",
   };
   const [form, setForm] = useState<any>(empty);

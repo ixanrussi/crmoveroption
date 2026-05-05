@@ -232,6 +232,41 @@ export default function ComisionesDashboard() {
   const rankingByCost = useMemo(() => [...ranking].filter(r => r.cpaCost > 0).sort((a, b) => b.cpaCost - a.cpaCost), [ranking]);
   const rankingByNgr = useMemo(() => [...ranking].filter(r => r.ngr !== 0).sort((a, b) => b.ngr - a.ngr), [ranking]);
   const rankingByRoi = useMemo(() => [...ranking].filter(r => r.cpaCost > 0).map(r => ({ ...r, roi: r.ngr / r.cpaCost })).sort((a, b) => b.roi - a.roi), [ranking]);
+  const rankingByMargin = useMemo(() => [...ranking].filter(r => r.affCost > 0).sort((a, b) => b.margin - a.margin), [ranking]);
+  const fraudList = useMemo(() => [...ranking].filter(r => r.fraudScore > 0).sort((a, b) => b.fraudScore - a.fraudScore), [ranking]);
+
+  // Ranking por cliente — visión Overoption
+  const clientRanking = useMemo(() => {
+    type Row = { id: string; name: string; cpaCost: number; affCost: number; rsCommission: number; ngr: number; visits: number; newAccounts: number; activeAccounts: number; newPurchasing: number };
+    const m = new Map<string, Row>();
+    const ensure = (id: string): Row => {
+      if (!m.has(id)) m.set(id, { id, name: clientMap.get(id) || "—", cpaCost: 0, affCost: 0, rsCommission: 0, ngr: 0, visits: 0, newAccounts: 0, activeAccounts: 0, newPurchasing: 0 });
+      return m.get(id)!;
+    };
+    enriched.forEach(i => {
+      if (!i.client_id) return;
+      const r = ensure(i.client_id);
+      if (i.report_type === "cpa") {
+        r.cpaCost += Number(i.commission_total || 0);
+        const c = closureMap.get(i.closure_id);
+        const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
+        if (cpa != null) r.affCost += cpa * (i.qualified_players || 0);
+      } else {
+        r.rsCommission += Number(i.commission_total || 0);
+        r.ngr += Number(i.casino_ngr || 0) + Number(i.sports_ngr || 0);
+        r.visits += i.visits || 0;
+        r.newAccounts += i.new_accounts || 0;
+        r.activeAccounts += i.active_accounts || 0;
+        r.newPurchasing += i.new_purchasing || 0;
+      }
+    });
+    return [...m.values()].map(r => ({
+      ...r,
+      cpaMargin: r.cpaCost - r.affCost,
+      overoptionNet: (r.cpaCost - r.affCost) + r.rsCommission,
+      ltv: r.activeAccounts > 0 ? r.ngr / r.activeAccounts : 0,
+    })).sort((a, b) => b.overoptionNet - a.overoptionNet);
+  }, [enriched, closureMap, affCpaFor, clientMap]);
 
   const totalCostShare = rankingByCost.reduce((s, r) => s + r.cpaCost, 0) || 1;
   const totalNgrShare = rankingByNgr.reduce((s, r) => s + Math.max(0, r.ngr), 0) || 1;

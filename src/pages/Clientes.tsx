@@ -745,7 +745,7 @@ export default function Clientes() {
                 {(viewing.client_commission_plans ?? []).map((p: any, i: number) => (
                   <div key={i} className="border rounded px-2 py-1 mb-1 text-xs space-y-0.5">
                     <div className="font-medium">
-                      {p.brand || "—"} · {p.country?.name || "—"} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
+                      {p.brand || "—"} · {(Array.isArray(p.country_ids) && p.country_ids.length > 0 ? countries.filter((c) => p.country_ids.includes(c.id)).map((c) => c.name).join(", ") : (p.country?.name || "—"))} · {p.plan_start_date || "—"} {p.currency ? `(${p.currency})` : ""}
                     </div>
                     {p.description && <div className="text-muted-foreground">{p.description}</div>}
                     <div>

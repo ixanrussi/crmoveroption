@@ -8,7 +8,7 @@ import WorldActivityMap from "@/components/WorldActivityMap";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
-  const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0, users: 0 });
+  const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0 });
   const [showMap, setShowMap] = useState(false);
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -19,13 +19,12 @@ const Dashboard = () => {
   }, [user]);
 
   const loadStats = async () => {
-    const [c, a, co, u] = await Promise.all([
+    const [c, a, co] = await Promise.all([
       supabase.from("clients").select("id", { count: "exact", head: true }),
       supabase.from("affiliates").select("id", { count: "exact", head: true }),
       supabase.from("countries").select("id", { count: "exact", head: true }),
-      supabase.from("profiles").select("id", { count: "exact", head: true }),
     ]);
-    setStats({ clients: c.count ?? 0, affiliates: a.count ?? 0, countries: co.count ?? 0, users: u.count ?? 0 });
+    setStats({ clients: c.count ?? 0, affiliates: a.count ?? 0, countries: co.count ?? 0 });
   };
 
   useEffect(() => { loadStats(); }, []);

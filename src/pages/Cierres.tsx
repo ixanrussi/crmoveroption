@@ -49,6 +49,14 @@ export default function Cierres() {
   const [newPeriod, setNewPeriod] = useState(() => new Date().toISOString().slice(0, 7));
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!uploading) { setElapsed(0); return; }
+    const start = Date.now();
+    const t = setInterval(() => setElapsed(Math.floor((Date.now() - start) / 1000)), 250);
+    return () => clearInterval(t);
+  }, [uploading]);
 
   const loadAll = async () => {
     setLoading(true);

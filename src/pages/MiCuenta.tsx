@@ -69,7 +69,7 @@ export default function MiCuenta() {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update(profile).eq("id", user.id);
+    const { error } = await supabase.from("profiles").upsert({ id: user.id, email: user.email ?? "", ...profile }, { onConflict: "id" });
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Perfil actualizado");

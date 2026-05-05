@@ -17,6 +17,7 @@ type AffiliatePayload = {
   email?: string | null;
   phone?: string | null;
   country_id?: string | null;
+  country_ids?: string[];
   status?: string;
   commission_pct?: number | string | null;
   payment_method?: string | null;
@@ -32,6 +33,7 @@ type CommissionPlan = {
   currency?: string | null;
   description?: string | null;
   country_id?: string | null;
+  country_ids?: string[];
   brand?: string | null;
   baseline?: number | string | null;
   cpa?: number | string | null;
@@ -114,12 +116,16 @@ Deno.serve(async (req) => {
       const ALLOWED_STATUSES = ["active", "inactive", "pending"];
       const status = a.status && ALLOWED_STATUSES.includes(a.status) ? a.status : "active";
       const commissionPct = Number(a.commission_pct) || 0;
+      const affCountryIds = Array.isArray((a as any).country_ids)
+        ? (a as any).country_ids.filter((x: any) => typeof x === "string")
+        : [];
       const payload = {
         fixed_name: a.fixed_name.trim(),
         alias: a.alias || null,
         email: a.email || null,
         phone: a.phone || null,
-        country_id: a.country_id || null,
+        country_id: a.country_id || (affCountryIds[0] ?? null),
+        country_ids: affCountryIds,
         status,
         commission_pct: commissionPct,
         payment_method: a.payment_method || null,
@@ -149,10 +155,11 @@ Deno.serve(async (req) => {
       if (body.action === "insert") {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
-            fixed_name, alias, email, phone, country_id, status,
+            fixed_name, alias, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
           ) values (
             ${payload.fixed_name}, ${payload.alias}, ${payload.email}, ${payload.phone}, ${payload.country_id},
+            ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
           ) returning id, unique_id
@@ -169,6 +176,7 @@ Deno.serve(async (req) => {
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},
+              country_ids = ${payload.country_ids}::uuid[],
               status = ${payload.status}::affiliate_status,
               commission_pct = ${payload.commission_pct},
               payment_method = ${payload.payment_method},
@@ -186,6 +194,7 @@ Deno.serve(async (req) => {
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},
+              country_ids = ${payload.country_ids}::uuid[],
               status = ${payload.status}::affiliate_status,
               commission_pct = ${payload.commission_pct},
               payment_method = ${payload.payment_method},
@@ -224,23 +233,29 @@ Deno.serve(async (req) => {
       if (plans.length) {
         const num = (v: any) => (v === null || v === undefined || v === "" ? null : Number(v));
         const intOrNull = (v: any) => (v === null || v === undefined || v === "" ? null : Math.trunc(Number(v)));
-        const planValues = plans.map((p) => ({
-          affiliate_id: affiliateId!,
-          plan_start_date: p.plan_start_date || null,
-          currency: p.currency || null,
-          description: p.description || null,
-          country_id: p.country_id || null,
-          brand: p.brand || null,
-          baseline: num(p.baseline),
-          cpa: num(p.cpa),
-          rev_share_pct: num(p.rev_share_pct),
-          cpl: num(p.cpl),
-          wager: num(p.wager),
-          conversion_type: p.conversion_type || null,
-          cap: intOrNull(p.cap),
-          created_by: userData.user.id,
-        }));
-        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
+        const planValues = plans.map((p) => {
+          const cIds = Array.isArray((p as any).country_ids)
+            ? (p as any).country_ids.filter((x: any) => typeof x === "string")
+            : [];
+          return {
+            affiliate_id: affiliateId!,
+            plan_start_date: p.plan_start_date || null,
+            currency: p.currency || null,
+            description: p.description || null,
+            country_id: p.country_id || (cIds[0] ?? null),
+            country_ids: cIds,
+            brand: p.brand || null,
+            baseline: num(p.baseline),
+            cpa: num(p.cpa),
+            rev_share_pct: num(p.rev_share_pct),
+            cpl: num(p.cpl),
+            wager: num(p.wager),
+            conversion_type: p.conversion_type || null,
+            cap: intOrNull(p.cap),
+            created_by: userData.user.id,
+          };
+        });
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

@@ -471,6 +471,36 @@ export type Database = {
           },
         ]
       }
+      commission_closure_feedback: {
+        Row: {
+          closure_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          kind: string
+          message: string
+          source: string
+        }
+        Insert: {
+          closure_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          message: string
+          source?: string
+        }
+        Update: {
+          closure_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kind?: string
+          message?: string
+          source?: string
+        }
+        Relationships: []
+      }
       commission_closure_items: {
         Row: {
           active_accounts: number | null

@@ -261,6 +261,30 @@ Deno.serve(async (req) => {
       return json(500, { error: itemsErr.message });
     }
 
+    // Generate auto feedback
+    const feedback: { closure_id: string; kind: string; source: string; message: string }[] = [];
+    feedback.push({
+      closure_id: closure.id,
+      kind: "info",
+      source: "auto",
+      message: `Tipo detectado: ${reportType.toUpperCase()} · ${items.length} filas extraídas · ${items.filter(i => i.affiliate_id).length} matcheadas automáticamente · Moneda: ${detectedCurrency ?? "n/d"}`,
+    });
+    const unmatched = items.filter(i => !i.affiliate_id).length;
+    if (unmatched > 0) {
+      feedback.push({
+        closure_id: closure.id,
+        kind: "issue",
+        source: "auto",
+        message: `${unmatched} fila(s) sin afiliado asignado. Asígnalas manualmente para que se guarden los mapeos automáticos.`,
+      });
+    }
+    warnings.forEach((w) => {
+      feedback.push({ closure_id: closure.id, kind: "warning", source: "auto", message: w });
+    });
+    if (feedback.length > 0) {
+      await admin.from("commission_closure_feedback").insert(feedback);
+    }
+
     return json(200, {
       ok: true,
       closure_id: closure.id,

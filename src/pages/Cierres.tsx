@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, FileText, Plus, Trash2, Upload } from "lucide-react";
+import { AlertCircle, ChevronDown, FileText, Info, MessageSquare, Plus, Send, Trash2, Upload } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -30,6 +31,7 @@ type Item = {
   currency: string | null; match_status: string;
   report_type: string; is_paid_to_affiliate: boolean;
 };
+type Feedback = { id: string; closure_id: string; kind: string; source: string; message: string; created_at: string };
 
 export default function Cierres() {
   const { isAdmin } = useAuth();
@@ -37,6 +39,8 @@ export default function Cierres() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [closures, setClosures] = useState<Closure[]>([]);
   const [items, setItems] = useState<Item[]>([]);
+  const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [newFeedback, setNewFeedback] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
   // New closure dialog state
@@ -48,16 +52,18 @@ export default function Cierres() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [{ data: cl }, { data: af }, { data: cs }, { data: it }] = await Promise.all([
+    const [{ data: cl }, { data: af }, { data: cs }, { data: it }, { data: fb }] = await Promise.all([
       supabase.from("clients").select("id, company_name").order("company_name"),
       supabase.from("affiliates").select("id, fixed_name, alias").order("fixed_name"),
       supabase.from("commission_closures").select("*").order("created_at", { ascending: false }),
       supabase.from("commission_closure_items").select("*").order("brand"),
+      supabase.from("commission_closure_feedback").select("*").order("created_at", { ascending: false }),
     ]);
     setClients(cl ?? []);
     setAffiliates(af ?? []);
     setClosures((cs ?? []) as Closure[]);
     setItems((it ?? []) as Item[]);
+    setFeedback((fb ?? []) as Feedback[]);
     setLoading(false);
   };
 
@@ -82,6 +88,34 @@ export default function Cierres() {
     });
     return m;
   }, [items]);
+
+  const feedbackByClosure = useMemo(() => {
+    const m = new Map<string, Feedback[]>();
+    feedback.forEach((f) => {
+      if (!m.has(f.closure_id)) m.set(f.closure_id, []);
+      m.get(f.closure_id)!.push(f);
+    });
+    return m;
+  }, [feedback]);
+
+  const addFeedback = async (closureId: string) => {
+    const msg = (newFeedback[closureId] ?? "").trim();
+    if (!msg) return;
+    const { data, error } = await supabase
+      .from("commission_closure_feedback")
+      .insert({ closure_id: closureId, kind: "issue", source: "user", message: msg })
+      .select("*")
+      .single();
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    setFeedback((p) => [data as Feedback, ...p]);
+    setNewFeedback((p) => ({ ...p, [closureId]: "" }));
+  };
+
+  const deleteFeedback = async (id: string) => {
+    const { error } = await supabase.from("commission_closure_feedback").delete().eq("id", id);
+    if (error) return toast({ title: "Error", description: error.message, variant: "destructive" });
+    setFeedback((p) => p.filter((f) => f.id !== id));
+  };
 
   const handleUpload = async () => {
     if (!newClient || !newPeriod || !file) {
@@ -234,7 +268,7 @@ export default function Cierres() {
               });
               const isRsType = closure.report_type === "revshare";
               return (
-          <Card key={closure.id} className={isRsType ? "border-l-4 border-l-secondary" : "border-l-4 border-l-primary"}>
+          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isRsType ? 'info' : 'success'}))` }}>
             <Collapsible defaultOpen={false}>
               <div className="flex items-center pr-2">
                 <CollapsibleTrigger asChild>
@@ -245,9 +279,15 @@ export default function Cierres() {
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <CardTitle className="text-base truncate flex items-center gap-2">
-                            <Badge variant={isRsType ? "secondary" : "default"} className="text-xs">
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded"
+                              style={{
+                                backgroundColor: `hsl(var(--${isRsType ? 'info' : 'success'}) / 0.15)`,
+                                color: `hsl(var(--${isRsType ? 'info' : 'success'}))`,
+                              }}
+                            >
                               {isRsType ? "RS" : "CPA"}
-                            </Badge>
+                            </span>
                             <span className="truncate">{closure.source_file_name}</span>
                           </CardTitle>
                           <p className="text-xs text-muted-foreground">{its.length} filas</p>
@@ -295,6 +335,62 @@ export default function Cierres() {
                       </Select>
                     </div>
                   )}
+
+                  {/* Feedback panel */}
+                  <div className="rounded-md border bg-muted/30 p-3 space-y-2">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                      <MessageSquare className="h-4 w-4" />
+                      Feedback del procesamiento
+                      <Badge variant="outline" className="ml-auto">{(feedbackByClosure.get(closure.id) ?? []).length}</Badge>
+                    </div>
+                    <div className="space-y-1.5 max-h-48 overflow-auto">
+                      {(feedbackByClosure.get(closure.id) ?? []).length === 0 && (
+                        <p className="text-xs text-muted-foreground">Sin observaciones aún.</p>
+                      )}
+                      {(feedbackByClosure.get(closure.id) ?? []).map((f) => {
+                        const colorVar =
+                          f.kind === "warning" ? "warning" :
+                          f.kind === "issue" ? "destructive" :
+                          f.kind === "suggestion" ? "info" : "muted-foreground";
+                        const Icon = f.kind === "info" ? Info : AlertCircle;
+                        return (
+                          <div
+                            key={f.id}
+                            className="flex items-start gap-2 text-xs p-2 rounded border"
+                            style={{ backgroundColor: `hsl(var(--${colorVar}) / 0.08)`, borderColor: `hsl(var(--${colorVar}) / 0.3)` }}
+                          >
+                            <Icon className="h-3.5 w-3.5 mt-0.5 shrink-0" style={{ color: `hsl(var(--${colorVar}))` }} />
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-medium uppercase" style={{ color: `hsl(var(--${colorVar}))` }}>{f.kind}</span>
+                                <span className="text-muted-foreground">· {f.source === "auto" ? "automático" : "usuario"}</span>
+                                <span className="text-muted-foreground">· {new Date(f.created_at).toLocaleString()}</span>
+                              </div>
+                              <p className="mt-0.5 break-words">{f.message}</p>
+                            </div>
+                            {isAdmin && (
+                              <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => deleteFeedback(f.id)}>
+                                <Trash2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {isAdmin && (
+                      <div className="flex gap-2 pt-1">
+                        <Textarea
+                          placeholder="Reportar limitación, sugerencia o problema en el parseo de este archivo…"
+                          value={newFeedback[closure.id] ?? ""}
+                          onChange={(e) => setNewFeedback((p) => ({ ...p, [closure.id]: e.target.value }))}
+                          className="min-h-[60px] text-xs"
+                        />
+                        <Button size="sm" onClick={() => addFeedback(closure.id)} className="self-end">
+                          <Send className="h-3.5 w-3.5 mr-1" />Añadir
+                        </Button>
+                      </div>
+                    )}
+                  </div>
 
                   {Array.from(byBrand.entries()).map(([brand, rows]) => {
                     const isRs = closure.report_type === "revshare";

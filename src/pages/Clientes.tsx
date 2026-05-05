@@ -291,7 +291,10 @@ export default function Clientes() {
                     <PopoverContent
                       className="w-[280px] p-2 max-h-72 overflow-y-auto overscroll-contain"
                       align="start"
-                      onWheel={(e) => e.stopPropagation()}
+                      onWheel={(e) => {
+                        e.currentTarget.scrollTop += e.deltaY;
+                        e.stopPropagation();
+                      }}
                       onTouchMove={(e) => e.stopPropagation()}
                     >
                       <div className="space-y-1">

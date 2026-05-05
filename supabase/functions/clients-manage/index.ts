@@ -38,6 +38,7 @@ type CommissionPlanPayload = {
   currency?: string | null;
   description?: string | null;
   country_id?: string | null;
+  country_ids?: string[] | null;
   brand?: string | null;
   baseline?: number | string | null;
   cpa?: number | string | null;

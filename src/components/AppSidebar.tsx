@@ -98,6 +98,16 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton asChild isActive={isActive("/mi-cuenta")}>
+              <NavLink to="/mi-cuenta">
+                <UserCircle className="h-4 w-4" />
+                <span>Mi cuenta</span>
+              </NavLink>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
         {!collapsed && (
           <div className="px-2 py-1.5 text-xs text-sidebar-foreground/70 truncate">
             {user?.email}

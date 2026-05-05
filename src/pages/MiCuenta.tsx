@@ -16,6 +16,41 @@ export default function MiCuenta() {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [changingPwd, setChangingPwd] = useState(false);
+  const [factors, setFactors] = useState<any[]>([]);
+  const [enrolling, setEnrolling] = useState<{ qr: string; secret: string; factorId: string } | null>(null);
+  const [otp, setOtp] = useState("");
+
+  const loadFactors = async () => {
+    const { data } = await supabase.auth.mfa.listFactors();
+    setFactors(data?.totp ?? []);
+  };
+
+  useEffect(() => { loadFactors(); }, []);
+
+  const startEnroll = async () => {
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp", friendlyName: "Authenticator" });
+    if (error) { toast.error(error.message); return; }
+    setEnrolling({ qr: data.totp.qr_code, secret: data.totp.secret, factorId: data.id });
+  };
+
+  const verifyEnroll = async () => {
+    if (!enrolling) return;
+    const { data: ch } = await supabase.auth.mfa.challenge({ factorId: enrolling.factorId });
+    if (!ch) return;
+    const { error } = await supabase.auth.mfa.verify({ factorId: enrolling.factorId, challengeId: ch.id, code: otp });
+    if (error) { toast.error(error.message); return; }
+    toast.success("2FA activado");
+    setEnrolling(null);
+    setOtp("");
+    loadFactors();
+  };
+
+  const removeFactor = async (id: string) => {
+    const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
+    if (error) { toast.error(error.message); return; }
+    toast.success("2FA desactivado");
+    loadFactors();
+  };
 
   useEffect(() => {
     (async () => {

@@ -128,13 +128,32 @@ export default function MiCuenta() {
           <CardDescription>Actualiza tus datos personales.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="flex items-center gap-4">
+            <Avatar className="h-20 w-20">
+              <AvatarImage src={profile.avatar_url} alt="Avatar" />
+              <AvatarFallback>{(profile.first_name?.[0] ?? user?.email?.[0] ?? "?").toUpperCase()}</AvatarFallback>
+            </Avatar>
+            <div>
+              <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
+              <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
+                <Upload className="h-4 w-4" /> {uploadingAvatar ? "Subiendo..." : "Cambiar foto"}
+              </Button>
+              <p className="text-xs text-muted-foreground mt-1">PNG, JPG hasta ~2MB</p>
+            </div>
+          </div>
           <div className="space-y-2">
             <Label>Email</Label>
             <Input value={user?.email ?? ""} disabled />
           </div>
-          <div className="space-y-2">
-            <Label>Nombre completo</Label>
-            <Input value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} disabled={loading} />
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>Nombre</Label>
+              <Input value={profile.first_name} onChange={(e) => setProfile({ ...profile, first_name: e.target.value })} disabled={loading} />
+            </div>
+            <div className="space-y-2">
+              <Label>Apellido</Label>
+              <Input value={profile.last_name} onChange={(e) => setProfile({ ...profile, last_name: e.target.value })} disabled={loading} />
+            </div>
           </div>
           <div className="space-y-2">
             <Label>Teléfono</Label>

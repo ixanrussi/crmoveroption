@@ -12,7 +12,7 @@ import {
   ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid,
   PieChart, Pie, Cell, Legend, ComposedChart, Line,
 } from "recharts";
-import { TrendingUp, TrendingDown, AlertTriangle, Trophy, Users, DollarSign, Activity, Target, Zap } from "lucide-react";
+import { TrendingUp, TrendingDown, AlertTriangle, Trophy, Users, DollarSign, Activity, Target, Zap, ShieldAlert, Coins } from "lucide-react";
 
 type Item = {
   id: string; closure_id: string; affiliate_id: string | null;
@@ -28,6 +28,7 @@ type Closure = { id: string; client_id: string; period: string; currency: string
 type Affiliate = { id: string; fixed_name: string; alias: string | null; country_ids: string[]; status: string };
 type Client = { id: string; company_name: string };
 type Country = { id: string; name: string; code: string | null };
+type AffPlan = { id: string; affiliate_id: string; brand: string | null; cpa: number | null; currency: string | null; plan_start_date: string | null };
 
 const fmt = (n: number, cur?: string | null) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: cur || "EUR", maximumFractionDigits: 0 }).format(n || 0);

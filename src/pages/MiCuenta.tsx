@@ -10,7 +10,7 @@ import { ShieldCheck, ShieldAlert } from "lucide-react";
 
 export default function MiCuenta() {
   const { user } = useAuth();
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [profile, setProfile] = useState({ full_name: "", phone: "", job_title: "" });
   const [newPassword, setNewPassword] = useState("");

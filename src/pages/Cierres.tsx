@@ -355,8 +355,23 @@ export default function Cierres() {
                 byBrand.get(k)!.push(i);
               });
               const isRsType = closure.report_type === "revshare";
+              // Detectar datos pobres: RS sin visitas/activos, o sin comisión, o sin filas, o muchos sin match
+              const totVisits = its.reduce((s, r) => s + (r.visits || 0), 0);
+              const totActives = its.reduce((s, r) => s + (r.active_accounts || 0), 0);
+              const unmatchedCount = its.filter((r) => r.match_status === "unmatched").length;
+              const unmatchedPct = its.length > 0 ? (unmatchedCount / its.length) * 100 : 0;
+              const isPoor =
+                its.length === 0 ||
+                Number(closure.total_commission || 0) === 0 ||
+                (isRsType && totVisits === 0 && totActives === 0) ||
+                unmatchedPct >= 50;
+              const poorReasons: string[] = [];
+              if (its.length === 0) poorReasons.push("sin filas");
+              if (Number(closure.total_commission || 0) === 0) poorReasons.push("comisión 0");
+              if (isRsType && totVisits === 0 && totActives === 0) poorReasons.push("sin visitas/activos");
+              if (unmatchedPct >= 50) poorReasons.push(`${unmatchedCount}/${its.length} sin match`);
               return (
-          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isRsType ? 'info' : 'success'}))` }}>
+          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isPoor ? 'destructive' : isRsType ? 'info' : 'success'}))` }}>
             <Collapsible defaultOpen={false}>
               <div className="flex items-center pr-2">
                 <CollapsibleTrigger asChild>
@@ -367,6 +382,11 @@ export default function Cierres() {
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <CardTitle className="text-base truncate flex items-center gap-2">
+                            {isPoor && (
+                              <span title={`Datos pobres: ${poorReasons.join(", ")}`} className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-destructive/15 text-destructive">
+                                <AlertCircle className="h-3 w-3" /> Alerta
+                              </span>
+                            )}
                             <span
                               className="text-xs font-semibold px-2 py-0.5 rounded"
                               style={{

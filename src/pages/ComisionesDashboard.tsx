@@ -411,6 +411,40 @@ export default function ComisionesDashboard() {
       </div>
 
       {/* KPIs */}
+      {/* Top hero — Overoption */}
+      <div className="grid gap-4 md:grid-cols-3">
+        <Card className="border-success/40 bg-success/5">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">💰 Ganancia neta Overoption</p>
+              <Coins className="h-6 w-6 text-success" />
+            </div>
+            <p className={`text-3xl font-bold mt-2 ${overoptionNet >= 0 ? "text-success" : "text-destructive"}`}>{fmt(overoptionNet)}</p>
+            <p className="text-xs text-muted-foreground mt-1">Margen CPA ({fmt(cpaMargin)}) + RevShare ({fmt(totals.rsCommission)})</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">Margen Overoption</p>
+              <Target className="h-6 w-6 text-primary" />
+            </div>
+            <p className={`text-3xl font-bold mt-2 ${overoptionMarginPct >= 30 ? "text-success" : overoptionMarginPct >= 15 ? "text-primary" : "text-warning"}`}>{pct(overoptionMarginPct)}</p>
+            <p className="text-xs text-muted-foreground mt-1">de los ingresos totales (CPA cliente + RS)</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">CPA pagado a afiliados</p>
+              <Users className="h-6 w-6 text-warning" />
+            </div>
+            <p className="text-3xl font-bold mt-2">{fmt(totals.affCost)}</p>
+            <p className="text-xs text-muted-foreground mt-1">de {fmt(totals.cpaCost)} cobrado al cliente · {fmtN(totals.qualified)} CPAs</p>
+          </CardContent>
+        </Card>
+      </div>
+
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardContent className="p-6 flex items-center justify-between">

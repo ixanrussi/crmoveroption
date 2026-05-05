@@ -437,11 +437,11 @@ export default function ComisionesDashboard() {
         </Card>
 
         <Card>
-          <CardHeader><CardTitle className="text-base">NGR por país</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">CPA por país</CardTitle></CardHeader>
           <CardContent className="h-96">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie data={byCountry.filter(c => c.ngr > 0)} dataKey="ngr" nameKey="name" outerRadius={110} label={(e: any) => e.name}>
+                <Pie data={byCountry.filter(c => c.cpa > 0)} dataKey="cpa" nameKey="name" outerRadius={110} label={(e: any) => e.name}>
                   {byCountry.map((_, i) => <Cell key={i} fill={COLORS[i % COLORS.length]} />)}
                 </Pie>
                 <Tooltip formatter={(v: number) => fmt(v)} />

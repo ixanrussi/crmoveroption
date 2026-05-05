@@ -32,6 +32,7 @@ type Item = {
   report_type: string; is_paid_to_affiliate: boolean;
 };
 type Feedback = { id: string; closure_id: string; kind: string; source: string; message: string; created_at: string };
+type AffPlan = { id: string; affiliate_id: string; brand: string | null; cpa: number | null; currency: string | null; plan_start_date: string | null };
 
 export default function Cierres() {
   const { isAdmin } = useAuth();
@@ -40,6 +41,7 @@ export default function Cierres() {
   const [closures, setClosures] = useState<Closure[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [feedback, setFeedback] = useState<Feedback[]>([]);
+  const [affPlans, setAffPlans] = useState<AffPlan[]>([]);
   const [newFeedback, setNewFeedback] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
 
@@ -60,18 +62,20 @@ export default function Cierres() {
 
   const loadAll = async () => {
     setLoading(true);
-    const [{ data: cl }, { data: af }, { data: cs }, { data: it }, { data: fb }] = await Promise.all([
+    const [{ data: cl }, { data: af }, { data: cs }, { data: it }, { data: fb }, { data: ap }] = await Promise.all([
       supabase.from("clients").select("id, company_name").order("company_name"),
       supabase.from("affiliates").select("id, fixed_name, alias").order("fixed_name"),
       supabase.from("commission_closures").select("*").order("created_at", { ascending: false }),
       supabase.from("commission_closure_items").select("*").order("brand"),
       supabase.from("commission_closure_feedback").select("*").order("created_at", { ascending: false }),
+      supabase.from("affiliate_commission_plans").select("id, affiliate_id, brand, cpa, currency, plan_start_date"),
     ]);
     setClients(cl ?? []);
     setAffiliates(af ?? []);
     setClosures((cs ?? []) as Closure[]);
     setItems((it ?? []) as Item[]);
     setFeedback((fb ?? []) as Feedback[]);
+    setAffPlans((ap ?? []) as AffPlan[]);
     setLoading(false);
   };
 

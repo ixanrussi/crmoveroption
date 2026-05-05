@@ -270,26 +270,46 @@ export default function Cierres() {
                   )}
 
                   {Array.from(byBrand.entries()).map(([brand, rows]) => {
+                    const isRs = closure.report_type === "revshare";
                     const totReg = rows.reduce((s, r) => s + r.qualified_players, 0);
                     const totDep = rows.reduce((s, r) => s + r.locked_players, 0);
+                    const totVis = rows.reduce((s, r) => s + (r.visits || 0), 0);
+                    const totAct = rows.reduce((s, r) => s + (r.active_accounts || 0), 0);
+                    const totNgr = rows.reduce((s, r) => s + Number(r.casino_ngr || 0) + Number(r.sports_ngr || 0), 0);
                     const totCom = rows.reduce((s, r) => s + Number(r.commission_total), 0);
                     return (
                       <div key={brand} className="border rounded-md overflow-hidden">
-                        <div className="bg-muted px-3 py-2 font-semibold text-sm">{brand}</div>
+                        <div className="bg-muted px-3 py-2 font-semibold text-sm flex justify-between">
+                          <span>{brand}</span>
+                          {isRs && <span className="text-xs text-muted-foreground font-normal">Revenue Share — no se reparte con afiliado</span>}
+                        </div>
                         <Table>
                           <TableHeader>
                             <TableRow>
                               <TableHead>Afiliado</TableHead>
                               <TableHead>Campaign ID</TableHead>
-                              <TableHead className="text-right">Registros</TableHead>
-                              <TableHead className="text-right">Depositantes</TableHead>
-                              <TableHead className="text-right">Comisión</TableHead>
+                              {isRs ? (
+                                <>
+                                  <TableHead className="text-right">Visitas</TableHead>
+                                  <TableHead className="text-right">Cuentas</TableHead>
+                                  <TableHead className="text-right">Activas</TableHead>
+                                  <TableHead className="text-right">NGR</TableHead>
+                                  <TableHead className="text-right">Comisión</TableHead>
+                                </>
+                              ) : (
+                                <>
+                                  <TableHead className="text-right">Calificados</TableHead>
+                                  <TableHead className="text-right">Bloqueados</TableHead>
+                                  <TableHead className="text-right">Comisión CPA</TableHead>
+                                </>
+                              )}
                               <TableHead>Match</TableHead>
                             </TableRow>
                           </TableHeader>
                           <TableBody>
                             {rows.map((it) => {
                               const aff = it.affiliate_id ? affMap.get(it.affiliate_id) : null;
+                              const ngr = Number(it.casino_ngr || 0) + Number(it.sports_ngr || 0);
                               return (
                                 <TableRow key={it.id}>
                                   <TableCell className="min-w-[220px]">
@@ -318,9 +338,21 @@ export default function Cierres() {
                                     <div className="text-xs text-muted-foreground mt-0.5">PDF: {it.raw_campaign_name}</div>
                                   </TableCell>
                                   <TableCell className="font-mono text-xs">{it.raw_campaign_id}</TableCell>
-                                  <TableCell className="text-right">{it.qualified_players}</TableCell>
-                                  <TableCell className="text-right">{it.locked_players}</TableCell>
-                                  <TableCell className="text-right font-medium">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
+                                  {isRs ? (
+                                    <>
+                                      <TableCell className="text-right">{it.visits || 0}</TableCell>
+                                      <TableCell className="text-right">{it.new_accounts || 0}</TableCell>
+                                      <TableCell className="text-right">{it.active_accounts || 0}</TableCell>
+                                      <TableCell className={`text-right ${ngr < 0 ? "text-destructive" : ""}`}>{fmtMoney(ngr, it.currency)}</TableCell>
+                                      <TableCell className="text-right font-medium">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <TableCell className="text-right">{it.qualified_players}</TableCell>
+                                      <TableCell className="text-right">{it.locked_players}</TableCell>
+                                      <TableCell className="text-right font-medium">{fmtMoney(Number(it.commission_total), it.currency)}</TableCell>
+                                    </>
+                                  )}
                                   <TableCell>
                                     <Badge variant={
                                       it.match_status === "auto_id" ? "default"
@@ -338,9 +370,21 @@ export default function Cierres() {
                             })}
                             <TableRow className="bg-muted/50 font-semibold">
                               <TableCell colSpan={2}>TOTAL {brand}</TableCell>
-                              <TableCell className="text-right">{totReg}</TableCell>
-                              <TableCell className="text-right">{totDep}</TableCell>
-                              <TableCell className="text-right">{fmtMoney(totCom, closure.currency)}</TableCell>
+                              {isRs ? (
+                                <>
+                                  <TableCell className="text-right">{totVis}</TableCell>
+                                  <TableCell className="text-right">{rows.reduce((s,r)=>s+(r.new_accounts||0),0)}</TableCell>
+                                  <TableCell className="text-right">{totAct}</TableCell>
+                                  <TableCell className={`text-right ${totNgr < 0 ? "text-destructive" : ""}`}>{fmtMoney(totNgr, closure.currency)}</TableCell>
+                                  <TableCell className="text-right">{fmtMoney(totCom, closure.currency)}</TableCell>
+                                </>
+                              ) : (
+                                <>
+                                  <TableCell className="text-right">{totReg}</TableCell>
+                                  <TableCell className="text-right">{totDep}</TableCell>
+                                  <TableCell className="text-right">{fmtMoney(totCom, closure.currency)}</TableCell>
+                                </>
+                              )}
                               <TableCell />
                             </TableRow>
                           </TableBody>

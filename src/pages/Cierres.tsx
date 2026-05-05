@@ -268,7 +268,7 @@ export default function Cierres() {
               });
               const isRsType = closure.report_type === "revshare";
               return (
-          <Card key={closure.id} className={isRsType ? "border-l-4 border-l-secondary" : "border-l-4 border-l-primary"}>
+          <Card key={closure.id} style={{ borderLeft: `4px solid hsl(var(--${isRsType ? 'info' : 'success'}))` }}>
             <Collapsible defaultOpen={false}>
               <div className="flex items-center pr-2">
                 <CollapsibleTrigger asChild>
@@ -279,9 +279,15 @@ export default function Cierres() {
                         <FileText className="h-4 w-4 text-muted-foreground" />
                         <div className="min-w-0">
                           <CardTitle className="text-base truncate flex items-center gap-2">
-                            <Badge variant={isRsType ? "secondary" : "default"} className="text-xs">
+                            <span
+                              className="text-xs font-semibold px-2 py-0.5 rounded"
+                              style={{
+                                backgroundColor: `hsl(var(--${isRsType ? 'info' : 'success'}) / 0.15)`,
+                                color: `hsl(var(--${isRsType ? 'info' : 'success'}))`,
+                              }}
+                            >
                               {isRsType ? "RS" : "CPA"}
-                            </Badge>
+                            </span>
                             <span className="truncate">{closure.source_file_name}</span>
                           </CardTitle>
                           <p className="text-xs text-muted-foreground">{its.length} filas</p>

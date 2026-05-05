@@ -43,23 +43,26 @@ export default function ComisionesDashboard() {
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [clients, setClients] = useState<Client[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [affPlans, setAffPlans] = useState<AffPlan[]>([]);
   const [periodFilter, setPeriodFilter] = useState<string>("all");
   const [clientFilter, setClientFilter] = useState<string>("all");
 
   useEffect(() => {
     (async () => {
-      const [it, cs, af, cl, co] = await Promise.all([
+      const [it, cs, af, cl, co, ap] = await Promise.all([
         supabase.from("commission_closure_items").select("*"),
         supabase.from("commission_closures").select("id, client_id, period, currency, status, report_type"),
         supabase.from("affiliates").select("id, fixed_name, alias, country_ids, status"),
         supabase.from("clients").select("id, company_name"),
         supabase.from("countries").select("id, name, code"),
+        supabase.from("affiliate_commission_plans").select("id, affiliate_id, brand, cpa, currency, plan_start_date"),
       ]);
       setItems((it.data ?? []) as Item[]);
       setClosures((cs.data ?? []) as Closure[]);
       setAffiliates((af.data ?? []) as Affiliate[]);
       setClients((cl.data ?? []) as Client[]);
       setCountries((co.data ?? []) as Country[]);
+      setAffPlans((ap.data ?? []) as AffPlan[]);
     })();
   }, []);
 

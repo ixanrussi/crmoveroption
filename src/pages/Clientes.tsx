@@ -64,6 +64,15 @@ export default function Clientes() {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
+  const [search, setSearch] = useState("");
+
+  const filteredList = list.filter((r) => {
+    const q = search.trim().toLowerCase();
+    if (!q) return true;
+    if (r.company_name?.toLowerCase().includes(q)) return true;
+    if (Array.isArray(r.brands) && r.brands.some((b: string) => b?.toLowerCase().includes(q))) return true;
+    return false;
+  });
 
   const empty = {
     company_name: "", website: "",
@@ -543,6 +552,14 @@ export default function Clientes() {
         )}
       </div>
 
+      <div className="max-w-sm">
+        <Input
+          placeholder="Buscar por nombre o marca..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       <Card>
         <CardContent className="p-0">
           <Table className="w-full table-fixed">
@@ -555,7 +572,7 @@ export default function Clientes() {
               {isAdmin && <TableHead className="w-[7%]"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {list.map((r) => (
+              {filteredList.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">
@@ -596,8 +613,8 @@ export default function Clientes() {
                   )}
                 </TableRow>
               ))}
-              {list.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableRow>
+              {filteredList.length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{search ? "Sin resultados" : "Sin clientes registrados"}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

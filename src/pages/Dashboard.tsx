@@ -5,8 +5,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Users, UserPlus, Globe, Layers, ShieldCheck, ShieldAlert } from "lucide-react";
+import { Users, UserPlus, Globe, Layers, ShieldCheck, ShieldAlert, Map as MapIcon } from "lucide-react";
 import { toast } from "sonner";
+import WorldActivityMap from "@/components/WorldActivityMap";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();

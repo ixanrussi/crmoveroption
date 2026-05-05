@@ -146,6 +146,33 @@ export type Database = {
           },
         ]
       }
+      affiliate_operator_ids: {
+        Row: {
+          affiliate_id: string
+          brand: string | null
+          client_id: string
+          created_at: string
+          id: string
+          operator_campaign_id: string
+        }
+        Insert: {
+          affiliate_id: string
+          brand?: string | null
+          client_id: string
+          created_at?: string
+          id?: string
+          operator_campaign_id: string
+        }
+        Update: {
+          affiliate_id?: string
+          brand?: string | null
+          client_id?: string
+          created_at?: string
+          id?: string
+          operator_campaign_id?: string
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           alias: string | null
@@ -444,6 +471,122 @@ export type Database = {
           },
         ]
       }
+      commission_closure_items: {
+        Row: {
+          affiliate_id: string | null
+          brand: string | null
+          closure_id: string
+          commission_total: number | null
+          cpa_amount: number | null
+          created_at: string
+          currency: string | null
+          id: string
+          locked_players: number | null
+          match_status: string
+          notes: string | null
+          qualified_players: number | null
+          raw_campaign_id: string | null
+          raw_campaign_name: string | null
+          revshare_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id?: string | null
+          brand?: string | null
+          closure_id: string
+          commission_total?: number | null
+          cpa_amount?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          locked_players?: number | null
+          match_status?: string
+          notes?: string | null
+          qualified_players?: number | null
+          raw_campaign_id?: string | null
+          raw_campaign_name?: string | null
+          revshare_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string | null
+          brand?: string | null
+          closure_id?: string
+          commission_total?: number | null
+          cpa_amount?: number | null
+          created_at?: string
+          currency?: string | null
+          id?: string
+          locked_players?: number | null
+          match_status?: string
+          notes?: string | null
+          qualified_players?: number | null
+          raw_campaign_id?: string | null
+          raw_campaign_name?: string | null
+          revshare_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "commission_closure_items_closure_id_fkey"
+            columns: ["closure_id"]
+            isOneToOne: false
+            referencedRelation: "commission_closures"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      commission_closures: {
+        Row: {
+          client_id: string
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          id: string
+          notes: string | null
+          period: string
+          source_file_name: string | null
+          source_file_path: string | null
+          status: Database["public"]["Enums"]["closure_status"]
+          total_commission: number | null
+          total_locked: number | null
+          total_qualified: number | null
+          updated_at: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          notes?: string | null
+          period: string
+          source_file_name?: string | null
+          source_file_path?: string | null
+          status?: Database["public"]["Enums"]["closure_status"]
+          total_commission?: number | null
+          total_locked?: number | null
+          total_qualified?: number | null
+          updated_at?: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          id?: string
+          notes?: string | null
+          period?: string
+          source_file_name?: string | null
+          source_file_path?: string | null
+          status?: Database["public"]["Enums"]["closure_status"]
+          total_commission?: number | null
+          total_locked?: number | null
+          total_qualified?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       countries: {
         Row: {
           code: string | null
@@ -564,6 +707,7 @@ export type Database = {
       affiliate_status: "active" | "inactive" | "pending"
       app_role: "super_admin" | "admin" | "user"
       client_status: "active" | "inactive" | "prospect"
+      closure_status: "draft" | "confirmed" | "paid"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -694,6 +838,7 @@ export const Constants = {
       affiliate_status: ["active", "inactive", "pending"],
       app_role: ["super_admin", "admin", "user"],
       client_status: ["active", "inactive", "prospect"],
+      closure_status: ["draft", "confirmed", "paid"],
     },
   },
 } as const

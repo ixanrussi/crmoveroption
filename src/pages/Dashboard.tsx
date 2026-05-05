@@ -75,7 +75,7 @@ const Dashboard = () => {
         </p>
       </div>
 
-      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-5">
         {cards.map((c) => (
           <Card key={c.label}>
             <CardContent className="p-6 flex items-center justify-between">
@@ -87,24 +87,20 @@ const Dashboard = () => {
             </CardContent>
           </Card>
         ))}
-      </div>
-
-      {showMap ? (
-        <WorldActivityMap />
-      ) : (
         <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapIcon className="h-5 w-5 text-primary" />
-              Mapa de actividad
-            </CardTitle>
-            <CardDescription>Visualiza los países donde tenemos clientes activos.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Button variant="outline" onClick={() => setShowMap(true)}>Ver mapa</Button>
+          <CardContent className="p-6 flex items-center justify-between gap-2">
+            <div className="min-w-0">
+              <p className="text-sm text-muted-foreground">Mapa de actividad</p>
+              <Button variant="link" className="h-auto p-0 text-base font-semibold" onClick={() => setShowMap((v) => !v)}>
+                {showMap ? "Ocultar" : "Ver mapa"}
+              </Button>
+            </div>
+            <MapIcon className="h-8 w-8 text-primary shrink-0" />
           </CardContent>
         </Card>
-      )}
+      </div>
+
+      {showMap && <WorldActivityMap />}
 
       <Card>
         <CardHeader>

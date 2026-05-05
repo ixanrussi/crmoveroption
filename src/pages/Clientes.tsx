@@ -613,8 +613,8 @@ export default function Clientes() {
                   )}
                 </TableRow>
               ))}
-              {list.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin clientes registrados</TableCell></TableRow>
+              {filteredList.length === 0 && (
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">{search ? "Sin resultados" : "Sin clientes registrados"}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

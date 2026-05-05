@@ -15,6 +15,7 @@ const Dashboard = () => {
   const [factors, setFactors] = useState<any[]>([]);
   const [enrolling, setEnrolling] = useState<{ qr: string; secret: string; factorId: string } | null>(null);
   const [otp, setOtp] = useState("");
+  const [showMap, setShowMap] = useState(false);
 
   const loadStats = async () => {
     const [c, a, co, u] = await Promise.all([

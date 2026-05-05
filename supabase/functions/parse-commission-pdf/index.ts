@@ -59,13 +59,7 @@ Deno.serve(async (req) => {
     const arrayBuf = await file.arrayBuffer();
     const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuf)));
 
-    const aiRes = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${lovableKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
+    const aiBody = JSON.stringify({
         model: "google/gemini-2.5-flash",
         messages: [
           {

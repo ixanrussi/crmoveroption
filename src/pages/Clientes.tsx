@@ -146,7 +146,7 @@ export default function Clientes() {
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
-        country_id: p.country_id ?? null,
+        country_ids: Array.isArray(p.country_ids) && p.country_ids.length > 0 ? p.country_ids : (p.country_id ? [p.country_id] : []),
         brand: p.brand ?? "",
         baseline: p.baseline?.toString() ?? "",
         cpa: p.cpa?.toString() ?? "",

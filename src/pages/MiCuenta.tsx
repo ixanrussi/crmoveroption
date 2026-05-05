@@ -99,9 +99,13 @@ export default function MiCuenta() {
       <Card>
         <CardHeader>
           <CardTitle className="text-base">Información de perfil</CardTitle>
-          <CardDescription>Tu email es <span className="font-medium">{user?.email}</span></CardDescription>
+          <CardDescription>Actualiza tus datos personales.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label>Email</Label>
+            <Input value={user?.email ?? ""} disabled />
+          </div>
           <div className="space-y-2">
             <Label>Nombre completo</Label>
             <Input value={profile.full_name} onChange={(e) => setProfile({ ...profile, full_name: e.target.value })} disabled={loading} />

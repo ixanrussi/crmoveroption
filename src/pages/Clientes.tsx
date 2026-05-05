@@ -572,7 +572,7 @@ export default function Clientes() {
               {isAdmin && <TableHead className="w-[7%]"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {list.map((r) => (
+              {filteredList.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-medium">
                     <div className="flex items-center gap-2">

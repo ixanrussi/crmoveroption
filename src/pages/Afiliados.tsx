@@ -76,7 +76,10 @@ export default function Afiliados() {
   const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
-    setForm({ ...row });
+    const affIds: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
+      ? row.country_ids
+      : (row?.country_id ? [row.country_id] : []);
+    setForm({ ...row, country_ids: affIds });
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
@@ -86,7 +89,7 @@ export default function Afiliados() {
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
-        country_id: p.country_id ?? null,
+        country_ids: Array.isArray(p.country_ids) && p.country_ids.length > 0 ? p.country_ids : (p.country_id ? [p.country_id] : []),
         brand: p.brand ?? "",
         baseline: p.baseline?.toString() ?? "",
         cpa: p.cpa?.toString() ?? "",

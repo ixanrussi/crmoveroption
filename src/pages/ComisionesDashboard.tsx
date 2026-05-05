@@ -71,6 +71,23 @@ export default function ComisionesDashboard() {
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c.company_name])), [clients]);
   const countryMap = useMemo(() => new Map(countries.map(c => [c.id, c])), [countries]);
 
+  // Resolve affiliate CPA cost (€ per qualified) for a given affiliate/brand/period
+  const affCpaFor = useMemo(() => {
+    return (affiliateId: string | null, brand: string | null, period: string): number | null => {
+      if (!affiliateId) return null;
+      const cands = affPlans.filter(p => p.affiliate_id === affiliateId && p.cpa != null);
+      if (!cands.length) return null;
+      const bl = (brand || "").toLowerCase();
+      const matches = (p: AffPlan) => !p.brand || bl.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(bl);
+      const periodDate = period ? `${period}-01` : null;
+      const elig = cands
+        .filter(matches)
+        .filter(p => !periodDate || !p.plan_start_date || p.plan_start_date <= periodDate)
+        .sort((a, b) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+      return elig[0]?.cpa ?? null;
+    };
+  }, [affPlans]);
+
   const periods = useMemo(() => [...new Set(closures.map(c => c.period))].sort().reverse(), [closures]);
 
   const enriched = useMemo(() => {

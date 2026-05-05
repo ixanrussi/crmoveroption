@@ -9,9 +9,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, FileText, Plus, Trash2, Upload } from "lucide-react";
+import { ChevronDown, FileText, Plus, Trash2, Upload, BarChart3 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
+import {
+  BarChart, Bar, XAxis, YAxis, Tooltip as RTooltip, ResponsiveContainer,
+  PieChart, Pie, Cell, Legend,
+} from "recharts";
 
 type Client = { id: string; company_name: string };
 type Affiliate = { id: string; fixed_name: string; alias: string | null };

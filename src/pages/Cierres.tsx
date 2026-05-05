@@ -39,6 +39,10 @@ export default function Cierres() {
   const [items, setItems] = useState<Item[]>([]);
   const [loading, setLoading] = useState(false);
 
+  // Dashboard filters
+  const [dashPeriod, setDashPeriod] = useState<string>("all");
+  const [dashClient, setDashClient] = useState<string>("all");
+
   // New closure dialog state
   const [openNew, setOpenNew] = useState(false);
   const [newClient, setNewClient] = useState("");

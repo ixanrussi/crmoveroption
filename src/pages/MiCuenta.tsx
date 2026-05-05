@@ -59,13 +59,19 @@ export default function MiCuenta() {
     (async () => {
       if (!user) return;
       setLoading(true);
-      const { data, error } = await supabase.from("profiles").select("full_name, phone, job_title").eq("id", user.id).maybeSingle();
+      const { data, error } = await supabase.from("profiles").select("first_name, last_name, full_name, phone, job_title, avatar_url").eq("id", user.id).maybeSingle();
       if (error) toast.error(error.message);
-      if (data) setProfile({
-        full_name: data.full_name ?? "",
-        phone: data.phone ?? "",
-        job_title: data.job_title ?? "",
-      });
+      if (data) {
+        const fn = data.first_name ?? (data.full_name ? data.full_name.split(" ")[0] : "");
+        const ln = data.last_name ?? (data.full_name ? data.full_name.split(" ").slice(1).join(" ") : "");
+        setProfile({
+          first_name: fn ?? "",
+          last_name: ln ?? "",
+          phone: data.phone ?? "",
+          job_title: data.job_title ?? "",
+          avatar_url: data.avatar_url ?? "",
+        });
+      }
       setLoading(false);
     })();
   }, [user]);
@@ -73,10 +79,27 @@ export default function MiCuenta() {
   const saveProfile = async () => {
     if (!user) return;
     setSaving(true);
-    const { error } = await supabase.from("profiles").update(profile).eq("id", user.id);
+    const full_name = `${profile.first_name} ${profile.last_name}`.trim();
+    const { error } = await supabase.from("profiles").update({ ...profile, full_name }).eq("id", user.id);
     setSaving(false);
     if (error) toast.error(error.message);
     else toast.success("Perfil actualizado");
+  };
+
+  const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !user) return;
+    setUploadingAvatar(true);
+    const ext = file.name.split(".").pop();
+    const path = `${user.id}/avatar.${ext}`;
+    const { error: upErr } = await supabase.storage.from("avatars").upload(path, file, { upsert: true, contentType: file.type });
+    if (upErr) { toast.error(upErr.message); setUploadingAvatar(false); return; }
+    const { data: pub } = supabase.storage.from("avatars").getPublicUrl(path);
+    const url = `${pub.publicUrl}?t=${Date.now()}`;
+    const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
+    if (updErr) toast.error(updErr.message);
+    else { setProfile((p) => ({ ...p, avatar_url: url })); toast.success("Foto actualizada"); }
+    setUploadingAvatar(false);
   };
 
   const changePassword = async () => {

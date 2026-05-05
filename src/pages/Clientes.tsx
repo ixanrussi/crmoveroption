@@ -477,14 +477,17 @@ export default function Clientes() {
                             onChange={(e) => updatePlan(i, { description: e.target.value })} />
                         </div>
                         <div className="space-y-1">
-                          <Label className="text-xs">Country</Label>
+                          <Label className="text-xs">GEO's (países)</Label>
                           <Popover>
                             <PopoverTrigger asChild>
                               <Button type="button" variant="outline" className="w-full justify-between font-normal">
                                 <span className="truncate">
-                                  {pl.country_id
-                                    ? countries.find((c) => c.id === pl.country_id)?.name ?? "Selecciona"
-                                    : "Selecciona"}
+                                  {(pl.country_ids ?? []).length === 0
+                                    ? "Selecciona uno o más"
+                                    : countries
+                                        .filter((c) => (pl.country_ids ?? []).includes(c.id))
+                                        .map((c) => c.name)
+                                        .join(", ")}
                                 </span>
                                 <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
                               </Button>
@@ -496,16 +499,23 @@ export default function Clientes() {
                               onTouchMove={(e) => e.stopPropagation()}
                             >
                               <div className="space-y-1">
-                                {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => (
-                                  <button
-                                    type="button"
-                                    key={c.id}
-                                    onClick={() => updatePlan(i, { country_id: c.id })}
-                                    className={`w-full text-left text-sm px-2 py-1.5 rounded hover:bg-accent ${pl.country_id === c.id ? "bg-accent" : ""}`}
-                                  >
-                                    {c.name}
-                                  </button>
-                                ))}
+                                {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
+                                  const checked = (pl.country_ids ?? []).includes(c.id);
+                                  return (
+                                    <label key={c.id} className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer">
+                                      <Checkbox
+                                        checked={checked}
+                                        onCheckedChange={(v) => {
+                                          const cur: string[] = pl.country_ids ?? [];
+                                          updatePlan(i, {
+                                            country_ids: v ? [...cur, c.id] : cur.filter((id) => id !== c.id),
+                                          });
+                                        }}
+                                      />
+                                      <span className="text-sm">{c.name}</span>
+                                    </label>
+                                  );
+                                })}
                                 {countries.length === 0 && (
                                   <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
                                 )}

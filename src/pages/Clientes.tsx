@@ -552,6 +552,14 @@ export default function Clientes() {
         )}
       </div>
 
+      <div className="max-w-sm">
+        <Input
+          placeholder="Buscar por nombre o marca..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+        />
+      </div>
+
       <Card>
         <CardContent className="p-0">
           <Table className="w-full table-fixed">

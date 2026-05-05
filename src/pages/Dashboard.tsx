@@ -89,6 +89,23 @@ const Dashboard = () => {
         ))}
       </div>
 
+      {showMap ? (
+        <WorldActivityMap />
+      ) : (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <MapIcon className="h-5 w-5 text-primary" />
+              Mapa de actividad
+            </CardTitle>
+            <CardDescription>Visualiza los países donde tenemos clientes activos.</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" onClick={() => setShowMap(true)}>Ver mapa</Button>
+          </CardContent>
+        </Card>
+      )}
+
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

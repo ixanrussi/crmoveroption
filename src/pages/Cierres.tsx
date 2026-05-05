@@ -673,7 +673,16 @@ export default function Cierres() {
           </Card>
               );
             })}
-          </div>
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  </div>
+                  );
+                })}
+                </CardContent>
+              </CollapsibleContent>
+            </Collapsible>
+          </Card>
           );
         });
       })()}

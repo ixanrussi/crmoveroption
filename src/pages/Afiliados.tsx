@@ -70,7 +70,7 @@ export default function Afiliados() {
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
-    status: "active", notes: "",
+    status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
@@ -224,6 +224,8 @@ export default function Afiliados() {
       email: form.email || null, phone: form.phone || null,
       country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
+      fixed_remuneration: form.fixed_remuneration === "" || form.fixed_remuneration == null ? null : Number(form.fixed_remuneration),
+      fixed_remuneration_currency: form.fixed_remuneration_currency || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -396,6 +398,28 @@ export default function Afiliados() {
                   <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Teléfono</Label>
                   <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
+                <div className="space-y-1">
+                  <Label>Remuneración fija</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.fixed_remuneration ?? ""}
+                      onChange={(e) => setForm({ ...form, fixed_remuneration: e.target.value })}
+                    />
+                    <Select
+                      value={form.fixed_remuneration_currency ?? ""}
+                      onValueChange={(v) => setForm({ ...form, fixed_remuneration_currency: v })}
+                    >
+                      <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                      <SelectContent>
+                        {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
                 <div className="space-y-1">
                   <Label>GEO's (países)</Label>
                   <Popover>

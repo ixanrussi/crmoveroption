@@ -132,6 +132,8 @@ Deno.serve(async (req) => {
         bank_details: a.bank_details || null,
         tax_id: a.tax_id || null,
         notes: a.notes || null,
+        fixed_remuneration: (a as any).fixed_remuneration === null || (a as any).fixed_remuneration === undefined || (a as any).fixed_remuneration === "" ? null : Number((a as any).fixed_remuneration),
+        fixed_remuneration_currency: (a as any).fixed_remuneration_currency || null,
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)
@@ -160,12 +162,14 @@ Deno.serve(async (req) => {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
             fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
-            commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
+            commission_pct, payment_method, bank_details, tax_id, notes, brands,
+            fixed_remuneration, fixed_remuneration_currency, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
-            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
+            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
+            ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;
@@ -189,6 +193,8 @@ Deno.serve(async (req) => {
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
               brands = ${payload.brands},
+              fixed_remuneration = ${payload.fixed_remuneration},
+              fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -208,6 +214,8 @@ Deno.serve(async (req) => {
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
               brands = ${payload.brands},
+              fixed_remuneration = ${payload.fixed_remuneration},
+              fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
               updated_at = now()
             where id = ${affiliateId}
           `;

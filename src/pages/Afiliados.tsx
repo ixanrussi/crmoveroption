@@ -628,7 +628,7 @@ export default function Afiliados() {
                             </Popover>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">Cliente</Label>
+                            <Label className="text-xs">Operador</Label>
                             <Select
                               value={pl.client_id || "__none__"}
                               onValueChange={(v) => updatePlan(i, { client_id: v === "__none__" ? "" : v, brand: "" })}

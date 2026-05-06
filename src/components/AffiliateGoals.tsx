@@ -205,7 +205,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Alcance</TableHead>
-                  <TableHead>Cliente</TableHead>
+                  <TableHead>Operador</TableHead>
                   <TableHead>Marca</TableHead>
                   <TableHead className="text-right">Objetivo</TableHead>
                   <TableHead className="text-right">Actual</TableHead>

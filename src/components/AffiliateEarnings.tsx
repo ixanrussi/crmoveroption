@@ -144,7 +144,7 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cliente</TableHead>
+                    <TableHead>Operador</TableHead>
                     <TableHead>Marca</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead className="text-right">Calificados</TableHead>

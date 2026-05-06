@@ -676,6 +676,14 @@ export default function Afiliados() {
 
       <Card>
         <CardContent className="p-0">
+          <div className="p-3 border-b">
+            <Input
+              placeholder="Buscar por nombre o alias…"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className="max-w-sm"
+            />
+          </div>
           <Table>
             <TableHeader><TableRow>
               <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead><TableHead>Alias</TableHead>
@@ -684,7 +692,14 @@ export default function Afiliados() {
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {list.map((r) => (
+              {list.filter((r) => {
+                const q = search.trim().toLowerCase();
+                if (!q) return true;
+                if (r.fixed_name?.toLowerCase().includes(q)) return true;
+                if (r.alias?.toLowerCase().includes(q)) return true;
+                if (Array.isArray(r.aliases) && r.aliases.some((a: string) => a?.toLowerCase().includes(q))) return true;
+                return false;
+              }).map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">

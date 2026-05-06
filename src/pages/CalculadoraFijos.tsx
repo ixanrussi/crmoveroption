@@ -52,7 +52,7 @@ export default function CalculadoraFijos() {
     (async () => {
       const { data } = await supabase
         .from("clients")
-        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, country_ids)")
+        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
         .order("company_name");
       setOperators((data ?? []) as any);
     })();

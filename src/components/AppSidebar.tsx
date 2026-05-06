@@ -10,7 +10,7 @@ import { Button } from "./ui/button";
 
 const mainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Clientes", url: "/clientes", icon: Users },
+  { title: "Operadores", url: "/clientes", icon: Users },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
   { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },

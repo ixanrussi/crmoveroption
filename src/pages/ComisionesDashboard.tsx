@@ -438,7 +438,7 @@ export default function ComisionesDashboard() {
             </Select>
           </div>
           <div className="space-y-1">
-            <Label className="text-xs">Cliente</Label>
+            <Label className="text-xs">Operador</Label>
             <Select value={clientFilter} onValueChange={setClientFilter}>
               <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
               <SelectContent>
@@ -660,7 +660,7 @@ export default function ComisionesDashboard() {
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="payouts">💸 Pago a afiliados</TabsTrigger>
           <TabsTrigger value="margin">💰 Margen Overoption</TabsTrigger>
-          <TabsTrigger value="clients">🏢 Top Clientes</TabsTrigger>
+          <TabsTrigger value="clients">🏢 Top Operadores</TabsTrigger>
           <TabsTrigger value="fraud">🚨 Riesgo de fraude</TabsTrigger>
           <TabsTrigger value="roi">Por ROI</TabsTrigger>
           <TabsTrigger value="ngr">Por NGR (calidad)</TabsTrigger>
@@ -732,7 +732,7 @@ export default function ComisionesDashboard() {
                 <TableHeader>
                   <TableRow>
                     <TableHead className="w-12">#</TableHead>
-                    <TableHead>Cliente</TableHead>
+                    <TableHead>Operador</TableHead>
                     <TableHead className="text-right">CPA cobrado</TableHead>
                     <TableHead className="text-right">CPA pagado</TableHead>
                     <TableHead className="text-right">Margen CPA</TableHead>
@@ -1086,7 +1086,7 @@ function AffiliatePayouts({ items, closures, affiliates, clients, affCpaFor, app
               </Select>
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Cliente</Label>
+              <Label className="text-xs">Operador</Label>
               <Select value={clientF} onValueChange={setClientF}>
                 <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
                 <SelectContent>
@@ -1167,7 +1167,7 @@ function AffiliatePayouts({ items, closures, affiliates, clients, affCpaFor, app
                 <TableHeader>
                   <TableRow>
                     <TableHead>Afiliado</TableHead>
-                    <TableHead>Cliente</TableHead>
+                    <TableHead>Operador</TableHead>
                     <TableHead>Marca</TableHead>
                     <TableHead>Período</TableHead>
                     <TableHead className="text-right">CPAs aprobados</TableHead>
@@ -1209,7 +1209,7 @@ function AffiliatePayouts({ items, closures, affiliates, clients, affCpaFor, app
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Cliente</TableHead>
+                    <TableHead>Operador</TableHead>
                     <TableHead>Marca</TableHead>
                     <TableHead className="text-right">CPAs aprobados</TableHead>
                     <TableHead className="text-right">Pago a afiliado</TableHead>

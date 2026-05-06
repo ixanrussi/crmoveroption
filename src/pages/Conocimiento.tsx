@@ -147,7 +147,7 @@ export default function Conocimiento() {
           <p className="text-sm text-muted-foreground">Sube PDF / Excel / CSV de cada cliente. La IA extrae datos clave y genera dudas / inconsistencias para revisar antes de facturar y pagar.</p>
         </div>
         <div className="space-y-1 min-w-[260px]">
-          <Label className="text-xs">Cliente</Label>
+          <Label className="text-xs">Operador</Label>
           <Select value={clientId} onValueChange={setClientId}>
             <SelectTrigger><SelectValue placeholder="Selecciona cliente" /></SelectTrigger>
             <SelectContent>

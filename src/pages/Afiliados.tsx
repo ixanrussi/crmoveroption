@@ -628,7 +628,7 @@ export default function Afiliados() {
                             </Popover>
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">Cliente</Label>
+                            <Label className="text-xs">Operador</Label>
                             <Select
                               value={pl.client_id || "__none__"}
                               onValueChange={(v) => updatePlan(i, { client_id: v === "__none__" ? "" : v, brand: "" })}
@@ -659,7 +659,7 @@ export default function Afiliados() {
                                 );
                               }
                               return (
-                                <Input value={pl.brand} placeholder={pl.client_id ? "Cliente sin marcas" : "Nombre de la marca"}
+                                <Input value={pl.brand} placeholder={pl.client_id ? "Operador sin marcas" : "Nombre de la marca"}
                                   onChange={(e) => updatePlan(i, { brand: e.target.value })} />
                               );
                             })()}

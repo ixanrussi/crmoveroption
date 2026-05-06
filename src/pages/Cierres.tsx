@@ -333,7 +333,7 @@ export default function Cierres() {
               <DialogHeader><DialogTitle>Importar reporte mensual</DialogTitle></DialogHeader>
               <div className="space-y-3">
                 <div>
-                  <Label>Cliente</Label>
+                  <Label>Operador</Label>
                   <Select value={newClient} onValueChange={setNewClient}>
                     <SelectTrigger><SelectValue placeholder="Selecciona cliente" /></SelectTrigger>
                     <SelectContent>
@@ -447,7 +447,7 @@ export default function Cierres() {
                   <div className="flex items-center justify-between gap-4">
                     <div className="flex items-center gap-3 min-w-0">
                       <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
-                      <CardTitle className="text-lg">{clientMap.get(g.client_id) ?? "Cliente"} · {g.year}</CardTitle>
+                      <CardTitle className="text-lg">{clientMap.get(g.client_id) ?? "Operador"} · {g.year}</CardTitle>
                       <span className="text-xs text-muted-foreground">
                         {g.closures.length} archivo{g.closures.length !== 1 ? "s" : ""} · {monthList.length} mes{monthList.length !== 1 ? "es" : ""}
                       </span>

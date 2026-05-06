@@ -243,7 +243,7 @@ export default function Clientes() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold">Clientes</h1>
+          <h1 className="text-2xl font-bold">Operadores</h1>
           <p className="text-muted-foreground text-sm">Gestión de clientes de Overoption</p>
         </div>
         {isAdmin && (

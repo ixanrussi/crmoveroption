@@ -137,6 +137,7 @@ export default function Clientes() {
       country_ids: ids,
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
+      net_min_cpa: row.net_min_cpa?.toString() ?? "",
     });
     setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(

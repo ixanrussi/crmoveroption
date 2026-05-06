@@ -132,6 +132,8 @@ Deno.serve(async (req) => {
         bank_details: a.bank_details || null,
         tax_id: a.tax_id || null,
         notes: a.notes || null,
+        fixed_remuneration: (a as any).fixed_remuneration === null || (a as any).fixed_remuneration === undefined || (a as any).fixed_remuneration === "" ? null : Number((a as any).fixed_remuneration),
+        fixed_remuneration_currency: (a as any).fixed_remuneration_currency || null,
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)

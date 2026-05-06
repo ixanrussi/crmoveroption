@@ -38,6 +38,7 @@ const App = () => (
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />
               <Route path="/listas/software" element={<SimpleListPage table="softwares" title="Software" />} />
               <Route path="/listas/canales" element={<SimpleListPage table="affiliate_channels" title="Canales de afiliados" />} />
+              <Route path="/listas/monedas" element={<SimpleListPage table="currencies" title="Monedas" withCode />} />
               <Route path="/usuarios" element={
                 <ProtectedRoute requireRole="super_admin"><Usuarios /></ProtectedRoute>
               } />

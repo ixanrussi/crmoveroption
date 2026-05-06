@@ -54,6 +54,7 @@ export default function Afiliados() {
   const [list, setList] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
+  const [clients, setClients] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);

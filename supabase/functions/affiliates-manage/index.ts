@@ -239,12 +239,13 @@ Deno.serve(async (req) => {
       if (plans.length) {
         const num = (v: any) => (v === null || v === undefined || v === "" ? null : Number(v));
         const intOrNull = (v: any) => (v === null || v === undefined || v === "" ? null : Math.trunc(Number(v)));
-        const planValues = plans.map((p) => {
-          const cIds = Array.isArray((p as any).country_ids)
-            ? (p as any).country_ids.filter((x: any) => typeof x === "string")
+        const planValues = plans.map((p: any) => {
+          const cIds = Array.isArray(p.country_ids)
+            ? p.country_ids.filter((x: any) => typeof x === "string")
             : [];
           return {
             affiliate_id: affiliateId!,
+            client_id: p.client_id || null,
             plan_start_date: p.plan_start_date || null,
             currency: p.currency || null,
             description: p.description || null,
@@ -252,16 +253,20 @@ Deno.serve(async (req) => {
             country_ids: cIds,
             brand: p.brand || null,
             baseline: num(p.baseline),
+            baseline_currency: p.baseline_currency || null,
             cpa: num(p.cpa),
+            cpa_currency: p.cpa_currency || null,
             rev_share_pct: num(p.rev_share_pct),
             cpl: num(p.cpl),
+            cpl_currency: p.cpl_currency || null,
             wager: num(p.wager),
+            wager_currency: p.wager_currency || null,
             conversion_type: p.conversion_type || null,
             cap: intOrNull(p.cap),
             created_by: userData.user.id,
           };
         });
-        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "created_by")}`;
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "client_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency", "rev_share_pct", "cpl", "cpl_currency", "wager", "wager_currency", "conversion_type", "cap", "created_by")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

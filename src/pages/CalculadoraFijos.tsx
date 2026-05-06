@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator } from "lucide-react";
+import { Calculator, Printer } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 type Plan = {
   id: string;
@@ -38,6 +39,9 @@ export default function CalculadoraFijos() {
   const [ftdTarget, setFtdTarget] = useState<string>("");
   const [fixedAmount, setFixedAmount] = useState<string>("");
   const [ftdActual, setFtdActual] = useState<string>("");
+  const [prospectName, setProspectName] = useState<string>("");
+
+  const handlePrint = () => window.print();
 
   useEffect(() => {
     (async () => {
@@ -73,13 +77,33 @@ export default function CalculadoraFijos() {
 
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2">
-          <Calculator className="h-6 w-6" /> Calculadora de Fijos
-        </h1>
-        <p className="text-muted-foreground text-sm">
-          Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos.
-        </p>
+      <style>{`@media print {
+        body * { visibility: hidden; }
+        #print-area, #print-area * { visibility: visible; }
+        #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
+        .no-print { display: none !important; }
+      }`}</style>
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <Calculator className="h-6 w-6" /> Calculadora de Fijos
+          </h1>
+          <p className="text-muted-foreground text-sm">
+            Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos.
+          </p>
+        </div>
+        <Button onClick={handlePrint} variant="outline" className="no-print" disabled={!plan}>
+          <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
+        </Button>
+      </div>
+
+      <div className="space-y-1 max-w-md">
+        <Label>Nombre del afiliado prospecto (opcional)</Label>
+        <Input
+          placeholder="Ej. Juan Pérez / AffiliateXYZ"
+          value={prospectName}
+          onChange={(e) => setProspectName(e.target.value)}
+        />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -132,8 +156,19 @@ export default function CalculadoraFijos() {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader><CardTitle className="text-lg">Resultado</CardTitle></CardHeader>
+        <Card id="print-area">
+          <CardHeader>
+            <CardTitle className="text-lg">
+              Oferta {prospectName ? `para ${prospectName}` : "— Resultado"}
+            </CardTitle>
+            {prospectName && operator && (
+              <p className="text-sm text-muted-foreground">
+                Operador: {operator.company_name}
+                {plan?.brand ? ` · ${plan.brand}` : ""}
+                {plan?.description ? ` · ${plan.description}` : ""}
+              </p>
+            )}
+          </CardHeader>
           <CardContent className="space-y-4">
             {!plan ? (
               <p className="text-sm text-muted-foreground">Selecciona un operador y un plan para ver el cálculo.</p>

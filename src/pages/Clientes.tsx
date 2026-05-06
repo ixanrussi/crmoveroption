@@ -365,13 +365,6 @@ export default function Clientes() {
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-2 space-y-1">
-                  <Label>CPA neto mínimo (pago bajo objetivo)</Label>
-                  <Input type="number" step="0.01" value={form.net_min_cpa ?? ""}
-                    onChange={(e) => setForm({ ...form, net_min_cpa: e.target.value })}
-                    placeholder="Valor neto a pagar al afiliado por FTD bajo el objetivo" />
-                  <p className="text-xs text-muted-foreground">Usado en la calculadora de fijos cuando el afiliado no alcanza el objetivo de FTDs.</p>
-                </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">

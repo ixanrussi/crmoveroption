@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Lock, X, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
 import { toast } from "sonner";
@@ -75,6 +76,7 @@ export default function Afiliados() {
   const [aliasInput, setAliasInput] = useState("");
 
   const [commissionShares, setCommissionShares] = useState<Record<string, { earned: number; pct: number; currency: string | null }>>({});
+  const [goalProgress, setGoalProgress] = useState<Record<string, { target: number; current: number; pct: number }>>({});
 
   const load = async () => {
     const { data } = await supabase
@@ -123,6 +125,38 @@ export default function Afiliados() {
       shares[k].pct = totalBilled > 0 ? (shares[k].earned / totalBilled) * 100 : 0;
     });
     setCommissionShares(shares);
+
+    // Compute goal progress per affiliate (sum of all goals: target vs qualified)
+    const { data: goals } = await supabase
+      .from("affiliate_goals")
+      .select("affiliate_id, scope, period, client_id, brand, ftd_target");
+
+    const progress: Record<string, { target: number; current: number; pct: number }> = {};
+    (goals ?? []).forEach((g: any) => {
+      let current = 0;
+      (items ?? []).forEach((it: any) => {
+        if (it.affiliate_id !== g.affiliate_id) return;
+        const cls: any = closureMap.get(it.closure_id);
+        if (!cls) return;
+        if (g.scope === "monthly" && g.period && cls.period !== g.period) return;
+        if (g.client_id && cls.client_id !== g.client_id) return;
+        if (g.brand) {
+          const a = (it.brand || "").toLowerCase();
+          const b = g.brand.toLowerCase();
+          if (!(a.includes(b) || b.includes(a))) return;
+        }
+        current += it.qualified_players || 0;
+      });
+      const prev = progress[g.affiliate_id] ?? { target: 0, current: 0, pct: 0 };
+      prev.target += Number(g.ftd_target || 0);
+      prev.current += current;
+      progress[g.affiliate_id] = prev;
+    });
+    Object.keys(progress).forEach((k) => {
+      const p = progress[k];
+      p.pct = p.target > 0 ? Math.min(100, Math.round((p.current / p.target) * 100)) : 0;
+    });
+    setGoalProgress(progress);
   };
   const loadLookups = async () => {
     const [c, ch, cl] = await Promise.all([
@@ -686,8 +720,9 @@ export default function Afiliados() {
           </div>
           <Table>
             <TableHeader><TableRow>
-              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead><TableHead>Alias</TableHead>
-              <TableHead>País</TableHead><TableHead>Canales</TableHead><TableHead>Comisión</TableHead>
+              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
+              <TableHead>País</TableHead><TableHead>Comisión</TableHead>
+              <TableHead className="min-w-[160px]">Objetivo</TableHead>
               <TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
@@ -711,22 +746,24 @@ export default function Afiliados() {
                       {r.fixed_name}
                     </button>
                   </TableCell>
-                  <TableCell>
-                    {Array.isArray(r.aliases) && r.aliases.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {r.aliases.map((a: string, i: number) => (
-                          <Badge key={`${a}-${i}`} variant="secondary" className="text-xs">{a}</Badge>
-                        ))}
-                      </div>
-                    ) : (r.alias || "—")}
-                  </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
-                  <TableCell className="text-xs">{r.affiliate_channel_links?.map((l: any) => l.channel?.name).join(", ")}</TableCell>
                   <TableCell>
                     {(() => {
                       const s = commissionShares[r.id];
                       if (!s || s.earned === 0) return <span className="text-muted-foreground text-xs">—</span>;
                       return <span className="font-medium">{s.pct.toFixed(2)}%</span>;
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const g = goalProgress[r.id];
+                      if (!g || g.target === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Progress value={g.pct} className="h-2 flex-1" />
+                          <span className={`text-xs font-medium ${g.pct >= 100 ? "text-success" : ""}`}>{g.pct}%</span>
+                        </div>
+                      );
                     })()}
                   </TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>

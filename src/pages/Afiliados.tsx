@@ -124,6 +124,38 @@ export default function Afiliados() {
       shares[k].pct = totalBilled > 0 ? (shares[k].earned / totalBilled) * 100 : 0;
     });
     setCommissionShares(shares);
+
+    // Compute goal progress per affiliate (sum of all goals: target vs qualified)
+    const { data: goals } = await supabase
+      .from("affiliate_goals")
+      .select("affiliate_id, scope, period, client_id, brand, ftd_target");
+
+    const progress: Record<string, { target: number; current: number; pct: number }> = {};
+    (goals ?? []).forEach((g: any) => {
+      let current = 0;
+      (items ?? []).forEach((it: any) => {
+        if (it.affiliate_id !== g.affiliate_id) return;
+        const cls: any = closureMap.get(it.closure_id);
+        if (!cls) return;
+        if (g.scope === "monthly" && g.period && cls.period !== g.period) return;
+        if (g.client_id && cls.client_id !== g.client_id) return;
+        if (g.brand) {
+          const a = (it.brand || "").toLowerCase();
+          const b = g.brand.toLowerCase();
+          if (!(a.includes(b) || b.includes(a))) return;
+        }
+        current += it.qualified_players || 0;
+      });
+      const prev = progress[g.affiliate_id] ?? { target: 0, current: 0, pct: 0 };
+      prev.target += Number(g.ftd_target || 0);
+      prev.current += current;
+      progress[g.affiliate_id] = prev;
+    });
+    Object.keys(progress).forEach((k) => {
+      const p = progress[k];
+      p.pct = p.target > 0 ? Math.min(100, Math.round((p.current / p.target) * 100)) : 0;
+    });
+    setGoalProgress(progress);
   };
   const loadLookups = async () => {
     const [c, ch, cl] = await Promise.all([

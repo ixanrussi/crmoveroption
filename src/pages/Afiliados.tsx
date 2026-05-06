@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
-import { CURRENCIES } from "@/lib/currencies";
+import { useCurrencies } from "@/lib/currencies";
 
 type CommissionPlan = {
   plan_start_date: string;
@@ -51,6 +51,7 @@ const emptyPlan: CommissionPlan = {
 
 export default function Afiliados() {
   const { isAdmin, isSuperAdmin } = useAuth();
+  const CURRENCIES = useCurrencies();
   const [list, setList] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);

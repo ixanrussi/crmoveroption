@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { CURRENCIES } from "@/lib/currencies";
+import { useCurrencies } from "@/lib/currencies";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
 const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;
@@ -57,6 +57,7 @@ const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();
+  const CURRENCIES = useCurrencies();
   const [list, setList] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [softwares, setSoftwares] = useState<any[]>([]);

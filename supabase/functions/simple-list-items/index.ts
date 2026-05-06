@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const allowedTables = ["countries", "softwares", "affiliate_channels"] as const;
+const allowedTables = ["countries", "softwares", "affiliate_channels", "currencies"] as const;
 type ListTable = (typeof allowedTables)[number];
 type AppRole = "super_admin" | "admin" | "user";
 
@@ -91,6 +91,15 @@ Deno.serve(async (req) => {
         await sql`insert into public.countries (name, code) values (${name}, ${body.code?.trim() || null})`;
       } else if (body.table === "softwares") {
         await sql`insert into public.softwares (name) values (${name})`;
+      } else if (body.table === "currencies") {
+        const code = body.code?.trim().toUpperCase();
+        if (!code) {
+          return new Response(JSON.stringify({ error: "El código ISO es obligatorio" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        await sql`insert into public.currencies (name, code) values (${name}, ${code})`;
       } else {
         await sql`insert into public.affiliate_channels (name) values (${name})`;
       }
@@ -112,6 +121,8 @@ Deno.serve(async (req) => {
       deleted = await sql<{ id: string }[]>`delete from public.countries where id = ${body.id} returning id`;
     } else if (body.table === "softwares") {
       deleted = await sql<{ id: string }[]>`delete from public.softwares where id = ${body.id} returning id`;
+    } else if (body.table === "currencies") {
+      deleted = await sql<{ id: string }[]>`delete from public.currencies where id = ${body.id} returning id`;
     } else {
       deleted = await sql<{ id: string }[]>`delete from public.affiliate_channels where id = ${body.id} returning id`;
     }

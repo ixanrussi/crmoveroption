@@ -376,6 +376,8 @@ export type Database = {
           id: string
           overoption_retention: number | null
           plan_start_date: string | null
+          proportional_enabled: boolean
+          proportional_min_pct: number | null
           rev_share_pct: number | null
           updated_at: string
           wager: number | null
@@ -400,6 +402,8 @@ export type Database = {
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null
+          proportional_enabled?: boolean
+          proportional_min_pct?: number | null
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null
@@ -424,6 +428,8 @@ export type Database = {
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null
+          proportional_enabled?: boolean
+          proportional_min_pct?: number | null
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null

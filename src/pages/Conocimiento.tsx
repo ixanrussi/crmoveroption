@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Upload, Sparkles, FileText, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle2, MessageSquare } from "lucide-react";
 
@@ -229,6 +230,14 @@ export default function Conocimiento() {
                       <TableCell>{d.category || "—"}</TableCell>
                       <TableCell>
                         <StatusBadge status={d.status} />
+                        {(d.status === "analyzing" || d.status === "pending") && (
+                          <div className="mt-2 w-40">
+                            <IndeterminateBar />
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              {d.status === "analyzing" ? "Analizando con IA…" : "En cola…"}
+                            </p>
+                          </div>
+                        )}
                         {d.analysis_error && <p className="text-xs text-destructive mt-1 max-w-xs truncate" title={d.analysis_error}>{d.analysis_error}</p>}
                       </TableCell>
                       <TableCell className="max-w-md text-xs text-muted-foreground">
@@ -258,6 +267,17 @@ function StatusBadge({ status }: { status: string }) {
   if (status === "analyzing") return <Badge variant="secondary"><RefreshCw className="h-3 w-3 mr-1 animate-spin" /> Analizando</Badge>;
   if (status === "failed") return <Badge variant="destructive">Falló</Badge>;
   return <Badge variant="outline">Pendiente</Badge>;
+}
+
+function IndeterminateBar() {
+  return (
+    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+      <div className="absolute inset-y-0 left-0 w-1/3 bg-primary animate-[indeterminate_1.4s_ease-in-out_infinite]" style={{
+        animationName: "indeterminate",
+      }} />
+      <style>{`@keyframes indeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`}</style>
+    </div>
+  );
 }
 
 function FindingCard({ f, docName, onAnswer }: { f: Finding; docName: string; onAnswer: (id: string, answer: string, status: string) => void }) {

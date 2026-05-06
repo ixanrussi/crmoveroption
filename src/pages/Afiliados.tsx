@@ -421,7 +421,37 @@ export default function Afiliados() {
                         {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <Label>Reglas de remuneración fija</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Volumen mínimo de FTD/mes</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Ej. 50"
+                        value={form.fixed_remuneration_min_ftd ?? ""}
+                        onChange={(e) => setForm({ ...form, fixed_remuneration_min_ftd: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">CPA fallback (si no alcanza el volumen)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={form.fixed_remuneration_fallback_cpa ?? ""}
+                        onChange={(e) => setForm({ ...form, fixed_remuneration_fallback_cpa: e.target.value })}
+                      />
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Si el afiliado alcanza el volumen mínimo de FTDs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por FTD.
+                  </p>
+                </div>
                 </div>
                 <div className="space-y-1">
                   <Label>GEO's (países)</Label>

@@ -286,7 +286,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct"
       )}`;
     }
 

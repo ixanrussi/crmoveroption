@@ -24,6 +24,7 @@ type ClientPayload = {
   senha?: string | null;
   client_type?: string | null;
   brands?: string[] | null;
+  net_min_cpa?: number | string | null;
 };
 
 type ContactPayload = {

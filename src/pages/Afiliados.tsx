@@ -509,7 +509,15 @@ export default function Afiliados() {
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">{r.fixed_name}</TableCell>
-                  <TableCell>{r.alias || "—"}</TableCell>
+                  <TableCell>
+                    {Array.isArray(r.aliases) && r.aliases.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {r.aliases.map((a: string, i: number) => (
+                          <Badge key={`${a}-${i}`} variant="secondary" className="text-xs">{a}</Badge>
+                        ))}
+                      </div>
+                    ) : (r.alias || "—")}
+                  </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell className="text-xs">{r.affiliate_channel_links?.map((l: any) => l.channel?.name).join(", ")}</TableCell>
                   <TableCell>{r.commission_pct}%</TableCell>

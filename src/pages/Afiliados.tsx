@@ -74,7 +74,7 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setAliasInput(""); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
     const affIds: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0

@@ -144,7 +144,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
                 </div>
               )}
               <div>
-                <Label className="text-xs">Cliente (opcional)</Label>
+                <Label className="text-xs">Operador (opcional)</Label>
                 <Select value={draft.client_id ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, client_id: v === "__all__" ? null : v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>

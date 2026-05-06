@@ -659,7 +659,7 @@ export default function Afiliados() {
                                 );
                               }
                               return (
-                                <Input value={pl.brand} placeholder={pl.client_id ? "Cliente sin marcas" : "Nombre de la marca"}
+                                <Input value={pl.brand} placeholder={pl.client_id ? "Operador sin marcas" : "Nombre de la marca"}
                                   onChange={(e) => updatePlan(i, { brand: e.target.value })} />
                               );
                             })()}

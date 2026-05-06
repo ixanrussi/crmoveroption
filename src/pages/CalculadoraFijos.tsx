@@ -37,8 +37,12 @@ const fmt = (n: number, currency?: string | null) =>
     maximumFractionDigits: 2,
   }).format(n);
 
+type Country = { id: string; name: string; code: string | null };
+
 export default function CalculadoraFijos() {
   const [operators, setOperators] = useState<Operator[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
+  const [countryId, setCountryId] = useState<string>("all");
   const [opId, setOpId] = useState<string>("");
   const [planId, setPlanId] = useState<string>("");
   const [ftdTarget, setFtdTarget] = useState<string>("");
@@ -50,16 +54,34 @@ export default function CalculadoraFijos() {
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("clients")
-        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
-        .order("company_name");
-      setOperators((data ?? []) as any);
+      const [{ data: ops }, { data: cs }] = await Promise.all([
+        supabase
+          .from("clients")
+          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
+          .order("company_name"),
+        supabase.from("countries").select("id, name, code").order("name"),
+      ]);
+      setOperators((ops ?? []) as any);
+      setCountries((cs ?? []) as any);
     })();
   }, []);
 
-  const operator = operators.find((o) => o.id === opId);
-  const plan = operator?.client_commission_plans.find((p) => p.id === planId);
+  const filteredOperators = useMemo(() => {
+    if (countryId === "all") return operators;
+    return operators.filter((o: any) => {
+      const opHas = (o.country_ids ?? []).includes(countryId);
+      const planHas = (o.client_commission_plans ?? []).some((p: Plan) => (p.country_ids ?? []).includes(countryId));
+      return opHas && planHas;
+    });
+  }, [operators, countryId]);
+
+  const operator = filteredOperators.find((o) => o.id === opId);
+  const filteredPlans = useMemo(() => {
+    if (!operator) return [];
+    if (countryId === "all") return operator.client_commission_plans;
+    return operator.client_commission_plans.filter((p) => (p.country_ids ?? []).includes(countryId));
+  }, [operator, countryId]);
+  const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;
   const retencion = plan?.overoption_retention ?? 0;

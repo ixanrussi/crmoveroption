@@ -415,7 +415,7 @@ export default function Afiliados() {
                     >
                       <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
                       <SelectContent>
-                        {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                        {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
                   </div>

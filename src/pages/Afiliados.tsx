@@ -51,10 +51,11 @@ export default function Afiliados() {
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
-    fixed_name: "", alias: "", email: "", phone: "", country_ids: [] as string[],
+    fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "",
   };
   const [form, setForm] = useState<any>(empty);
+  const [aliasInput, setAliasInput] = useState("");
 
   const load = async () => {
     const { data } = await supabase

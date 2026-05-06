@@ -269,6 +269,17 @@ function StatusBadge({ status }: { status: string }) {
   return <Badge variant="outline">Pendiente</Badge>;
 }
 
+function IndeterminateBar() {
+  return (
+    <div className="relative h-1.5 w-full overflow-hidden rounded-full bg-secondary">
+      <div className="absolute inset-y-0 left-0 w-1/3 bg-primary animate-[indeterminate_1.4s_ease-in-out_infinite]" style={{
+        animationName: "indeterminate",
+      }} />
+      <style>{`@keyframes indeterminate { 0% { transform: translateX(-100%); } 100% { transform: translateX(300%); } }`}</style>
+    </div>
+  );
+}
+
 function FindingCard({ f, docName, onAnswer }: { f: Finding; docName: string; onAnswer: (id: string, answer: string, status: string) => void }) {
   const [answer, setAnswer] = useState(f.answer ?? "");
   const sevColor = f.severity === "high" ? "border-destructive/50 bg-destructive/5"

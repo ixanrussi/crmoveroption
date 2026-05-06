@@ -45,6 +45,9 @@ const App = () => (
               <Route path="/usuarios" element={
                 <ProtectedRoute requireRole="super_admin"><Usuarios /></ProtectedRoute>
               } />
+              <Route path="/logs" element={
+                <ProtectedRoute requireRole="super_admin"><ActivityLogs /></ProtectedRoute>
+              } />
             </Route>
             <Route path="*" element={<NotFound />} />
           </Routes>

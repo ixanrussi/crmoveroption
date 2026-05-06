@@ -230,6 +230,14 @@ export default function Conocimiento() {
                       <TableCell>{d.category || "—"}</TableCell>
                       <TableCell>
                         <StatusBadge status={d.status} />
+                        {(d.status === "analyzing" || d.status === "pending") && (
+                          <div className="mt-2 w-40">
+                            <IndeterminateBar />
+                            <p className="text-[10px] text-muted-foreground mt-1">
+                              {d.status === "analyzing" ? "Analizando con IA…" : "En cola…"}
+                            </p>
+                          </div>
+                        )}
                         {d.analysis_error && <p className="text-xs text-destructive mt-1 max-w-xs truncate" title={d.analysis_error}>{d.analysis_error}</p>}
                       </TableCell>
                       <TableCell className="max-w-md text-xs text-muted-foreground">

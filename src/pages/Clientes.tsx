@@ -48,10 +48,12 @@ type CommissionPlan = {
   wager: string;
   conversion_type: string;
   cap: string;
+  overoption_retention: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+  overoption_retention: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -74,7 +76,7 @@ export default function Clientes() {
   const empty = {
     company_name: "", website: "",
     address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
-    client_type: "", brands: [] as string[],
+    client_type: "", brands: [] as string[], net_min_cpa: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [brandInput, setBrandInput] = useState("");
@@ -135,6 +137,7 @@ export default function Clientes() {
       country_ids: ids,
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
+      net_min_cpa: row.net_min_cpa?.toString() ?? "",
     });
     setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
@@ -159,6 +162,7 @@ export default function Clientes() {
         wager: p.wager?.toString() ?? "",
         conversion_type: p.conversion_type ?? "",
         cap: p.cap?.toString() ?? "",
+        overoption_retention: p.overoption_retention?.toString() ?? "",
       })),
     );
     setBrandInput("");
@@ -201,6 +205,7 @@ export default function Clientes() {
           senha: form.senha,
           client_type: form.client_type || null,
           brands: Array.isArray(form.brands) ? form.brands : [],
+          net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
@@ -217,6 +222,7 @@ export default function Clientes() {
           wager: p.wager === "" ? null : p.wager,
           conversion_type: p.conversion_type || null,
           cap: p.cap === "" ? null : p.cap,
+          overoption_retention: p.overoption_retention === "" ? null : p.overoption_retention,
         })),
       },
     });
@@ -341,6 +347,13 @@ export default function Clientes() {
                       {CLIENT_TYPES.map((t) => <SelectItem key={t} value={t}>{t}</SelectItem>)}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label>CPA neto mínimo (pago bajo objetivo)</Label>
+                  <Input type="number" step="0.01" value={form.net_min_cpa ?? ""}
+                    onChange={(e) => setForm({ ...form, net_min_cpa: e.target.value })}
+                    placeholder="Valor neto a pagar al afiliado por FTD bajo el objetivo" />
+                  <p className="text-xs text-muted-foreground">Usado en la calculadora de fijos cuando el afiliado no alcanza el objetivo de FTDs.</p>
                 </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
@@ -590,6 +603,21 @@ export default function Clientes() {
                           <Label className="text-xs">CAP (conversiones autorizadas)</Label>
                           <Input type="number" step="1" value={pl.cap}
                             onChange={(e) => updatePlan(i, { cap: e.target.value })} />
+                        </div>
+                        <div className="space-y-1 col-span-2 border-t pt-2 mt-1">
+                          <Label className="text-xs">Retención Overoption (valor por CPA)</Label>
+                          <Input type="number" step="0.01" value={pl.overoption_retention}
+                            onChange={(e) => updatePlan(i, { overoption_retention: e.target.value })}
+                            placeholder="Valor absoluto retenido por cada CPA" />
+                          {(() => {
+                            const cpa = parseFloat(pl.cpa);
+                            const ret = parseFloat(pl.overoption_retention);
+                            if (Number.isFinite(cpa) && cpa > 0 && Number.isFinite(ret)) {
+                              const pct = (ret / cpa) * 100;
+                              return <p className="text-xs text-muted-foreground">Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto.</p>;
+                            }
+                            return <p className="text-xs text-muted-foreground">Define CPA y retención para ver el % equivalente.</p>;
+                          })()}
                         </div>
                       </div>
                       </CollapsibleContent>

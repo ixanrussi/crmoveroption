@@ -371,6 +371,7 @@ export type Database = {
           currency: string | null
           description: string | null
           id: string
+          overoption_retention: number | null
           plan_start_date: string | null
           rev_share_pct: number | null
           updated_at: string
@@ -391,6 +392,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           id?: string
+          overoption_retention?: number | null
           plan_start_date?: string | null
           rev_share_pct?: number | null
           updated_at?: string
@@ -411,6 +413,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           id?: string
+          overoption_retention?: number | null
           plan_start_date?: string | null
           rev_share_pct?: number | null
           updated_at?: string
@@ -516,6 +519,7 @@ export type Database = {
           email: string | null
           id: string
           login: string | null
+          net_min_cpa: number | null
           notes: string | null
           phone: string | null
           senha: string | null
@@ -537,6 +541,7 @@ export type Database = {
           email?: string | null
           id?: string
           login?: string | null
+          net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null
           senha?: string | null
@@ -558,6 +563,7 @@ export type Database = {
           email?: string | null
           id?: string
           login?: string | null
+          net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null
           senha?: string | null

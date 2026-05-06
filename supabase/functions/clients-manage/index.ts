@@ -24,6 +24,7 @@ type ClientPayload = {
   senha?: string | null;
   client_type?: string | null;
   brands?: string[] | null;
+  net_min_cpa?: number | string | null;
 };
 
 type ContactPayload = {
@@ -47,6 +48,7 @@ type CommissionPlanPayload = {
   wager?: number | string | null;
   conversion_type?: string | null;
   cap?: number | string | null;
+  overoption_retention?: number | string | null;
 };
 
 type RequestBody = {
@@ -139,6 +141,11 @@ Deno.serve(async (req) => {
       ? c.country_ids.filter((x) => typeof x === "string" && x.length > 0)
       : [];
 
+    const numTop = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
     const payload = {
       company_name: c.company_name.trim(),
       website: c.website || null,
@@ -152,6 +159,7 @@ Deno.serve(async (req) => {
       senha: c.senha || null,
       client_type: clientType,
       brands,
+      net_min_cpa: numTop(c.net_min_cpa),
     };
 
     let clientId = body.id;
@@ -179,12 +187,12 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, created_by
+          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, created_by
         ) values (
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
-          ${payload.client_type}, ${payload.brands}, ${userData.user.id}
+          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -204,6 +212,7 @@ Deno.serve(async (req) => {
           senha = ${payload.senha},
           client_type = ${payload.client_type},
           brands = ${payload.brands},
+          net_min_cpa = ${payload.net_min_cpa},
           updated_at = now()
         where id = ${clientId}
       `;
@@ -256,6 +265,7 @@ Deno.serve(async (req) => {
             wager: num(p?.wager),
             conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
             cap: intOrNull(p?.cap),
+            overoption_retention: num(p?.overoption_retention),
           };
         })
       : [];
@@ -266,7 +276,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention"
       )}`;
     }
 

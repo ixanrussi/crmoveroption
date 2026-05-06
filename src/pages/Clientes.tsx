@@ -57,6 +57,7 @@ const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
 export default function Clientes() {
   const { isAdmin, isSuperAdmin } = useAuth();
+  const CURRENCIES = useCurrencies();
   const [list, setList] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [softwares, setSoftwares] = useState<any[]>([]);

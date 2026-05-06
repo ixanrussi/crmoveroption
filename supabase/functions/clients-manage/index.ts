@@ -274,6 +274,8 @@ Deno.serve(async (req) => {
             fallback_cpa: num(p?.fallback_cpa),
             cpa_at_80: num(p?.cpa_at_80),
             cpa_at_90: num(p?.cpa_at_90),
+            proportional_enabled: !!p?.proportional_enabled,
+            proportional_min_pct: num(p?.proportional_min_pct),
           };
         })
       : [];

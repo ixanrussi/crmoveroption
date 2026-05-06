@@ -75,6 +75,7 @@ export default function Afiliados() {
   const [aliasInput, setAliasInput] = useState("");
 
   const [commissionShares, setCommissionShares] = useState<Record<string, { earned: number; pct: number; currency: string | null }>>({});
+  const [goalProgress, setGoalProgress] = useState<Record<string, { target: number; current: number; pct: number }>>({});
 
   const load = async () => {
     const { data } = await supabase

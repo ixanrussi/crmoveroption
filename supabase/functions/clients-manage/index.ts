@@ -141,6 +141,11 @@ Deno.serve(async (req) => {
       ? c.country_ids.filter((x) => typeof x === "string" && x.length > 0)
       : [];
 
+    const numTop = (v: unknown): number | null => {
+      if (v === null || v === undefined || v === "") return null;
+      const n = Number(v);
+      return Number.isFinite(n) ? n : null;
+    };
     const payload = {
       company_name: c.company_name.trim(),
       website: c.website || null,
@@ -154,6 +159,7 @@ Deno.serve(async (req) => {
       senha: c.senha || null,
       client_type: clientType,
       brands,
+      net_min_cpa: numTop(c.net_min_cpa),
     };
 
     let clientId = body.id;

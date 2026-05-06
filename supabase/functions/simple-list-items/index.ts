@@ -9,7 +9,7 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
-const allowedTables = ["countries", "softwares", "affiliate_channels"] as const;
+const allowedTables = ["countries", "softwares", "affiliate_channels", "currencies"] as const;
 type ListTable = (typeof allowedTables)[number];
 type AppRole = "super_admin" | "admin" | "user";
 

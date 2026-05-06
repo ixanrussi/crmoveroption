@@ -49,11 +49,14 @@ type CommissionPlan = {
   conversion_type: string;
   cap: string;
   overoption_retention: string;
+  fallback_cpa: string;
+  cpa_at_20: string;
+  cpa_at_90: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
-  overoption_retention: "",
+  overoption_retention: "", fallback_cpa: "", cpa_at_20: "", cpa_at_90: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -163,6 +166,9 @@ export default function Clientes() {
         conversion_type: p.conversion_type ?? "",
         cap: p.cap?.toString() ?? "",
         overoption_retention: p.overoption_retention?.toString() ?? "",
+        fallback_cpa: p.fallback_cpa?.toString() ?? "",
+        cpa_at_20: p.cpa_at_20?.toString() ?? "",
+        cpa_at_90: p.cpa_at_90?.toString() ?? "",
       })),
     );
     setBrandInput("");
@@ -223,6 +229,9 @@ export default function Clientes() {
           conversion_type: p.conversion_type || null,
           cap: p.cap === "" ? null : p.cap,
           overoption_retention: p.overoption_retention === "" ? null : p.overoption_retention,
+          fallback_cpa: p.fallback_cpa === "" ? null : p.fallback_cpa,
+          cpa_at_20: p.cpa_at_20 === "" ? null : p.cpa_at_20,
+          cpa_at_90: p.cpa_at_90 === "" ? null : p.cpa_at_90,
         })),
       },
     });
@@ -604,20 +613,40 @@ export default function Clientes() {
                           <Input type="number" step="1" value={pl.cap}
                             onChange={(e) => updatePlan(i, { cap: e.target.value })} />
                         </div>
-                        <div className="space-y-1 col-span-2 border-t pt-2 mt-1">
-                          <Label className="text-xs">Retención Overoption (valor por CPA)</Label>
-                          <Input type="number" step="0.01" value={pl.overoption_retention}
-                            onChange={(e) => updatePlan(i, { overoption_retention: e.target.value })}
-                            placeholder="Valor absoluto retenido por cada CPA" />
-                          {(() => {
-                            const cpa = parseFloat(pl.cpa);
-                            const ret = parseFloat(pl.overoption_retention);
-                            if (Number.isFinite(cpa) && cpa > 0 && Number.isFinite(ret)) {
-                              const pct = (ret / cpa) * 100;
-                              return <p className="text-xs text-muted-foreground">Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto.</p>;
-                            }
-                            return <p className="text-xs text-muted-foreground">Define CPA y retención para ver el % equivalente.</p>;
-                          })()}
+                        <div className="col-span-2 border-t pt-3 mt-1 grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Retención Overoption (valor por CPA)</Label>
+                            <Input type="number" step="0.01" value={pl.overoption_retention}
+                              onChange={(e) => updatePlan(i, { overoption_retention: e.target.value })}
+                              placeholder="Valor absoluto retenido por cada CPA" />
+                            {(() => {
+                              const cpa = parseFloat(pl.cpa);
+                              const ret = parseFloat(pl.overoption_retention);
+                              if (Number.isFinite(cpa) && cpa > 0 && Number.isFinite(ret)) {
+                                const pct = (ret / cpa) * 100;
+                                return <p className="text-xs text-muted-foreground">Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto.</p>;
+                              }
+                              return <p className="text-xs text-muted-foreground">Define CPA y retención para ver el % equivalente.</p>;
+                            })()}
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CPA fallback (bajo objetivo)</Label>
+                            <Input type="number" step="0.01" value={pl.fallback_cpa}
+                              onChange={(e) => updatePlan(i, { fallback_cpa: e.target.value })}
+                              placeholder="CPA pagado si no alcanza el objetivo" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CPA al 20% del objetivo</Label>
+                            <Input type="number" step="0.01" value={pl.cpa_at_20}
+                              onChange={(e) => updatePlan(i, { cpa_at_20: e.target.value })}
+                              placeholder="Valor CPA si cumple ≥20%" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">CPA al 90% del objetivo</Label>
+                            <Input type="number" step="0.01" value={pl.cpa_at_90}
+                              onChange={(e) => updatePlan(i, { cpa_at_90: e.target.value })}
+                              placeholder="Valor CPA si cumple ≥90%" />
+                          </div>
                         </div>
                       </div>
                       </CollapsibleContent>

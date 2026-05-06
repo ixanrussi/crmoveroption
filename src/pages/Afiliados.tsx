@@ -615,6 +615,11 @@ export default function Afiliados() {
                     <AffiliateEarnings affiliateId={editing.id} />
                   </TabsContent>
                 )}
+                {editing && (
+                  <TabsContent value="objetivos">
+                    <AffiliateGoals affiliateId={editing.id} />
+                  </TabsContent>
+                )}
               </Tabs>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>

@@ -401,30 +401,33 @@ export default function Afiliados() {
                   <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Teléfono</Label>
                   <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
-                <div className="space-y-1">
-                  <Label>Remuneración fija</Label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      step="0.01"
-                      min="0"
-                      placeholder="0.00"
-                      value={form.fixed_remuneration ?? ""}
-                      onChange={(e) => setForm({ ...form, fixed_remuneration: e.target.value })}
-                    />
-                    <Select
-                      value={form.fixed_remuneration_currency ?? ""}
-                      onValueChange={(v) => setForm({ ...form, fixed_remuneration_currency: v })}
-                    >
-                      <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
-                      <SelectContent>
-                        {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                </div>
-                <div className="space-y-1 md:col-span-2">
-                  <Label>Reglas de remuneración fija</Label>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                <div className="md:col-span-2 rounded-lg border border-border bg-muted/30 p-4 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <h4 className="text-sm font-semibold">Remuneración fija</h4>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Monto y moneda</Label>
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          step="0.01"
+                          min="0"
+                          placeholder="0.00"
+                          value={form.fixed_remuneration ?? ""}
+                          onChange={(e) => setForm({ ...form, fixed_remuneration: e.target.value })}
+                        />
+                        <Select
+                          value={form.fixed_remuneration_currency ?? ""}
+                          onValueChange={(v) => setForm({ ...form, fixed_remuneration_currency: v })}
+                        >
+                          <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
                     <div className="space-y-1">
                       <Label className="text-xs text-muted-foreground">Volumen mínimo de FTD/mes</Label>
                       <Input
@@ -436,7 +439,7 @@ export default function Afiliados() {
                         onChange={(e) => setForm({ ...form, fixed_remuneration_min_ftd: e.target.value })}
                       />
                     </div>
-                    <div className="space-y-1">
+                    <div className="space-y-1 md:col-span-2">
                       <Label className="text-xs text-muted-foreground">CPA fallback (si no alcanza el volumen)</Label>
                       <Input
                         type="number"
@@ -451,7 +454,6 @@ export default function Afiliados() {
                   <p className="text-[11px] text-muted-foreground">
                     Si el afiliado alcanza el volumen mínimo de FTDs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por FTD.
                   </p>
-                </div>
                 </div>
                 <div className="space-y-1">
                   <Label>GEO's (países)</Label>

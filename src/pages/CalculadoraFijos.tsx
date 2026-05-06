@@ -18,6 +18,8 @@ type Plan = {
   fallback_cpa: number | null;
   cpa_at_80: number | null;
   cpa_at_90: number | null;
+  proportional_enabled: boolean | null;
+  proportional_min_pct: number | null;
   country_ids: string[] | null;
 };
 

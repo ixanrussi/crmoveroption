@@ -211,7 +211,6 @@ export default function CalculadoraFijos() {
                     { label: "CPA al ≥90% del objetivo", value: cpa90 },
                     { label: "CPA al ≥80% del objetivo", value: cpa80 },
                   ]
-                    .filter((r) => !r.hide)
                     .sort((a, b) => (b.value || 0) - (a.value || 0))
                     .map((r) => (
                       <div key={r.label} className="flex justify-between text-sm">

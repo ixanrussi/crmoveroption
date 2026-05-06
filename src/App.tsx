@@ -16,6 +16,7 @@ import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import Conocimiento from "./pages/Conocimiento";
+import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

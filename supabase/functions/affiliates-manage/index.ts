@@ -155,13 +155,14 @@ Deno.serve(async (req) => {
       `;
       if (dupCliName.length) return { response: json(409, { error: "El nombre coincide con un cliente existente" }) };
 
+      const aliasPrimary = payload.aliases[0] ?? payload.alias ?? null;
       if (body.action === "insert") {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
-            fixed_name, alias, email, phone, country_id, country_ids, status,
+            fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
           ) values (
-            ${payload.fixed_name}, ${payload.alias}, ${payload.email}, ${payload.phone}, ${payload.country_id},
+            ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
@@ -175,7 +176,8 @@ Deno.serve(async (req) => {
           await tx`
             update public.affiliates set
               fixed_name = ${payload.fixed_name},
-              alias = ${payload.alias},
+              alias = ${aliasPrimary},
+              aliases = ${payload.aliases}::text[],
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},
@@ -193,7 +195,8 @@ Deno.serve(async (req) => {
         } else {
           await tx`
             update public.affiliates set
-              alias = ${payload.alias},
+              alias = ${aliasPrimary},
+              aliases = ${payload.aliases}::text[],
               email = ${payload.email},
               phone = ${payload.phone},
               country_id = ${payload.country_id},

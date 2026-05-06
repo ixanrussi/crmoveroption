@@ -52,6 +52,8 @@ type CommissionPlanPayload = {
   fallback_cpa?: number | string | null;
   cpa_at_80?: number | string | null;
   cpa_at_90?: number | string | null;
+  proportional_enabled?: boolean | null;
+  proportional_min_pct?: number | string | null;
 };
 
 type RequestBody = {

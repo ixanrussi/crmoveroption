@@ -28,7 +28,7 @@ type Closure = { id: string; client_id: string; period: string; currency: string
 type Affiliate = { id: string; fixed_name: string; alias: string | null; country_ids: string[]; status: string };
 type Client = { id: string; company_name: string };
 type Country = { id: string; name: string; code: string | null };
-type AffPlan = { id: string; affiliate_id: string; brand: string | null; cpa: number | null; currency: string | null; plan_start_date: string | null };
+type AffPlan = { id: string; affiliate_id: string; client_id: string | null; brand: string | null; cpa: number | null; cpa_currency: string | null; currency: string | null; country_ids: string[]; plan_start_date: string | null };
 
 const fmt = (n: number, cur?: string | null) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: cur || "EUR", maximumFractionDigits: 0 }).format(n || 0);

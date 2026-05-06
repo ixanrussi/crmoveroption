@@ -70,7 +70,7 @@ export default function Afiliados() {
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
-    status: "active", notes: "",
+    status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");

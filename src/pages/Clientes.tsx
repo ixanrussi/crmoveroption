@@ -15,6 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
+import { CURRENCIES } from "@/lib/currencies";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
 const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;
@@ -488,8 +489,7 @@ export default function Clientes() {
                           <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
                             <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="USD">USD</SelectItem>
-                              <SelectItem value="EUR">EUR</SelectItem>
+                              {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                             </SelectContent>
                           </Select>
                         </div>

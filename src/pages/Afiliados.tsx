@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
-const CURRENCIES = ["USD", "EUR", "BRL", "MXN", "ARS", "CLP", "COP", "PEN", "GBP"] as const;
+import { CURRENCIES } from "@/lib/currencies";
 
 type CommissionPlan = {
   plan_start_date: string;
@@ -407,8 +407,7 @@ export default function Afiliados() {
                             <Select value={pl.currency} onValueChange={(v) => updatePlan(i, { currency: v })}>
                               <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
                               <SelectContent>
-                                <SelectItem value="USD">USD</SelectItem>
-                                <SelectItem value="EUR">EUR</SelectItem>
+                                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                               </SelectContent>
                             </Select>
                           </div>

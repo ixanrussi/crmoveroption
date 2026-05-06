@@ -15,6 +15,9 @@ type Plan = {
   currency: string | null;
   cpa: number | null;
   overoption_retention: number | null;
+  fallback_cpa: number | null;
+  cpa_at_80: number | null;
+  cpa_at_90: number | null;
   country_ids: string[] | null;
 };
 
@@ -47,7 +50,7 @@ export default function CalculadoraFijos() {
     (async () => {
       const { data } = await supabase
         .from("clients")
-        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, country_ids)")
+        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, country_ids)")
         .order("company_name");
       setOperators((data ?? []) as any);
     })();
@@ -58,8 +61,10 @@ export default function CalculadoraFijos() {
 
   const cpaBruto = plan?.cpa ?? 0;
   const retencion = plan?.overoption_retention ?? 0;
-  const cpaNeto = Math.max(0, cpaBruto - retencion); // valor neto disponible para el afiliado
-  const netMin = operator?.net_min_cpa ?? 0;
+  const cpaNeto = Math.max(0, cpaBruto - retencion);
+  const fallbackCpa = plan?.fallback_cpa ?? operator?.net_min_cpa ?? 0;
+  const cpa80 = plan?.cpa_at_80 ?? 0;
+  const cpa90 = plan?.cpa_at_90 ?? 0;
 
   const ftdT = parseFloat(ftdTarget) || 0;
   const fixed = parseFloat(fixedAmount) || 0;
@@ -67,13 +72,29 @@ export default function CalculadoraFijos() {
 
   const calc = useMemo(() => {
     if (!plan || ftdT <= 0) return null;
-    const cpaEfectivoObjetivo = fixed / ftdT; // CPA neto efectivo si cumple objetivo
-    const maxFijoPosible = cpaNeto * ftdT; // tope para no exceder CPA neto
-    const cumplio = ftdA >= ftdT;
-    const pagoReal = cumplio ? fixed : ftdA * netMin;
+    const cpaEfectivoObjetivo = fixed / ftdT;
+    const maxFijoPosible = cpaNeto * ftdT;
+    const pct = ftdA / ftdT;
+    let cpaTier = 0;
+    let tierLabel = "";
+    if (pct >= 1) {
+      cpaTier = 0;
+      tierLabel = "Objetivo alcanzado (100%)";
+    } else if (pct >= 0.9 && cpa90 > 0) {
+      cpaTier = cpa90;
+      tierLabel = "≥ 90% del objetivo";
+    } else if (pct >= 0.8 && cpa80 > 0) {
+      cpaTier = cpa80;
+      tierLabel = "≥ 80% del objetivo";
+    } else {
+      cpaTier = fallbackCpa;
+      tierLabel = "Bajo objetivo (fallback)";
+    }
+    const cumplio = pct >= 1;
+    const pagoReal = cumplio ? fixed : ftdA * cpaTier;
     const cpaEfectivoReal = ftdA > 0 ? pagoReal / ftdA : 0;
-    return { cpaEfectivoObjetivo, maxFijoPosible, cumplio, pagoReal, cpaEfectivoReal };
-  }, [plan, ftdT, fixed, ftdA, cpaNeto, netMin]);
+    return { cpaEfectivoObjetivo, maxFijoPosible, cumplio, pagoReal, cpaEfectivoReal, tierLabel, cpaTier };
+  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90]);
 
   return (
     <div className="space-y-6">
@@ -185,9 +206,21 @@ export default function CalculadoraFijos() {
                     <span className="font-semibold">{fmt(cpaNeto, plan.currency)}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">CPA neto mínimo (bajo objetivo)</span>
+                    <span className="text-muted-foreground">CPA fallback (bajo objetivo)</span>
                     <span className="font-semibold">
-                      {netMin > 0 ? fmt(netMin, plan.currency) : <Badge variant="destructive">No configurado</Badge>}
+                      {fallbackCpa > 0 ? fmt(fallbackCpa, plan.currency) : <Badge variant="destructive">No configurado</Badge>}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">CPA al ≥80% del objetivo</span>
+                    <span className="font-semibold">
+                      {cpa80 > 0 ? fmt(cpa80, plan.currency) : <span className="text-muted-foreground">— usa fallback</span>}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">CPA al ≥90% del objetivo</span>
+                    <span className="font-semibold">
+                      {cpa90 > 0 ? fmt(cpa90, plan.currency) : <span className="text-muted-foreground">— usa fallback</span>}
                     </span>
                   </div>
                 </div>
@@ -221,7 +254,7 @@ export default function CalculadoraFijos() {
                       <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
                         Escenario real
                         <Badge variant={calc.cumplio ? "default" : "secondary"}>
-                          {calc.cumplio ? "Objetivo alcanzado" : "Bajo objetivo"}
+                          {calc.tierLabel}
                         </Badge>
                       </div>
                       <div className="flex justify-between items-baseline">
@@ -232,9 +265,9 @@ export default function CalculadoraFijos() {
                         <span className="text-muted-foreground">CPA neto efectivo</span>
                         <span className="font-semibold">{fmt(calc.cpaEfectivoReal, plan.currency)}</span>
                       </div>
-                      {!calc.cumplio && netMin === 0 && (
+                      {!calc.cumplio && calc.cpaTier === 0 && (
                         <p className="text-xs text-destructive">
-                          ⚠ El operador no tiene CPA neto mínimo configurado. Edítalo en la ficha del Operador.
+                          ⚠ No hay CPA configurado para este escenario. Edita el Commission Plan del Operador.
                         </p>
                       )}
                     </div>

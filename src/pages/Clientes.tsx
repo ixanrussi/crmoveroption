@@ -624,7 +624,12 @@ export default function Clientes() {
                               const ret = parseFloat(pl.overoption_retention);
                               if (Number.isFinite(cpa) && cpa > 0 && Number.isFinite(ret)) {
                                 const pct = (ret / cpa) * 100;
-                                return <p className="text-xs text-muted-foreground">Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto.</p>;
+                                const neto = Math.max(0, cpa - ret);
+                                return (
+                                  <p className="text-xs text-muted-foreground">
+                                    Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto · CPA neto al afiliado: <span className="font-semibold text-foreground">{neto.toFixed(2)}</span>
+                                  </p>
+                                );
                               }
                               return <p className="text-xs text-muted-foreground">Define CPA y retención para ver el % equivalente.</p>;
                             })()}

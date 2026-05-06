@@ -399,6 +399,28 @@ export default function Afiliados() {
                 <div className="space-y-1"><Label>Teléfono</Label>
                   <Input value={form.phone ?? ""} onChange={(e) => setForm({ ...form, phone: e.target.value })} /></div>
                 <div className="space-y-1">
+                  <Label>Remuneración fija</Label>
+                  <div className="flex gap-2">
+                    <Input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      placeholder="0.00"
+                      value={form.fixed_remuneration ?? ""}
+                      onChange={(e) => setForm({ ...form, fixed_remuneration: e.target.value })}
+                    />
+                    <Select
+                      value={form.fixed_remuneration_currency ?? ""}
+                      onValueChange={(v) => setForm({ ...form, fixed_remuneration_currency: v })}
+                    >
+                      <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                      <SelectContent>
+                        {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+                <div className="space-y-1">
                   <Label>GEO's (países)</Label>
                   <Popover>
                     <PopoverTrigger asChild>

@@ -14,7 +14,6 @@ const mainItems = [
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
   { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },
-  { title: "Base de Conocimiento", url: "/conocimiento", icon: BookOpen },
 ];
 const listItems = [
   { title: "GEO´s", url: "/listas/paises" },
@@ -92,6 +91,14 @@ export function AppSidebar() {
                     <NavLink to="/usuarios">
                       <Shield className="h-4 w-4" />
                       <span>Usuarios y Roles</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/conocimiento")}>
+                    <NavLink to="/conocimiento">
+                      <BookOpen className="h-4 w-4" />
+                      <span>Base de Conocimiento</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

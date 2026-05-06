@@ -232,6 +232,12 @@ export default function Afiliados() {
               <DialogHeader>
                 <DialogTitle>{editing ? `Editar afiliado ${editing.unique_id}` : "Nuevo afiliado"}</DialogTitle>
               </DialogHeader>
+              <Tabs defaultValue="datos" className="w-full">
+                <TabsList className={editing ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
+                  <TabsTrigger value="datos">Datos & Comisiones</TabsTrigger>
+                  {editing && <TabsTrigger value="ganadas">Comisiones ganadas</TabsTrigger>}
+                </TabsList>
+                <TabsContent value="datos">
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label className="flex items-center gap-1">

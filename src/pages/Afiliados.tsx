@@ -706,7 +706,19 @@ export default function Afiliados() {
                   </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell className="text-xs">{r.affiliate_channel_links?.map((l: any) => l.channel?.name).join(", ")}</TableCell>
-                  <TableCell>{r.commission_pct}%</TableCell>
+                  <TableCell>
+                    {(() => {
+                      const s = commissionShares[r.id];
+                      if (!s || s.earned === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                      const fmt = new Intl.NumberFormat("es-ES", { style: "currency", currency: s.currency || "EUR" }).format(s.earned);
+                      return (
+                        <div className="flex flex-col">
+                          <span className="font-medium text-success text-sm">{fmt}</span>
+                          <span className="text-[10px] text-muted-foreground">{s.pct.toFixed(2)}% del total</span>
+                        </div>
+                      );
+                    })()}
+                  </TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

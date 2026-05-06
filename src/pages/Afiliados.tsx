@@ -720,8 +720,9 @@ export default function Afiliados() {
           </div>
           <Table>
             <TableHeader><TableRow>
-              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead><TableHead>Alias</TableHead>
-              <TableHead>País</TableHead><TableHead>Canales</TableHead><TableHead>Comisión</TableHead>
+              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
+              <TableHead>País</TableHead><TableHead>Comisión</TableHead>
+              <TableHead className="min-w-[160px]">Objetivo</TableHead>
               <TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
@@ -745,22 +746,24 @@ export default function Afiliados() {
                       {r.fixed_name}
                     </button>
                   </TableCell>
-                  <TableCell>
-                    {Array.isArray(r.aliases) && r.aliases.length > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {r.aliases.map((a: string, i: number) => (
-                          <Badge key={`${a}-${i}`} variant="secondary" className="text-xs">{a}</Badge>
-                        ))}
-                      </div>
-                    ) : (r.alias || "—")}
-                  </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
-                  <TableCell className="text-xs">{r.affiliate_channel_links?.map((l: any) => l.channel?.name).join(", ")}</TableCell>
                   <TableCell>
                     {(() => {
                       const s = commissionShares[r.id];
                       if (!s || s.earned === 0) return <span className="text-muted-foreground text-xs">—</span>;
                       return <span className="font-medium">{s.pct.toFixed(2)}%</span>;
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const g = goalProgress[r.id];
+                      if (!g || g.target === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                      return (
+                        <div className="flex items-center gap-2">
+                          <Progress value={g.pct} className="h-2 flex-1" />
+                          <span className={`text-xs font-medium ${g.pct >= 100 ? "text-success" : ""}`}>{g.pct}%</span>
+                        </div>
+                      );
                     })()}
                   </TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>

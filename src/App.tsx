@@ -15,6 +15,7 @@ import ComisionesDashboard from "./pages/ComisionesDashboard";
 import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
+import Conocimiento from "./pages/Conocimiento";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -35,6 +36,7 @@ const App = () => (
               <Route path="/afiliados" element={<Afiliados />} />
               <Route path="/cierres" element={<Cierres />} />
               <Route path="/comisiones-dashboard" element={<ComisionesDashboard />} />
+              <Route path="/conocimiento" element={<Conocimiento />} />
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />
               <Route path="/listas/software" element={<SimpleListPage table="softwares" title="Software" />} />
               <Route path="/listas/canales" element={<SimpleListPage table="affiliate_channels" title="Canales de afiliados" />} />

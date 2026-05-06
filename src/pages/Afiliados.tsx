@@ -18,7 +18,7 @@ import { toast } from "sonner";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
-import { CURRENCIES } from "@/lib/currencies";
+import { useCurrencies } from "@/lib/currencies";
 
 type CommissionPlan = {
   plan_start_date: string;

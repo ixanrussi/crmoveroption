@@ -48,10 +48,12 @@ type CommissionPlan = {
   wager: string;
   conversion_type: string;
   cap: string;
+  overoption_retention: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+  overoption_retention: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 

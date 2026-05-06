@@ -199,6 +199,8 @@ Deno.serve(async (req) => {
               brands = ${payload.brands},
               fixed_remuneration = ${payload.fixed_remuneration},
               fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
+              fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
+              fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               updated_at = now()
             where id = ${affiliateId}
           `;

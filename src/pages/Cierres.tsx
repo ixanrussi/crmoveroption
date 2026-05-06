@@ -709,6 +709,34 @@ export default function Cierres() {
                                       <span>{aff?.fixed_name ?? it.raw_campaign_name}</span>
                                     )}
                                     <div className="text-xs text-muted-foreground mt-0.5">PDF: {it.raw_campaign_name}</div>
+                                    {isAdmin && !it.affiliate_id && (() => {
+                                      const sugg = suggestAffiliates(it);
+                                      if (sugg.length === 0) return null;
+                                      return (
+                                        <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                                          <span className="text-[10px] text-muted-foreground">Sugerencias IA:</span>
+                                          {sugg.map(({ aff, score }) => {
+                                            const pct = Math.round(score * 100);
+                                            const tone = score >= 0.85 ? "success" : score >= 0.7 ? "info" : "warning";
+                                            return (
+                                              <button
+                                                key={aff.id}
+                                                onClick={() => assignAffiliate(it, aff.id)}
+                                                className="text-[11px] px-1.5 py-0.5 rounded border hover:bg-accent inline-flex items-center gap-1"
+                                                style={{
+                                                  borderColor: `hsl(var(--${tone}) / 0.4)`,
+                                                  backgroundColor: `hsl(var(--${tone}) / 0.08)`,
+                                                }}
+                                                title={`Confirmar match con ${aff.fixed_name}`}
+                                              >
+                                                <span className="font-medium">{aff.fixed_name}</span>
+                                                <span style={{ color: `hsl(var(--${tone}))` }}>{pct}%</span>
+                                              </button>
+                                            );
+                                          })}
+                                        </div>
+                                      );
+                                    })()}
                                   </TableCell>
                                   <TableCell className="font-mono text-xs">{it.raw_campaign_id}</TableCell>
                                   {isRs ? (

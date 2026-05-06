@@ -264,12 +264,11 @@ export default function Clientes() {
               onPointerDownOutside={(e) => e.preventDefault()}
               onInteractOutside={(e) => e.preventDefault()}
             >
-              <DialogHeader><DialogTitle>{editing ? "Editar cliente" : "Nuevo cliente"}</DialogTitle></DialogHeader>
+              <DialogHeader><DialogTitle>{editing ? "Editar Operador" : "Nuevo Operador"}</DialogTitle></DialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label>Empresa *</Label>
-                  <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} />
-                </div>
+                  <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} disabled={!!editing} /></div>
                 <div className="space-y-1"><Label>Sitio web</Label>
                   <Input value={form.website ?? ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Login</Label>

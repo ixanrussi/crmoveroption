@@ -162,12 +162,14 @@ Deno.serve(async (req) => {
         const inserted = await tx<{ id: string; unique_id: string }[]>`
           insert into public.affiliates (
             fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
-            commission_pct, payment_method, bank_details, tax_id, notes, brands, created_by
+            commission_pct, payment_method, bank_details, tax_id, notes, brands,
+            fixed_remuneration, fixed_remuneration_currency, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
-            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands}, ${userData.user.id}
+            ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
+            ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;

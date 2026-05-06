@@ -15,7 +15,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
 import { toast } from "sonner";
-import { CURRENCIES } from "@/lib/currencies";
+import { useCurrencies } from "@/lib/currencies";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
 const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;

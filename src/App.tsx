@@ -16,6 +16,7 @@ import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import Conocimiento from "./pages/Conocimiento";
+import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -43,6 +44,9 @@ const App = () => (
               <Route path="/listas/monedas" element={<SimpleListPage table="currencies" title="Monedas" withCode />} />
               <Route path="/usuarios" element={
                 <ProtectedRoute requireRole="super_admin"><Usuarios /></ProtectedRoute>
+              } />
+              <Route path="/logs" element={
+                <ProtectedRoute requireRole="super_admin"><ActivityLogs /></ProtectedRoute>
               } />
             </Route>
             <Route path="*" element={<NotFound />} />

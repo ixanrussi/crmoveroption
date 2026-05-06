@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText } from "lucide-react";
 import logo from "@/assets/overoption-logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -99,6 +99,14 @@ export function AppSidebar() {
                     <NavLink to="/conocimiento">
                       <BookOpen className="h-4 w-4" />
                       <span>Base de Conocimiento</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/logs")}>
+                    <NavLink to="/logs">
+                      <ScrollText className="h-4 w-4" />
+                      <span>Log de actividad</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

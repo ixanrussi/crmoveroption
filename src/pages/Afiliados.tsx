@@ -51,10 +51,11 @@ export default function Afiliados() {
   const [saving, setSaving] = useState(false);
 
   const empty: any = {
-    fixed_name: "", alias: "", email: "", phone: "", country_ids: [] as string[],
+    fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "",
   };
   const [form, setForm] = useState<any>(empty);
+  const [aliasInput, setAliasInput] = useState("");
 
   const load = async () => {
     const { data } = await supabase
@@ -73,13 +74,17 @@ export default function Afiliados() {
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
-  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setOpen(true); };
+  const openNew = () => { setEditing(null); setForm(empty); setChannelIds([]); setChannelLinks({}); setPlans([]); setAliasInput(""); setOpen(true); };
   const openEdit = (row: any) => {
     setEditing(row);
     const affIds: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
       ? row.country_ids
       : (row?.country_id ? [row.country_id] : []);
-    setForm({ ...row, country_ids: affIds });
+    const aliasesArr: string[] = Array.isArray(row?.aliases) && row.aliases.length > 0
+      ? row.aliases
+      : (row?.alias ? [row.alias] : []);
+    setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
+    setAliasInput("");
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
@@ -110,9 +115,12 @@ export default function Afiliados() {
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
+    const aliasesArr: string[] = Array.isArray(form.aliases) ? form.aliases.filter((x: string) => x && x.trim()) : [];
     const payload: any = {
       fixed_name: form.fixed_name,
-      alias: form.alias || null, email: form.email || null, phone: form.phone || null,
+      alias: aliasesArr[0] || form.alias || null,
+      aliases: aliasesArr,
+      email: form.email || null, phone: form.phone || null,
       country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
     };
@@ -198,9 +206,57 @@ export default function Afiliados() {
                     onChange={(e) => setForm({ ...form, fixed_name: e.target.value })} />
                   {!canEditFixed && <p className="text-xs text-muted-foreground">Solo el super admin puede modificarlo.</p>}
                 </div>
-                <div className="col-span-2 space-y-1">
-                  <Label>Alias (puede cambiar con el tiempo)</Label>
-                  <Input value={form.alias ?? ""} onChange={(e) => setForm({ ...form, alias: e.target.value })} />
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>
+                  <p className="text-xs text-muted-foreground">Escribe un alias y presiona Enter para agregarlo como tag.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nuevo alias"
+                      value={aliasInput}
+                      onChange={(e) => setAliasInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = aliasInput.trim();
+                          if (v && !(form.aliases ?? []).includes(v)) {
+                            setForm({ ...form, aliases: [...(form.aliases ?? []), v] });
+                          }
+                          setAliasInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const v = aliasInput.trim();
+                        if (v && !(form.aliases ?? []).includes(v)) {
+                          setForm({ ...form, aliases: [...(form.aliases ?? []), v] });
+                        }
+                        setAliasInput("");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Agregar
+                    </Button>
+                  </div>
+                  {(form.aliases ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Sin alias agregados.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(form.aliases ?? []).map((a: string, i: number) => (
+                        <Badge key={`${a}-${i}`} variant="secondary" className="flex items-center gap-1">
+                          {a}
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, aliases: form.aliases.filter((_: string, idx: number) => idx !== i) })}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1"><Label>Email</Label>
                   <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>
@@ -453,7 +509,15 @@ export default function Afiliados() {
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">{r.fixed_name}</TableCell>
-                  <TableCell>{r.alias || "—"}</TableCell>
+                  <TableCell>
+                    {Array.isArray(r.aliases) && r.aliases.length > 0 ? (
+                      <div className="flex flex-wrap gap-1">
+                        {r.aliases.map((a: string, i: number) => (
+                          <Badge key={`${a}-${i}`} variant="secondary" className="text-xs">{a}</Badge>
+                        ))}
+                      </div>
+                    ) : (r.alias || "—")}
+                  </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell className="text-xs">{r.affiliate_channel_links?.map((l: any) => l.channel?.name).join(", ")}</TableCell>
                   <TableCell>{r.commission_pct}%</TableCell>

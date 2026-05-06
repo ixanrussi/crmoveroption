@@ -1,0 +1,2 @@
+ALTER TABLE public.affiliates ADD COLUMN IF NOT EXISTS aliases text[] NOT NULL DEFAULT '{}'::text[];
+UPDATE public.affiliates SET aliases = ARRAY[alias] WHERE alias IS NOT NULL AND alias <> '' AND (aliases IS NULL OR array_length(aliases,1) IS NULL);

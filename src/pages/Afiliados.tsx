@@ -710,13 +710,7 @@ export default function Afiliados() {
                     {(() => {
                       const s = commissionShares[r.id];
                       if (!s || s.earned === 0) return <span className="text-muted-foreground text-xs">—</span>;
-                      const fmt = new Intl.NumberFormat("es-ES", { style: "currency", currency: s.currency || "EUR" }).format(s.earned);
-                      return (
-                        <div className="flex flex-col">
-                          <span className="font-medium text-success text-sm">{fmt}</span>
-                          <span className="text-[10px] text-muted-foreground">{s.pct.toFixed(2)}% del total</span>
-                        </div>
-                      );
+                      return <span className="font-medium">{s.pct.toFixed(2)}%</span>;
                     })()}
                   </TableCell>
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>

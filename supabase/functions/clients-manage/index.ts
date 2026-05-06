@@ -48,6 +48,7 @@ type CommissionPlanPayload = {
   wager?: number | string | null;
   conversion_type?: string | null;
   cap?: number | string | null;
+  overoption_retention?: number | string | null;
 };
 
 type RequestBody = {

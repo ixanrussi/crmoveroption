@@ -30,7 +30,7 @@ const Dashboard = () => {
   useEffect(() => { loadStats(); }, []);
 
   const cards = [
-    { label: "Clientes", value: stats.clients, icon: Users, color: "text-primary" },
+    { label: "Operadores", value: stats.clients, icon: Users, color: "text-primary" },
     { label: "Afiliados", value: stats.affiliates, icon: UserPlus, color: "text-success" },
     { label: "Países", value: stats.countries, icon: Globe, color: "text-warning" },
   ];

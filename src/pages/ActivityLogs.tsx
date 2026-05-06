@@ -25,7 +25,7 @@ type Log = {
 
 const TABLE_LABELS: Record<string, string> = {
   affiliates: "Afiliados",
-  clients: "Clientes",
+  clients: "Operadores",
   affiliate_commission_plans: "Planes comisión (afiliado)",
   client_commission_plans: "Planes comisión (cliente)",
   commission_closures: "Cierres",

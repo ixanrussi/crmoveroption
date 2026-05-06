@@ -16,6 +16,7 @@ import { Plus, Pencil, Trash2, Lock, X, ChevronDown } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
+import AffiliateGoals from "@/components/AffiliateGoals";
 import { toast } from "sonner";
 
 
@@ -233,9 +234,10 @@ export default function Afiliados() {
                 <DialogTitle>{editing ? `Editar afiliado ${editing.unique_id}` : "Nuevo afiliado"}</DialogTitle>
               </DialogHeader>
               <Tabs defaultValue="datos" className="w-full">
-                <TabsList className={editing ? "grid w-full grid-cols-2" : "grid w-full grid-cols-1"}>
+                <TabsList className={editing ? "grid w-full grid-cols-3" : "grid w-full grid-cols-1"}>
                   <TabsTrigger value="datos">Datos & Comisiones</TabsTrigger>
                   {editing && <TabsTrigger value="ganadas">Comisiones ganadas</TabsTrigger>}
+                  {editing && <TabsTrigger value="objetivos">Objetivos</TabsTrigger>}
                 </TabsList>
                 <TabsContent value="datos">
               <div className="grid grid-cols-2 gap-3">
@@ -611,6 +613,11 @@ export default function Afiliados() {
                 {editing && (
                   <TabsContent value="ganadas">
                     <AffiliateEarnings affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+                {editing && (
+                  <TabsContent value="objetivos">
+                    <AffiliateGoals affiliateId={editing.id} />
                   </TabsContent>
                 )}
               </Tabs>

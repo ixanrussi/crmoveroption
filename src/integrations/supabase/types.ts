@@ -200,6 +200,48 @@ export type Database = {
           },
         ]
       }
+      affiliate_goals: {
+        Row: {
+          affiliate_id: string
+          brand: string | null
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          ftd_target: number
+          id: string
+          notes: string | null
+          period: string | null
+          scope: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          brand?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ftd_target?: number
+          id?: string
+          notes?: string | null
+          period?: string | null
+          scope?: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          brand?: string | null
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          ftd_target?: number
+          id?: string
+          notes?: string | null
+          period?: string | null
+          scope?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliate_operator_ids: {
         Row: {
           affiliate_id: string

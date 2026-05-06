@@ -134,6 +134,8 @@ Deno.serve(async (req) => {
         notes: a.notes || null,
         fixed_remuneration: (a as any).fixed_remuneration === null || (a as any).fixed_remuneration === undefined || (a as any).fixed_remuneration === "" ? null : Number((a as any).fixed_remuneration),
         fixed_remuneration_currency: (a as any).fixed_remuneration_currency || null,
+        fixed_remuneration_min_ftd: (a as any).fixed_remuneration_min_ftd === null || (a as any).fixed_remuneration_min_ftd === undefined || (a as any).fixed_remuneration_min_ftd === "" ? null : Math.trunc(Number((a as any).fixed_remuneration_min_ftd)),
+        fixed_remuneration_fallback_cpa: (a as any).fixed_remuneration_fallback_cpa === null || (a as any).fixed_remuneration_fallback_cpa === undefined || (a as any).fixed_remuneration_fallback_cpa === "" ? null : Number((a as any).fixed_remuneration_fallback_cpa),
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)

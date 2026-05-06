@@ -24,7 +24,7 @@ type Goal = {
   ftd_target: number;
   notes: string | null;
 };
-type Client = { id: string; company_name: string };
+type Client = { id: string; company_name: string; brands: string[] | null };
 type Item = {
   closure_id: string;
   brand: string | null;
@@ -50,7 +50,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
     setLoading(true);
     const [{ data: g }, { data: c }, { data: it }, { data: cs }] = await Promise.all([
       supabase.from("affiliate_goals").select("*").eq("affiliate_id", affiliateId).order("created_at", { ascending: false }),
-      supabase.from("clients").select("id, company_name").order("company_name"),
+      supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_closure_items").select("closure_id, brand, qualified_players").eq("affiliate_id", affiliateId),
       supabase.from("commission_closures").select("id, client_id, period"),
     ]);
@@ -155,7 +155,27 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Marca (opcional)</Label>
-                <Input value={draft.brand ?? ""} maxLength={80} onChange={(e) => setDraft({ ...draft, brand: e.target.value })} placeholder="ej. Betway.es" />
+                {(() => {
+                  const selectedClient = clients.find((c) => c.id === draft.client_id);
+                  const brands = selectedClient?.brands ?? [];
+                  if (!draft.client_id || brands.length === 0) {
+                    return (
+                      <Select disabled value="__all__">
+                        <SelectTrigger><SelectValue placeholder="Selecciona un cliente" /></SelectTrigger>
+                        <SelectContent><SelectItem value="__all__">Todas</SelectItem></SelectContent>
+                      </Select>
+                    );
+                  }
+                  return (
+                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, brand: v === "__all__" ? null : v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">Todas</SelectItem>
+                        {brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
               </div>
               <div>
                 <Label className="text-xs">Objetivo FTD</Label>

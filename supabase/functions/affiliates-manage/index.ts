@@ -193,6 +193,8 @@ Deno.serve(async (req) => {
               tax_id = ${payload.tax_id},
               notes = ${payload.notes},
               brands = ${payload.brands},
+              fixed_remuneration = ${payload.fixed_remuneration},
+              fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
               updated_at = now()
             where id = ${affiliateId}
           `;

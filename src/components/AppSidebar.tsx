@@ -19,6 +19,7 @@ const listItems = [
   { title: "GEO´s", url: "/listas/paises" },
   { title: "Software", url: "/listas/software" },
   { title: "Canales", url: "/listas/canales" },
+  { title: "Monedas", url: "/listas/monedas" },
 ];
 
 export function AppSidebar() {

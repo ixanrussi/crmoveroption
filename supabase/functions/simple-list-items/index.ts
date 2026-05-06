@@ -121,6 +121,8 @@ Deno.serve(async (req) => {
       deleted = await sql<{ id: string }[]>`delete from public.countries where id = ${body.id} returning id`;
     } else if (body.table === "softwares") {
       deleted = await sql<{ id: string }[]>`delete from public.softwares where id = ${body.id} returning id`;
+    } else if (body.table === "currencies") {
+      deleted = await sql<{ id: string }[]>`delete from public.currencies where id = ${body.id} returning id`;
     } else {
       deleted = await sql<{ id: string }[]>`delete from public.affiliate_channels where id = ${body.id} returning id`;
     }

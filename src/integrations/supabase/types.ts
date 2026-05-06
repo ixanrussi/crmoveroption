@@ -72,13 +72,17 @@ export type Database = {
         Row: {
           affiliate_id: string
           baseline: number | null
+          baseline_currency: string | null
           brand: string | null
           cap: number | null
+          client_id: string | null
           conversion_type: string | null
           country_id: string | null
           country_ids: string[]
           cpa: number | null
+          cpa_currency: string | null
           cpl: number | null
+          cpl_currency: string | null
           created_at: string
           created_by: string | null
           currency: string | null
@@ -88,17 +92,22 @@ export type Database = {
           rev_share_pct: number | null
           updated_at: string
           wager: number | null
+          wager_currency: string | null
         }
         Insert: {
           affiliate_id: string
           baseline?: number | null
+          baseline_currency?: string | null
           brand?: string | null
           cap?: number | null
+          client_id?: string | null
           conversion_type?: string | null
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
+          cpa_currency?: string | null
           cpl?: number | null
+          cpl_currency?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -108,17 +117,22 @@ export type Database = {
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null
+          wager_currency?: string | null
         }
         Update: {
           affiliate_id?: string
           baseline?: number | null
+          baseline_currency?: string | null
           brand?: string | null
           cap?: number | null
+          client_id?: string | null
           conversion_type?: string | null
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
+          cpa_currency?: string | null
           cpl?: number | null
+          cpl_currency?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -128,6 +142,7 @@ export type Database = {
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null
+          wager_currency?: string | null
         }
         Relationships: [
           {

@@ -445,7 +445,7 @@ export default function Clientes() {
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">
-                    <Label className="text-base">Comisiones</Label>
+                    <Label className="text-base">Commission Plans</Label>
                     <Button type="button" size="sm" variant="outline" onClick={addPlan}>
                       <Plus className="h-4 w-4 mr-1" /> Agregar plan
                     </Button>

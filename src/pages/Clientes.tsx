@@ -50,13 +50,13 @@ type CommissionPlan = {
   cap: string;
   overoption_retention: string;
   fallback_cpa: string;
-  cpa_at_20: string;
+  cpa_at_80: string;
   cpa_at_90: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
-  overoption_retention: "", fallback_cpa: "", cpa_at_20: "", cpa_at_90: "",
+  overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -167,7 +167,7 @@ export default function Clientes() {
         cap: p.cap?.toString() ?? "",
         overoption_retention: p.overoption_retention?.toString() ?? "",
         fallback_cpa: p.fallback_cpa?.toString() ?? "",
-        cpa_at_20: p.cpa_at_20?.toString() ?? "",
+        cpa_at_80: p.cpa_at_80?.toString() ?? "",
         cpa_at_90: p.cpa_at_90?.toString() ?? "",
       })),
     );
@@ -230,7 +230,7 @@ export default function Clientes() {
           cap: p.cap === "" ? null : p.cap,
           overoption_retention: p.overoption_retention === "" ? null : p.overoption_retention,
           fallback_cpa: p.fallback_cpa === "" ? null : p.fallback_cpa,
-          cpa_at_20: p.cpa_at_20 === "" ? null : p.cpa_at_20,
+          cpa_at_80: p.cpa_at_80 === "" ? null : p.cpa_at_80,
           cpa_at_90: p.cpa_at_90 === "" ? null : p.cpa_at_90,
         })),
       },
@@ -636,10 +636,10 @@ export default function Clientes() {
                               placeholder="CPA pagado si no alcanza el objetivo" />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-xs">CPA al 20% del objetivo</Label>
-                            <Input type="number" step="0.01" value={pl.cpa_at_20}
-                              onChange={(e) => updatePlan(i, { cpa_at_20: e.target.value })}
-                              placeholder="Valor CPA si cumple ≥20%" />
+                            <Label className="text-xs">CPA al 80% del objetivo</Label>
+                            <Input type="number" step="0.01" value={pl.cpa_at_80}
+                              onChange={(e) => updatePlan(i, { cpa_at_80: e.target.value })}
+                              placeholder="Valor CPA si cumple ≥80%" />
                           </div>
                           <div className="space-y-1">
                             <Label className="text-xs">CPA al 90% del objetivo</Label>

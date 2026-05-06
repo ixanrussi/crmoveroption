@@ -654,8 +654,9 @@ export default function ComisionesDashboard() {
       </div>
 
       {/* Rankings */}
-      <Tabs defaultValue="margin" className="space-y-4">
+      <Tabs defaultValue="payouts" className="space-y-4">
         <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="payouts">💸 Pago a afiliados</TabsTrigger>
           <TabsTrigger value="margin">💰 Margen Overoption</TabsTrigger>
           <TabsTrigger value="clients">🏢 Top Clientes</TabsTrigger>
           <TabsTrigger value="fraud">🚨 Riesgo de fraude</TabsTrigger>
@@ -663,6 +664,17 @@ export default function ComisionesDashboard() {
           <TabsTrigger value="ngr">Por NGR (calidad)</TabsTrigger>
           <TabsTrigger value="cpa">Por CPA (volumen)</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="payouts">
+          <AffiliatePayouts
+            items={items}
+            closures={closures}
+            affiliates={affiliates}
+            clients={clients}
+            affCpaFor={affCpaFor}
+            approvedCpas={approvedCpas}
+          />
+        </TabsContent>
 
         <TabsContent value="margin">
           <Card>

@@ -176,6 +176,7 @@ export type Database = {
       affiliates: {
         Row: {
           alias: string | null
+          aliases: string[]
           bank_details: string | null
           brands: string[]
           commission_pct: number | null
@@ -196,6 +197,7 @@ export type Database = {
         }
         Insert: {
           alias?: string | null
+          aliases?: string[]
           bank_details?: string | null
           brands?: string[]
           commission_pct?: number | null
@@ -216,6 +218,7 @@ export type Database = {
         }
         Update: {
           alias?: string | null
+          aliases?: string[]
           bank_details?: string | null
           brands?: string[]
           commission_pct?: number | null

@@ -168,11 +168,24 @@ export default function CalculadoraFijos() {
           <CardHeader><CardTitle className="text-lg">Parámetros</CardTitle></CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-1">
+              <Label>País / región</Label>
+              <Select value={countryId} onValueChange={(v) => { setCountryId(v); setOpId(""); setPlanId(""); }}>
+                <SelectTrigger><SelectValue placeholder="Todos los países" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los países</SelectItem>
+                  {countries.map((c) => (
+                    <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-1">
               <Label>Operador</Label>
               <Select value={opId} onValueChange={(v) => { setOpId(v); setPlanId(""); }}>
-                <SelectTrigger><SelectValue placeholder="Selecciona un operador" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder={filteredOperators.length ? "Selecciona un operador" : "Sin operadores para el país"} /></SelectTrigger>
                 <SelectContent>
-                  {operators.map((o) => (
+                  {filteredOperators.map((o) => (
                     <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>
                   ))}
                 </SelectContent>
@@ -184,7 +197,7 @@ export default function CalculadoraFijos() {
               <Select value={planId} onValueChange={setPlanId} disabled={!operator}>
                 <SelectTrigger><SelectValue placeholder={operator ? "Selecciona un plan" : "Primero elige operador"} /></SelectTrigger>
                 <SelectContent>
-                  {(operator?.client_commission_plans ?? []).map((p) => (
+                  {filteredPlans.map((p) => (
                     <SelectItem key={p.id} value={p.id}>
                       {p.description || "Sin nombre"}
                     </SelectItem>

@@ -282,6 +282,8 @@ export type Database = {
           created_by: string | null
           email: string | null
           fixed_name: string
+          fixed_remuneration: number | null
+          fixed_remuneration_currency: string | null
           id: string
           notes: string | null
           payment_method: string | null
@@ -303,6 +305,8 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           fixed_name: string
+          fixed_remuneration?: number | null
+          fixed_remuneration_currency?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null
@@ -324,6 +328,8 @@ export type Database = {
           created_by?: string | null
           email?: string | null
           fixed_name?: string
+          fixed_remuneration?: number | null
+          fixed_remuneration_currency?: string | null
           id?: string
           notes?: string | null
           payment_method?: string | null

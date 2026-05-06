@@ -14,7 +14,6 @@ const mainItems = [
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
   { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },
-  { title: "Base de Conocimiento", url: "/conocimiento", icon: BookOpen },
 ];
 const listItems = [
   { title: "GEO´s", url: "/listas/paises" },

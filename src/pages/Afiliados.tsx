@@ -831,28 +831,48 @@ export default function Afiliados() {
                     {(() => {
                       const g = goalProgress[r.id];
                       if (!g || g.target === 0) return <span className="text-muted-foreground text-xs">—</span>;
-                      const size = 44;
-                      const stroke = 4;
-                      const r2 = (size - stroke) / 2;
-                      const c = 2 * Math.PI * r2;
-                      const offset = c - (g.pct / 100) * c;
-                      const done = g.pct >= 100;
+                      const now = new Date();
+                      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                      const dayOfMonth = now.getDate();
+                      const remainingDays = Math.max(1, daysInMonth - dayOfMonth + 1);
+                      const expectedPct = (dayOfMonth / daysInMonth) * 100;
+                      const ratio = expectedPct > 0 ? g.pct / expectedPct : 1;
+                      // green: on/above pace (>=95%), orange: behind (>=70%), red: very behind
+                      const color =
+                        g.pct >= 100 || ratio >= 0.95
+                          ? "hsl(142 71% 45%)"
+                          : ratio >= 0.7
+                          ? "hsl(32 95% 54%)"
+                          : "hsl(0 84% 60%)";
+                      const textColor =
+                        g.pct >= 100 || ratio >= 0.95
+                          ? "text-[hsl(142_71%_45%)]"
+                          : ratio >= 0.7
+                          ? "text-[hsl(32_95%_54%)]"
+                          : "text-[hsl(0_84%_60%)]";
+                      const remaining = Math.max(0, g.target - g.current);
+                      const dailyNeeded = remaining / remainingDays;
                       return (
-                        <div className="flex items-center gap-2">
-                          <svg width={size} height={size} className="-rotate-90">
-                            <circle cx={size/2} cy={size/2} r={r2} stroke="hsl(var(--muted))" strokeWidth={stroke} fill="none" />
-                            <circle
-                              cx={size/2} cy={size/2} r={r2}
-                              stroke={done ? "hsl(var(--success, var(--primary)))" : "hsl(var(--primary))"}
-                              strokeWidth={stroke}
-                              fill="none"
-                              strokeDasharray={c}
-                              strokeDashoffset={offset}
-                              strokeLinecap="round"
-                              className="transition-all"
-                            />
-                          </svg>
-                          <span className={`text-xs font-medium ${done ? "text-success" : ""}`}>{g.pct}%</span>
+                        <div className="flex flex-col gap-1 min-w-[140px]">
+                          <div className="flex items-center gap-2">
+                            <div className="relative flex-1 h-2.5 rounded-full bg-muted overflow-hidden">
+                              <div
+                                className="h-full transition-all rounded-full"
+                                style={{ width: `${Math.min(100, g.pct)}%`, backgroundColor: color }}
+                              />
+                              <div
+                                className="absolute top-0 bottom-0 w-px bg-foreground/40"
+                                style={{ left: `${Math.min(100, expectedPct)}%` }}
+                                title={`Pace esperado: ${expectedPct.toFixed(0)}%`}
+                              />
+                            </div>
+                            <span className={`text-xs font-semibold ${textColor}`}>{g.pct}%</span>
+                          </div>
+                          <span className="text-[10px] text-muted-foreground">
+                            {remaining > 0
+                              ? `${dailyNeeded.toFixed(1)} FTD/día (${remainingDays}d)`
+                              : "Objetivo alcanzado"}
+                          </span>
                         </div>
                       );
                     })()}

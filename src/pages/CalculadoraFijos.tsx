@@ -143,7 +143,12 @@ export default function CalculadoraFijos() {
               </div>
               <div className="space-y-1">
                 <Label>Valor fijo ofrecido</Label>
-                <Input type="number" min="0" step="0.01" value={fixedAmount} onChange={(e) => setFixedAmount(e.target.value)} />
+                <Input type="number" min="0" step="0.01" value={fixedAmount} onChange={(e) => setFixedAmount(e.target.value)} placeholder={plan && ftdT > 0 ? String((cpaNeto * ftdT).toFixed(2)) : ""} />
+                {plan && ftdT > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    Referencia (CPA neto × FTDs): <button type="button" className="underline" onClick={() => setFixedAmount(String((cpaNeto * ftdT).toFixed(2)))}>{fmt(cpaNeto * ftdT, plan.currency)}</button>
+                  </p>
+                )}
               </div>
             </div>
 

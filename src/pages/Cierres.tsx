@@ -15,7 +15,7 @@ import { toast } from "@/hooks/use-toast";
 import { useAuth } from "@/hooks/useAuth";
 
 type Client = { id: string; company_name: string };
-type Affiliate = { id: string; fixed_name: string; alias: string | null };
+type Affiliate = { id: string; fixed_name: string; alias: string | null; aliases?: string[] | null; brands?: string[] | null };
 type Closure = {
   id: string; client_id: string; period: string; status: string; currency: string | null;
   total_commission: number; total_qualified: number; total_locked: number;

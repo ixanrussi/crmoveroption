@@ -148,8 +148,7 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
                     <TableHead>Marca</TableHead>
                     <TableHead>Tipo</TableHead>
                     <TableHead className="text-right">Calificados</TableHead>
-                    <TableHead className="text-right">Comisión cliente</TableHead>
-                    <TableHead className="text-right">Ganado afiliado</TableHead>
+                    <TableHead className="text-right">Ganado</TableHead>
                     <TableHead>Estado</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -160,7 +159,6 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
                       <TableCell className="text-xs">{r.brand}</TableCell>
                       <TableCell><Badge variant="outline" className="text-[10px]">{r.type === "cpa" ? "CPA" : "RS"}</Badge></TableCell>
                       <TableCell className="text-right">{r.qualified}</TableCell>
-                      <TableCell className="text-right text-xs">{fmt(r.commission_client, r.currency)}</TableCell>
                       <TableCell className="text-right font-medium text-success">
                         {r.type === "cpa" ? fmt(r.affiliate_earned, r.currency) : <span className="text-xs text-muted-foreground">—</span>}
                       </TableCell>

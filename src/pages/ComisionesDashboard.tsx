@@ -113,7 +113,6 @@ export default function ComisionesDashboard() {
         return s;
       };
       const elig = cands
-        .filter(p => !periodDate || !p.plan_start_date || p.plan_start_date <= periodDate)
         .map(p => ({ p, s: score(p) }))
         .filter(x => x.s >= 0)
         .sort((a, b) => b.s - a.s || (b.p.plan_start_date || "").localeCompare(a.p.plan_start_date || ""));

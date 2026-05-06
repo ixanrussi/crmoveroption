@@ -133,6 +133,9 @@ Deno.serve(async (req) => {
         tax_id: a.tax_id || null,
         notes: a.notes || null,
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
+        aliases: Array.isArray((a as any).aliases)
+          ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)
+          : [],
       };
 
       let affiliateId = body.id;

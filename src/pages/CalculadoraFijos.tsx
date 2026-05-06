@@ -27,6 +27,7 @@ type Operator = {
   id: string;
   company_name: string;
   net_min_cpa: number | null;
+  country_ids: string[] | null;
   client_commission_plans: Plan[];
 };
 

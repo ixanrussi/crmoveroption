@@ -18,6 +18,8 @@ type Plan = {
   fallback_cpa: number | null;
   cpa_at_80: number | null;
   cpa_at_90: number | null;
+  proportional_enabled: boolean | null;
+  proportional_min_pct: number | null;
   country_ids: string[] | null;
 };
 
@@ -50,7 +52,7 @@ export default function CalculadoraFijos() {
     (async () => {
       const { data } = await supabase
         .from("clients")
-        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, country_ids)")
+        .select("id, company_name, net_min_cpa, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
         .order("company_name");
       setOperators((data ?? []) as any);
     })();
@@ -65,6 +67,8 @@ export default function CalculadoraFijos() {
   const fallbackCpa = plan?.fallback_cpa ?? operator?.net_min_cpa ?? 0;
   const cpa80 = plan?.cpa_at_80 ?? 0;
   const cpa90 = plan?.cpa_at_90 ?? 0;
+  const proportionalEnabled = !!plan?.proportional_enabled;
+  const proportionalMinPct = plan?.proportional_min_pct ?? 0;
 
   const ftdT = parseFloat(ftdTarget) || 0;
   const fixed = parseFloat(fixedAmount) || 0;
@@ -75,26 +79,35 @@ export default function CalculadoraFijos() {
     const cpaEfectivoObjetivo = fixed / ftdT;
     const maxFijoPosible = cpaNeto * ftdT;
     const pct = ftdA / ftdT;
+    const cumplio = pct >= 1;
     let cpaTier = 0;
     let tierLabel = "";
-    if (pct >= 1) {
-      cpaTier = 0;
+    let pagoReal = 0;
+    if (cumplio) {
       tierLabel = "Objetivo alcanzado (100%)";
+      pagoReal = fixed;
+    } else if (proportionalEnabled) {
+      const minPct = (proportionalMinPct || 0) / 100;
+      const appliedPct = Math.max(pct, minPct);
+      cpaTier = cpaNeto * appliedPct;
+      tierLabel = `Proporcional (${(appliedPct * 100).toFixed(0)}% del CPA${minPct > pct ? ` · piso ${(minPct*100).toFixed(0)}%` : ""})`;
+      pagoReal = ftdA * cpaTier;
     } else if (pct >= 0.9 && cpa90 > 0) {
       cpaTier = cpa90;
       tierLabel = "≥ 90% del objetivo";
+      pagoReal = ftdA * cpaTier;
     } else if (pct >= 0.8 && cpa80 > 0) {
       cpaTier = cpa80;
       tierLabel = "≥ 80% del objetivo";
+      pagoReal = ftdA * cpaTier;
     } else {
       cpaTier = fallbackCpa;
       tierLabel = "Bajo objetivo (fallback)";
+      pagoReal = ftdA * cpaTier;
     }
-    const cumplio = pct >= 1;
-    const pagoReal = cumplio ? fixed : ftdA * cpaTier;
     const cpaEfectivoReal = ftdA > 0 ? pagoReal / ftdA : 0;
     return { cpaEfectivoObjetivo, maxFijoPosible, cumplio, pagoReal, cpaEfectivoReal, tierLabel, cpaTier };
-  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90]);
+  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct]);
 
   return (
     <div className="space-y-6">

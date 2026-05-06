@@ -659,8 +659,27 @@ export default function Clientes() {
                             <Input type="number" step="0.01" value={pl.cpa_at_90}
                               onChange={(e) => updatePlan(i, { cpa_at_90: e.target.value })}
                               placeholder="Valor CPA si cumple ≥90%" />
+                          <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
+                            <div className="flex items-center justify-between gap-3">
+                              <div>
+                                <Label className="text-xs">Pago proporcional bajo objetivo</Label>
+                                <p className="text-xs text-muted-foreground">Si está activo, paga el % de CPA igual al % del objetivo alcanzado (ignora CPA fallback).</p>
+                              </div>
+                              <Switch checked={pl.proportional_enabled}
+                                onCheckedChange={(v) => updatePlan(i, { proportional_enabled: v })} />
+                            </div>
+                            {pl.proportional_enabled && (
+                              <div className="space-y-1 max-w-xs">
+                                <Label className="text-xs">% mínimo a pagar (proporcional)</Label>
+                                <Input type="number" step="0.01" min="0" max="100" value={pl.proportional_min_pct}
+                                  onChange={(e) => updatePlan(i, { proportional_min_pct: e.target.value })}
+                                  placeholder="Ej. 50 (= 50% del CPA)" />
+                                <p className="text-xs text-muted-foreground">Piso de pago aunque la entrega sea menor a este %.</p>
+                              </div>
+                            )}
                           </div>
                         </div>
+                      </div>
                       </div>
                       </CollapsibleContent>
                     </Collapsible>

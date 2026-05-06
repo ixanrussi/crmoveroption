@@ -600,7 +600,15 @@ export default function Afiliados() {
               {list.map((r) => (
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
-                  <TableCell className="font-medium">{r.fixed_name}</TableCell>
+                  <TableCell className="font-medium">
+                    <button
+                      type="button"
+                      className="text-left hover:underline text-primary"
+                      onClick={() => openEdit(r)}
+                    >
+                      {r.fixed_name}
+                    </button>
+                  </TableCell>
                   <TableCell>
                     {Array.isArray(r.aliases) && r.aliases.length > 0 ? (
                       <div className="flex flex-wrap gap-1">

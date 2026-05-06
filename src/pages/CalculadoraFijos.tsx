@@ -129,7 +129,7 @@ export default function CalculadoraFijos() {
                 <SelectContent>
                   {(operator?.client_commission_plans ?? []).map((p) => (
                     <SelectItem key={p.id} value={p.id}>
-                      {p.description || "Sin nombre"} {p.brand ? `· ${p.brand}` : ""} {p.cpa ? `· CPA ${p.cpa}` : ""}
+                      {p.description || "Sin nombre"}
                     </SelectItem>
                   ))}
                 </SelectContent>

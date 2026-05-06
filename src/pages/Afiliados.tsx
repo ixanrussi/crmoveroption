@@ -73,12 +73,55 @@ export default function Afiliados() {
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
 
+  const [commissionShares, setCommissionShares] = useState<Record<string, { earned: number; pct: number; currency: string | null }>>({});
+
   const load = async () => {
     const { data } = await supabase
       .from("affiliates")
       .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name))")
       .order("created_at", { ascending: false });
     setList(data ?? []);
+
+    // Compute affiliate share of total billed (commission_total) by Overoption
+    const [{ data: items }, { data: closures }] = await Promise.all([
+      supabase.from("commission_closure_items").select("affiliate_id, commission_total, qualified_players, report_type, brand, closure_id, currency"),
+      supabase.from("commission_closures").select("id, client_id, period, currency"),
+    ]);
+    const { data: plans } = await supabase
+      .from("affiliate_commission_plans")
+      .select("affiliate_id, client_id, brand, cpa, plan_start_date");
+
+    const closureMap = new Map((closures ?? []).map((c: any) => [c.id, c]));
+    const totalBilled = (items ?? []).reduce((s: number, it: any) => s + Number(it.commission_total || 0), 0);
+
+    const findCpa = (affId: string, clientId: string, brand: string | null) => {
+      const cands = (plans ?? []).filter((p: any) => p.affiliate_id === affId && p.cpa != null && (!p.client_id || p.client_id === clientId));
+      const bl = (brand || "").toLowerCase();
+      const elig = cands
+        .filter((p: any) => !p.brand || bl.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(bl))
+        .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+      return elig[0]?.cpa ?? null;
+    };
+
+    const shares: Record<string, { earned: number; pct: number; currency: string | null }> = {};
+    (items ?? []).forEach((it: any) => {
+      if (!it.affiliate_id) return;
+      const cls: any = closureMap.get(it.closure_id);
+      if (!cls) return;
+      const cpa = it.report_type === "cpa" ? findCpa(it.affiliate_id, cls.client_id, it.brand) : null;
+      const earned = it.report_type === "cpa" && cpa != null ? Number(cpa) * Number(it.qualified_players || 0) : 0;
+      const cur = it.currency || cls.currency || null;
+      const cur0 = shares[it.affiliate_id]?.currency ?? cur;
+      shares[it.affiliate_id] = {
+        earned: (shares[it.affiliate_id]?.earned || 0) + earned,
+        pct: 0,
+        currency: cur0,
+      };
+    });
+    Object.keys(shares).forEach((k) => {
+      shares[k].pct = totalBilled > 0 ? (shares[k].earned / totalBilled) * 100 : 0;
+    });
+    setCommissionShares(shares);
   };
   const loadLookups = async () => {
     const [c, ch, cl] = await Promise.all([

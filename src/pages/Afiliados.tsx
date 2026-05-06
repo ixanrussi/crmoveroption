@@ -206,9 +206,57 @@ export default function Afiliados() {
                     onChange={(e) => setForm({ ...form, fixed_name: e.target.value })} />
                   {!canEditFixed && <p className="text-xs text-muted-foreground">Solo el super admin puede modificarlo.</p>}
                 </div>
-                <div className="col-span-2 space-y-1">
-                  <Label>Alias (puede cambiar con el tiempo)</Label>
-                  <Input value={form.alias ?? ""} onChange={(e) => setForm({ ...form, alias: e.target.value })} />
+                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                  <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>
+                  <p className="text-xs text-muted-foreground">Escribe un alias y presiona Enter para agregarlo como tag.</p>
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nuevo alias"
+                      value={aliasInput}
+                      onChange={(e) => setAliasInput(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          const v = aliasInput.trim();
+                          if (v && !(form.aliases ?? []).includes(v)) {
+                            setForm({ ...form, aliases: [...(form.aliases ?? []), v] });
+                          }
+                          setAliasInput("");
+                        }
+                      }}
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => {
+                        const v = aliasInput.trim();
+                        if (v && !(form.aliases ?? []).includes(v)) {
+                          setForm({ ...form, aliases: [...(form.aliases ?? []), v] });
+                        }
+                        setAliasInput("");
+                      }}
+                    >
+                      <Plus className="h-4 w-4 mr-1" /> Agregar
+                    </Button>
+                  </div>
+                  {(form.aliases ?? []).length === 0 ? (
+                    <p className="text-sm text-muted-foreground">Sin alias agregados.</p>
+                  ) : (
+                    <div className="flex flex-wrap gap-2">
+                      {(form.aliases ?? []).map((a: string, i: number) => (
+                        <Badge key={`${a}-${i}`} variant="secondary" className="flex items-center gap-1">
+                          {a}
+                          <button
+                            type="button"
+                            onClick={() => setForm({ ...form, aliases: form.aliases.filter((_: string, idx: number) => idx !== i) })}
+                            className="hover:text-destructive"
+                          >
+                            <X className="h-3 w-3" />
+                          </button>
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
                 </div>
                 <div className="space-y-1"><Label>Email</Label>
                   <Input type="email" value={form.email ?? ""} onChange={(e) => setForm({ ...form, email: e.target.value })} /></div>

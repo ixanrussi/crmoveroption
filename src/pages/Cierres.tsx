@@ -64,7 +64,7 @@ export default function Cierres() {
     setLoading(true);
     const [{ data: cl }, { data: af }, { data: cs }, { data: it }, { data: fb }, { data: ap }] = await Promise.all([
       supabase.from("clients").select("id, company_name").order("company_name"),
-      supabase.from("affiliates").select("id, fixed_name, alias").order("fixed_name"),
+      supabase.from("affiliates").select("id, fixed_name, alias, aliases, brands").order("fixed_name"),
       supabase.from("commission_closures").select("*").order("created_at", { ascending: false }),
       supabase.from("commission_closure_items").select("*").order("brand"),
       supabase.from("commission_closure_feedback").select("*").order("created_at", { ascending: false }),

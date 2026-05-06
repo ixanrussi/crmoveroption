@@ -365,7 +365,7 @@ export type Database = {
           country_id: string | null
           country_ids: string[]
           cpa: number | null
-          cpa_at_20: number | null
+          cpa_at_80: number | null
           cpa_at_90: number | null
           cpl: number | null
           created_at: string
@@ -389,7 +389,7 @@ export type Database = {
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
-          cpa_at_20?: number | null
+          cpa_at_80?: number | null
           cpa_at_90?: number | null
           cpl?: number | null
           created_at?: string
@@ -413,7 +413,7 @@ export type Database = {
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
-          cpa_at_20?: number | null
+          cpa_at_80?: number | null
           cpa_at_90?: number | null
           cpl?: number | null
           created_at?: string

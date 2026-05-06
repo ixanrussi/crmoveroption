@@ -49,6 +49,9 @@ type CommissionPlanPayload = {
   conversion_type?: string | null;
   cap?: number | string | null;
   overoption_retention?: number | string | null;
+  fallback_cpa?: number | string | null;
+  cpa_at_80?: number | string | null;
+  cpa_at_90?: number | string | null;
 };
 
 type RequestBody = {
@@ -266,6 +269,9 @@ Deno.serve(async (req) => {
             conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
             cap: intOrNull(p?.cap),
             overoption_retention: num(p?.overoption_retention),
+            fallback_cpa: num(p?.fallback_cpa),
+            cpa_at_80: num(p?.cpa_at_80),
+            cpa_at_90: num(p?.cpa_at_90),
           };
         })
       : [];
@@ -276,7 +282,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90"
       )}`;
     }
 

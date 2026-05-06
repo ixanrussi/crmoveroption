@@ -134,6 +134,8 @@ Deno.serve(async (req) => {
         notes: a.notes || null,
         fixed_remuneration: (a as any).fixed_remuneration === null || (a as any).fixed_remuneration === undefined || (a as any).fixed_remuneration === "" ? null : Number((a as any).fixed_remuneration),
         fixed_remuneration_currency: (a as any).fixed_remuneration_currency || null,
+        fixed_remuneration_min_ftd: (a as any).fixed_remuneration_min_ftd === null || (a as any).fixed_remuneration_min_ftd === undefined || (a as any).fixed_remuneration_min_ftd === "" ? null : Math.trunc(Number((a as any).fixed_remuneration_min_ftd)),
+        fixed_remuneration_fallback_cpa: (a as any).fixed_remuneration_fallback_cpa === null || (a as any).fixed_remuneration_fallback_cpa === undefined || (a as any).fixed_remuneration_fallback_cpa === "" ? null : Number((a as any).fixed_remuneration_fallback_cpa),
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)
@@ -163,13 +165,15 @@ Deno.serve(async (req) => {
           insert into public.affiliates (
             fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands,
-            fixed_remuneration, fixed_remuneration_currency, created_by
+            fixed_remuneration, fixed_remuneration_currency,
+            fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
-            ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency}, ${userData.user.id}
+            ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency},
+            ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;
@@ -195,6 +199,8 @@ Deno.serve(async (req) => {
               brands = ${payload.brands},
               fixed_remuneration = ${payload.fixed_remuneration},
               fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
+              fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
+              fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -216,6 +222,8 @@ Deno.serve(async (req) => {
               brands = ${payload.brands},
               fixed_remuneration = ${payload.fixed_remuneration},
               fixed_remuneration_currency = ${payload.fixed_remuneration_currency},
+              fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
+              fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               updated_at = now()
             where id = ${affiliateId}
           `;

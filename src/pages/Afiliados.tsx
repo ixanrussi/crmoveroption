@@ -71,6 +71,7 @@ export default function Afiliados() {
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
+    fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
@@ -226,6 +227,8 @@ export default function Afiliados() {
       notes: form.notes || null,
       fixed_remuneration: form.fixed_remuneration === "" || form.fixed_remuneration == null ? null : Number(form.fixed_remuneration),
       fixed_remuneration_currency: form.fixed_remuneration_currency || null,
+      fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
+      fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -418,7 +421,37 @@ export default function Afiliados() {
                         {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
                       </SelectContent>
                     </Select>
+                </div>
+                <div className="space-y-1 md:col-span-2">
+                  <Label>Reglas de remuneración fija</Label>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">Volumen mínimo de FTD/mes</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="1"
+                        placeholder="Ej. 50"
+                        value={form.fixed_remuneration_min_ftd ?? ""}
+                        onChange={(e) => setForm({ ...form, fixed_remuneration_min_ftd: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-xs text-muted-foreground">CPA fallback (si no alcanza el volumen)</Label>
+                      <Input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={form.fixed_remuneration_fallback_cpa ?? ""}
+                        onChange={(e) => setForm({ ...form, fixed_remuneration_fallback_cpa: e.target.value })}
+                      />
+                    </div>
                   </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Si el afiliado alcanza el volumen mínimo de FTDs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por FTD.
+                  </p>
+                </div>
                 </div>
                 <div className="space-y-1">
                   <Label>GEO's (países)</Label>

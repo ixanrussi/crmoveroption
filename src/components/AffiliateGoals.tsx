@@ -24,7 +24,7 @@ type Goal = {
   ftd_target: number;
   notes: string | null;
 };
-type Client = { id: string; company_name: string };
+type Client = { id: string; company_name: string; brands: string[] | null };
 type Item = {
   closure_id: string;
   brand: string | null;

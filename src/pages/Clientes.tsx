@@ -238,6 +238,8 @@ export default function Clientes() {
           fallback_cpa: p.fallback_cpa === "" ? null : p.fallback_cpa,
           cpa_at_80: p.cpa_at_80 === "" ? null : p.cpa_at_80,
           cpa_at_90: p.cpa_at_90 === "" ? null : p.cpa_at_90,
+          proportional_enabled: !!p.proportional_enabled,
+          proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
         })),
       },
     });

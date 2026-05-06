@@ -67,21 +67,34 @@ export default function CalculadoraFijos() {
     })();
   }, []);
 
+  const wwId = countries.find((c) => c.code === "WW" || c.name.toLowerCase().includes("world"))?.id;
+  const latamId = countries.find((c) => c.name.toLowerCase() === "latam")?.id;
+  const latamCountryIds = useMemo(
+    () => countries.filter((c) => c.id !== wwId && c.id !== latamId && c.name.toLowerCase() !== "españa").map((c) => c.id),
+    [countries, wwId, latamId],
+  );
+  const expandRegions = (ids: string[] | null | undefined): Set<string> => {
+    const set = new Set<string>(ids ?? []);
+    if (wwId && set.has(wwId)) countries.forEach((c) => set.add(c.id));
+    if (latamId && set.has(latamId)) latamCountryIds.forEach((id) => set.add(id));
+    return set;
+  };
+
   const filteredOperators = useMemo(() => {
     if (countryId === "all") return operators;
     return operators.filter((o: any) => {
-      const opHas = (o.country_ids ?? []).includes(countryId);
-      const planHas = (o.client_commission_plans ?? []).some((p: Plan) => (p.country_ids ?? []).includes(countryId));
+      const opHas = expandRegions(o.country_ids).has(countryId);
+      const planHas = (o.client_commission_plans ?? []).some((p: Plan) => expandRegions(p.country_ids).has(countryId));
       return opHas && planHas;
     });
-  }, [operators, countryId]);
+  }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
 
   const operator = filteredOperators.find((o) => o.id === opId);
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
     if (countryId === "all") return operator.client_commission_plans;
-    return operator.client_commission_plans.filter((p) => (p.country_ids ?? []).includes(countryId));
-  }, [operator, countryId]);
+    return operator.client_commission_plans.filter((p) => expandRegions(p.country_ids).has(countryId));
+  }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
   const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;

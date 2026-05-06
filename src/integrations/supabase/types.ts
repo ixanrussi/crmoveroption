@@ -704,6 +704,122 @@ export type Database = {
         }
         Relationships: []
       }
+      knowledge_documents: {
+        Row: {
+          analysis_error: string | null
+          analysis_extracted: Json | null
+          analysis_summary: string | null
+          analyzed_at: string | null
+          category: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          file_name: string
+          file_path: string
+          id: string
+          mime_type: string | null
+          notes: string | null
+          size_bytes: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          analysis_error?: string | null
+          analysis_extracted?: Json | null
+          analysis_summary?: string | null
+          analyzed_at?: string | null
+          category?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          file_name: string
+          file_path: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          analysis_error?: string | null
+          analysis_extracted?: Json | null
+          analysis_summary?: string | null
+          analyzed_at?: string | null
+          category?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string
+          file_path?: string
+          id?: string
+          mime_type?: string | null
+          notes?: string | null
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      knowledge_findings: {
+        Row: {
+          answer: string | null
+          answered_at: string | null
+          answered_by: string | null
+          client_id: string
+          context: Json | null
+          created_at: string
+          detail: string | null
+          document_id: string
+          id: string
+          kind: string
+          severity: string
+          status: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          client_id: string
+          context?: Json | null
+          created_at?: string
+          detail?: string | null
+          document_id: string
+          id?: string
+          kind?: string
+          severity?: string
+          status?: string
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          answer?: string | null
+          answered_at?: string | null
+          answered_by?: string | null
+          client_id?: string
+          context?: Json | null
+          created_at?: string
+          detail?: string | null
+          document_id?: string
+          id?: string
+          kind?: string
+          severity?: string
+          status?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "knowledge_findings_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "knowledge_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           avatar_url: string | null

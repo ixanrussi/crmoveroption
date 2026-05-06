@@ -365,11 +365,14 @@ export type Database = {
           country_id: string | null
           country_ids: string[]
           cpa: number | null
+          cpa_at_20: number | null
+          cpa_at_90: number | null
           cpl: number | null
           created_at: string
           created_by: string | null
           currency: string | null
           description: string | null
+          fallback_cpa: number | null
           id: string
           overoption_retention: number | null
           plan_start_date: string | null
@@ -386,11 +389,14 @@ export type Database = {
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
+          cpa_at_20?: number | null
+          cpa_at_90?: number | null
           cpl?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
           description?: string | null
+          fallback_cpa?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null
@@ -407,11 +413,14 @@ export type Database = {
           country_id?: string | null
           country_ids?: string[]
           cpa?: number | null
+          cpa_at_20?: number | null
+          cpa_at_90?: number | null
           cpl?: number | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
           description?: string | null
+          fallback_cpa?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null

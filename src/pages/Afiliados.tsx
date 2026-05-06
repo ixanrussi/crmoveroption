@@ -547,10 +547,10 @@ export default function Afiliados() {
                         <CollapsibleTrigger asChild>
                           <button type="button" className="flex items-center gap-2 flex-1 text-left min-w-0">
                             <ChevronDown className="h-4 w-4 transition-transform [[data-state=closed]>&]:-rotate-90" />
-                            <span className="text-sm font-semibold text-foreground truncate">
+                            <span className="text-base font-bold text-primary truncate">
                               {clients.find((c) => c.id === pl.client_id)?.company_name || "Sin cliente"}
                             </span>
-                            <span className="text-sm font-medium truncate">{pl.description || "Sin descripción"}</span>
+                            <span className="text-sm text-muted-foreground truncate">{pl.description || "Sin descripción"}</span>
                             <div className="flex gap-2 ml-2">
                               <Badge variant="secondary">CPA: {pl.cpa || "—"}</Badge>
                               <Badge variant="secondary">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>

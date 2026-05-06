@@ -155,7 +155,27 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Marca (opcional)</Label>
-                <Input value={draft.brand ?? ""} maxLength={80} onChange={(e) => setDraft({ ...draft, brand: e.target.value })} placeholder="ej. Betway.es" />
+                {(() => {
+                  const selectedClient = clients.find((c) => c.id === draft.client_id);
+                  const brands = selectedClient?.brands ?? [];
+                  if (!draft.client_id || brands.length === 0) {
+                    return (
+                      <Select disabled value="__all__">
+                        <SelectTrigger><SelectValue placeholder="Selecciona un cliente" /></SelectTrigger>
+                        <SelectContent><SelectItem value="__all__">Todas</SelectItem></SelectContent>
+                      </Select>
+                    );
+                  }
+                  return (
+                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, brand: v === "__all__" ? null : v })}>
+                      <SelectTrigger><SelectValue /></SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="__all__">Todas</SelectItem>
+                        {brands.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                      </SelectContent>
+                    </Select>
+                  );
+                })()}
               </div>
               <div>
                 <Label className="text-xs">Objetivo FTD</Label>

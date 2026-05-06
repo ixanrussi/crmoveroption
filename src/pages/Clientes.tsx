@@ -604,6 +604,21 @@ export default function Clientes() {
                           <Input type="number" step="1" value={pl.cap}
                             onChange={(e) => updatePlan(i, { cap: e.target.value })} />
                         </div>
+                        <div className="space-y-1 col-span-2 border-t pt-2 mt-1">
+                          <Label className="text-xs">Retención Overoption (valor por CPA)</Label>
+                          <Input type="number" step="0.01" value={pl.overoption_retention}
+                            onChange={(e) => updatePlan(i, { overoption_retention: e.target.value })}
+                            placeholder="Valor absoluto retenido por cada CPA" />
+                          {(() => {
+                            const cpa = parseFloat(pl.cpa);
+                            const ret = parseFloat(pl.overoption_retention);
+                            if (Number.isFinite(cpa) && cpa > 0 && Number.isFinite(ret)) {
+                              const pct = (ret / cpa) * 100;
+                              return <p className="text-xs text-muted-foreground">Equivale a <span className="font-semibold text-foreground">{pct.toFixed(2)}%</span> del CPA bruto.</p>;
+                            }
+                            return <p className="text-xs text-muted-foreground">Define CPA y retención para ver el % equivalente.</p>;
+                          })()}
+                        </div>
                       </div>
                       </CollapsibleContent>
                     </Collapsible>

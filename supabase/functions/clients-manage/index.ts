@@ -265,6 +265,7 @@ Deno.serve(async (req) => {
             wager: num(p?.wager),
             conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
             cap: intOrNull(p?.cap),
+            overoption_retention: num(p?.overoption_retention),
           };
         })
       : [];
@@ -275,7 +276,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention"
       )}`;
     }
 

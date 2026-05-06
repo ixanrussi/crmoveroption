@@ -607,6 +607,13 @@ export default function Afiliados() {
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
               </div>
+                </TabsContent>
+                {editing && (
+                  <TabsContent value="ganadas">
+                    <AffiliateEarnings affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+              </Tabs>
               <DialogFooter>
                 <Button variant="outline" onClick={() => setOpen(false)}>Cancelar</Button>
                 <Button onClick={save} disabled={saving}>{saving ? "Guardando..." : "Guardar"}</Button>

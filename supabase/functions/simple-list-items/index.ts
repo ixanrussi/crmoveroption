@@ -91,6 +91,15 @@ Deno.serve(async (req) => {
         await sql`insert into public.countries (name, code) values (${name}, ${body.code?.trim() || null})`;
       } else if (body.table === "softwares") {
         await sql`insert into public.softwares (name) values (${name})`;
+      } else if (body.table === "currencies") {
+        const code = body.code?.trim().toUpperCase();
+        if (!code) {
+          return new Response(JSON.stringify({ error: "El código ISO es obligatorio" }), {
+            status: 400,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          });
+        }
+        await sql`insert into public.currencies (name, code) values (${name}, ${code})`;
       } else {
         await sql`insert into public.affiliate_channels (name) values (${name})`;
       }

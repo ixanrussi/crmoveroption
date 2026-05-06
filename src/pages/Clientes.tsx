@@ -162,6 +162,7 @@ export default function Clientes() {
         wager: p.wager?.toString() ?? "",
         conversion_type: p.conversion_type ?? "",
         cap: p.cap?.toString() ?? "",
+        overoption_retention: p.overoption_retention?.toString() ?? "",
       })),
     );
     setBrandInput("");

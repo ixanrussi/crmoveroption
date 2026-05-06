@@ -952,3 +952,292 @@ export default function ComisionesDashboard() {
     </div>
   );
 }
+
+// =============== Pago de Comisiones a Afiliados ===============
+
+type PayoutsProps = {
+  items: Item[];
+  closures: Closure[];
+  affiliates: Affiliate[];
+  clients: Client[];
+  affCpaFor: (affiliateId: string | null, clientId: string | null, brand: string | null, period: string) => { cpa: number; currency: string | null } | null;
+  approvedCpas: (i: { qualified_players: number; locked_players: number }) => number;
+};
+
+function AffiliatePayouts({ items, closures, affiliates, clients, affCpaFor, approvedCpas }: PayoutsProps) {
+  const closureMap = useMemo(() => new Map(closures.map(c => [c.id, c])), [closures]);
+  const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c.company_name])), [clients]);
+  const periods = useMemo(() => [...new Set(closures.map(c => c.period))].sort(), [closures]);
+
+  const [affiliateFilter, setAffiliateFilter] = useState<string>("all");
+  const [clientF, setClientF] = useState<string>("all");
+  const [from, setFrom] = useState<string>(periods[0] ?? "");
+  const [to, setTo] = useState<string>(periods[periods.length - 1] ?? "");
+
+  useEffect(() => {
+    if (!from && periods.length) setFrom(periods[0]);
+    if (!to && periods.length) setTo(periods[periods.length - 1]);
+  }, [periods, from, to]);
+
+  // Build payout rows: only CPA report items, only paid_to_affiliate=true
+  type Row = {
+    affiliate_id: string; affiliate_name: string;
+    client_id: string; client_name: string;
+    period: string; brand: string;
+    approved: number; cpaUnit: number; currency: string;
+    payout: number; clientCharge: number;
+  };
+  const rows: Row[] = useMemo(() => {
+    const out: Row[] = [];
+    items.forEach(i => {
+      if (i.report_type !== "cpa") return;
+      if (!i.is_paid_to_affiliate) return;
+      if (!i.affiliate_id) return;
+      const c = closureMap.get(i.closure_id);
+      if (!c) return;
+      if (affiliateFilter !== "all" && i.affiliate_id !== affiliateFilter) return;
+      if (clientF !== "all" && c.client_id !== clientF) return;
+      if (from && c.period < from) return;
+      if (to && c.period > to) return;
+      const plan = affCpaFor(i.affiliate_id, c.client_id, i.brand, c.period);
+      if (!plan) return;
+      const approved = approvedCpas(i);
+      if (approved <= 0) return;
+      const aff = affiliates.find(a => a.id === i.affiliate_id);
+      out.push({
+        affiliate_id: i.affiliate_id,
+        affiliate_name: aff?.fixed_name || aff?.alias || "—",
+        client_id: c.client_id,
+        client_name: clientMap.get(c.client_id) || "—",
+        period: c.period,
+        brand: i.brand || "—",
+        approved,
+        cpaUnit: plan.cpa,
+        currency: plan.currency || c.currency || "EUR",
+        payout: plan.cpa * approved,
+        clientCharge: Number(i.commission_total || 0),
+      });
+    });
+    return out;
+  }, [items, closureMap, clientMap, affiliates, affiliateFilter, clientF, from, to, affCpaFor, approvedCpas]);
+
+  // KPIs (group by currency to be precise)
+  const totalsByCcy = useMemo(() => {
+    const m = new Map<string, { payout: number; charge: number; approved: number }>();
+    rows.forEach(r => {
+      const cur = m.get(r.currency) ?? { payout: 0, charge: 0, approved: 0 };
+      cur.payout += r.payout;
+      cur.charge += r.clientCharge;
+      cur.approved += r.approved;
+      m.set(r.currency, cur);
+    });
+    return [...m.entries()];
+  }, [rows]);
+
+  // Aggregate by client + brand
+  const byClientBrand = useMemo(() => {
+    const m = new Map<string, { client: string; brand: string; approved: number; payout: number; charge: number; currency: string }>();
+    rows.forEach(r => {
+      const k = `${r.client_name}__${r.brand}__${r.currency}`;
+      const cur = m.get(k) ?? { client: r.client_name, brand: r.brand, approved: 0, payout: 0, charge: 0, currency: r.currency };
+      cur.approved += r.approved;
+      cur.payout += r.payout;
+      cur.charge += r.clientCharge;
+      m.set(k, cur);
+    });
+    return [...m.values()].sort((a, b) => b.payout - a.payout);
+  }, [rows]);
+
+  // Volume of FTD (approved CPAs) per period (proxy of "by day")
+  const volumeByPeriod = useMemo(() => {
+    const m = new Map<string, { period: string; ftd: number; payout: number }>();
+    rows.forEach(r => {
+      const cur = m.get(r.period) ?? { period: r.period, ftd: 0, payout: 0 };
+      cur.ftd += r.approved;
+      cur.payout += r.payout;
+      m.set(r.period, cur);
+    });
+    return [...m.values()].sort((a, b) => a.period.localeCompare(b.period));
+  }, [rows]);
+
+  return (
+    <div className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Coins className="h-4 w-4 text-success" /> Pago de comisiones a afiliados
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">
+            Calculado como CPAs aprobados (calificados + bloqueados) × CPA del plan de comisión del afiliado para ese cliente, marca y país.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="flex flex-wrap gap-3 items-end">
+            <div className="space-y-1">
+              <Label className="text-xs">Afiliado</Label>
+              <Select value={affiliateFilter} onValueChange={setAffiliateFilter}>
+                <SelectTrigger className="w-56"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {affiliates.map(a => <SelectItem key={a.id} value={a.id}>{a.fixed_name || a.alias || "—"}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Cliente</Label>
+              <Select value={clientF} onValueChange={setClientF}>
+                <SelectTrigger className="w-48"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Desde</Label>
+              <Select value={from} onValueChange={setFrom}>
+                <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                <SelectContent>{periods.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Hasta</Label>
+              <Select value={to} onValueChange={setTo}>
+                <SelectTrigger className="w-32"><SelectValue /></SelectTrigger>
+                <SelectContent>{periods.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}</SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* KPIs */}
+          <div className="grid gap-3 md:grid-cols-3">
+            {totalsByCcy.length === 0 && (
+              <Card className="md:col-span-3">
+                <CardContent className="p-6 text-center text-muted-foreground text-sm">
+                  Sin pagos calculables. Verifica que el afiliado tenga un plan CPA configurado para el cliente, marca y país de los reportes.
+                </CardContent>
+              </Card>
+            )}
+            {totalsByCcy.map(([ccy, v]) => {
+              const margin = v.charge - v.payout;
+              return (
+                <Card key={ccy} className="border-success/30 bg-success/5">
+                  <CardContent className="p-4">
+                    <p className="text-xs text-muted-foreground">Pagado a afiliados ({ccy})</p>
+                    <p className="text-2xl font-bold text-success">{fmt(v.payout, ccy)}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {fmtN(v.approved)} CPAs aprobados · cobrado al cliente {fmt(v.charge, ccy)} · margen {fmt(margin, ccy)}
+                    </p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+
+          {/* Chart: FTD volume per period */}
+          {volumeByPeriod.length > 0 && (
+            <Card>
+              <CardHeader className="pb-2"><CardTitle className="text-sm">Volumen de FTD (CPAs aprobados) por período</CardTitle></CardHeader>
+              <CardContent className="h-72">
+                <ResponsiveContainer width="100%" height="100%">
+                  <ComposedChart data={volumeByPeriod}>
+                    <CartesianGrid strokeDasharray="3 3" className="stroke-border" />
+                    <XAxis dataKey="period" />
+                    <YAxis yAxisId="left" />
+                    <YAxis yAxisId="right" orientation="right" tickFormatter={(v) => fmt(v).replace(/\D00$/, "")} />
+                    <Tooltip formatter={(v: number, n: string) => n === "FTD" ? fmtN(v) : fmt(v)} />
+                    <Legend />
+                    <Bar yAxisId="left" dataKey="ftd" name="FTD" fill="hsl(var(--primary))" />
+                    <Line yAxisId="right" type="monotone" dataKey="payout" name="Pago afiliado" stroke="hsl(var(--success))" strokeWidth={2} />
+                  </ComposedChart>
+                </ResponsiveContainer>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Detail by client + brand + period */}
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm">Detalle por cliente, marca y período</CardTitle>
+            </CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Afiliado</TableHead>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Marca</TableHead>
+                    <TableHead>Período</TableHead>
+                    <TableHead className="text-right">CPAs aprobados</TableHead>
+                    <TableHead className="text-right">CPA unitario</TableHead>
+                    <TableHead className="text-right">Pago al afiliado</TableHead>
+                    <TableHead className="text-right">Cobrado al cliente</TableHead>
+                    <TableHead className="text-right">Margen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {rows.length === 0 && (
+                    <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sin filas</TableCell></TableRow>
+                  )}
+                  {rows.sort((a, b) => a.period.localeCompare(b.period) || a.client_name.localeCompare(b.client_name)).map((r, i) => {
+                    const margin = r.clientCharge - r.payout;
+                    return (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium">{r.affiliate_name}</TableCell>
+                        <TableCell>{r.client_name}</TableCell>
+                        <TableCell>{r.brand}</TableCell>
+                        <TableCell>{r.period}</TableCell>
+                        <TableCell className="text-right">{fmtN(r.approved)}</TableCell>
+                        <TableCell className="text-right">{fmt(r.cpaUnit, r.currency)}</TableCell>
+                        <TableCell className="text-right font-semibold text-success">{fmt(r.payout, r.currency)}</TableCell>
+                        <TableCell className="text-right">{fmt(r.clientCharge, r.currency)}</TableCell>
+                        <TableCell className={`text-right ${margin >= 0 ? "text-success" : "text-destructive"}`}>{fmt(margin, r.currency)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+
+          {/* Subtotal by client+brand */}
+          <Card>
+            <CardHeader className="pb-2"><CardTitle className="text-sm">Resumen por cliente y marca</CardTitle></CardHeader>
+            <CardContent className="p-0 overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Cliente</TableHead>
+                    <TableHead>Marca</TableHead>
+                    <TableHead className="text-right">CPAs aprobados</TableHead>
+                    <TableHead className="text-right">Pago a afiliado</TableHead>
+                    <TableHead className="text-right">Cobrado al cliente</TableHead>
+                    <TableHead className="text-right">Margen</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {byClientBrand.length === 0 && (
+                    <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin datos</TableCell></TableRow>
+                  )}
+                  {byClientBrand.map((r, i) => {
+                    const margin = r.charge - r.payout;
+                    return (
+                      <TableRow key={i}>
+                        <TableCell className="font-medium">{r.client}</TableCell>
+                        <TableCell>{r.brand}</TableCell>
+                        <TableCell className="text-right">{fmtN(r.approved)}</TableCell>
+                        <TableCell className="text-right text-success font-semibold">{fmt(r.payout, r.currency)}</TableCell>
+                        <TableCell className="text-right">{fmt(r.charge, r.currency)}</TableCell>
+                        <TableCell className={`text-right ${margin >= 0 ? "text-success" : "text-destructive"}`}>{fmt(margin, r.currency)}</TableCell>
+                      </TableRow>
+                    );
+                  })}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

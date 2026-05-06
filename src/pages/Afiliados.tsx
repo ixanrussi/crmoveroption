@@ -80,7 +80,11 @@ export default function Afiliados() {
     const affIds: string[] = Array.isArray(row?.country_ids) && row.country_ids.length > 0
       ? row.country_ids
       : (row?.country_id ? [row.country_id] : []);
-    setForm({ ...row, country_ids: affIds });
+    const aliasesArr: string[] = Array.isArray(row?.aliases) && row.aliases.length > 0
+      ? row.aliases
+      : (row?.alias ? [row.alias] : []);
+    setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
+    setAliasInput("");
     setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
     const links: Record<string, string> = {};
     row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });

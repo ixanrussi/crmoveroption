@@ -224,7 +224,8 @@ export default function Afiliados() {
       email: form.email || null, phone: form.phone || null,
       country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
-    };
+      fixed_remuneration: form.fixed_remuneration === "" || form.fixed_remuneration == null ? null : Number(form.fixed_remuneration),
+      fixed_remuneration_currency: form.fixed_remuneration_currency || null,
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
       body: {

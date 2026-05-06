@@ -205,6 +205,7 @@ export default function Clientes() {
           senha: form.senha,
           client_type: form.client_type || null,
           brands: Array.isArray(form.brands) ? form.brands : [],
+          net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
@@ -221,6 +222,7 @@ export default function Clientes() {
           wager: p.wager === "" ? null : p.wager,
           conversion_type: p.conversion_type || null,
           cap: p.cap === "" ? null : p.cap,
+          overoption_retention: p.overoption_retention === "" ? null : p.overoption_retention,
         })),
       },
     });

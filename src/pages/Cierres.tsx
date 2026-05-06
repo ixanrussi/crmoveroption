@@ -108,6 +108,66 @@ export default function Cierres() {
     };
   }, [affPlans]);
 
+  // ---- Fuzzy match: sugerencias de afiliado por nombre crudo ----
+  const normalize = (s: string) =>
+    (s || "")
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9]+/g, " ")
+      .trim();
+
+  const lev = (a: string, b: string): number => {
+    if (a === b) return 0;
+    if (!a.length) return b.length;
+    if (!b.length) return a.length;
+    const dp = Array.from({ length: b.length + 1 }, (_, i) => i);
+    for (let i = 1; i <= a.length; i++) {
+      let prev = dp[0];
+      dp[0] = i;
+      for (let j = 1; j <= b.length; j++) {
+        const tmp = dp[j];
+        dp[j] = a[i - 1] === b[j - 1] ? prev : Math.min(prev, dp[j], dp[j - 1]) + 1;
+        prev = tmp;
+      }
+    }
+    return dp[b.length];
+  };
+
+  const stringSim = (a: string, b: string) => {
+    const na = normalize(a), nb = normalize(b);
+    if (!na || !nb) return 0;
+    if (na === nb) return 1;
+    if (na.includes(nb) || nb.includes(na)) return 0.92;
+    const dist = lev(na, nb);
+    const maxLen = Math.max(na.length, nb.length);
+    return Math.max(0, 1 - dist / maxLen);
+  };
+
+  const suggestAffiliates = (item: Item) => {
+    const raw = item.raw_campaign_name || "";
+    if (!raw.trim()) return [] as Array<{ aff: Affiliate; score: number; reason: string }>;
+    const candidates: Array<{ aff: Affiliate; score: number; reason: string }> = [];
+    for (const a of affiliates) {
+      const names = [a.fixed_name, a.alias, ...(a.aliases ?? [])].filter(Boolean) as string[];
+      let best = 0;
+      let bestName = a.fixed_name;
+      for (const n of names) {
+        const s = stringSim(raw, n);
+        if (s > best) { best = s; bestName = n; }
+      }
+      // Boost si la marca del item está en las marcas del afiliado
+      if (item.brand && a.brands?.length) {
+        const ib = normalize(item.brand);
+        if (a.brands.some((b) => normalize(b).includes(ib) || ib.includes(normalize(b)))) {
+          best = Math.min(1, best + 0.05);
+        }
+      }
+      if (best >= 0.55) candidates.push({ aff: a, score: best, reason: `≈ "${bestName}"` });
+    }
+    return candidates.sort((x, y) => y.score - x.score).slice(0, 3);
+  };
+
   const clientMap = useMemo(() => {
     const m = new Map<string, string>();
     clients.forEach((c) => m.set(c.id, c.company_name));

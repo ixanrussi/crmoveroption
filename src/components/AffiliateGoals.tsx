@@ -50,7 +50,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
     setLoading(true);
     const [{ data: g }, { data: c }, { data: it }, { data: cs }] = await Promise.all([
       supabase.from("affiliate_goals").select("*").eq("affiliate_id", affiliateId).order("created_at", { ascending: false }),
-      supabase.from("clients").select("id, company_name").order("company_name"),
+      supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_closure_items").select("closure_id, brand, qualified_players").eq("affiliate_id", affiliateId),
       supabase.from("commission_closures").select("id, client_id, period"),
     ]);

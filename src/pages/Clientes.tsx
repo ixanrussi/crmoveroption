@@ -173,6 +173,8 @@ export default function Clientes() {
         fallback_cpa: p.fallback_cpa?.toString() ?? "",
         cpa_at_80: p.cpa_at_80?.toString() ?? "",
         cpa_at_90: p.cpa_at_90?.toString() ?? "",
+        proportional_enabled: !!p.proportional_enabled,
+        proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
       })),
     );
     setBrandInput("");

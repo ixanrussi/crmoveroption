@@ -167,8 +167,8 @@ export default function ComisionesDashboard() {
       t.qualified += i.qualified_players || 0;
       t.locked += i.locked_players || 0;
       const c = closureMap.get(i.closure_id);
-      const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
-      if (cpa != null) t.affCost += cpa * (i.qualified_players || 0);
+      const plan = affCpaFor(i.affiliate_id, c?.client_id ?? null, i.brand, c?.period ?? "");
+      if (plan) t.affCost += plan.cpa * approvedCpas(i);
     });
     rsItems.forEach(i => {
       t.visits += i.visits || 0;
@@ -235,8 +235,8 @@ export default function ComisionesDashboard() {
         r.qualified += i.qualified_players || 0;
         r.locked += i.locked_players || 0;
         const c = closureMap.get(i.closure_id);
-        const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
-        if (cpa != null) r.affCost += cpa * (i.qualified_players || 0);
+        const plan = affCpaFor(i.affiliate_id, c?.client_id ?? null, i.brand, c?.period ?? "");
+        if (plan) r.affCost += plan.cpa * approvedCpas(i);
       } else {
         r.visits += i.visits || 0;
         r.newAccounts += i.new_accounts || 0;
@@ -287,8 +287,8 @@ export default function ComisionesDashboard() {
       if (i.report_type === "cpa") {
         r.cpaCost += Number(i.commission_total || 0);
         const c = closureMap.get(i.closure_id);
-        const cpa = affCpaFor(i.affiliate_id, i.brand, c?.period ?? "");
-        if (cpa != null) r.affCost += cpa * (i.qualified_players || 0);
+        const plan = affCpaFor(i.affiliate_id, c?.client_id ?? null, i.brand, c?.period ?? "");
+        if (plan) r.affCost += plan.cpa * approvedCpas(i);
       } else {
         r.rsCommission += Number(i.commission_total || 0);
         r.ngr += Number(i.casino_ngr || 0) + Number(i.sports_ngr || 0);

@@ -206,7 +206,7 @@ export default function CalculadoraFijos() {
                     <span className="font-semibold">{fmt(cpaNeto, plan.currency)}</span>
                   </div>
                   {[
-                    { label: "CPA neto disponible por FTD", value: cpaNeto, hide: true },
+                    { label: "CPA neto disponible por FTD", value: cpaNeto },
                     { label: "CPA fallback (bajo objetivo)", value: fallbackCpa, fallbackBadge: true },
                     { label: "CPA al ≥90% del objetivo", value: cpa90 },
                     { label: "CPA al ≥80% del objetivo", value: cpa80 },

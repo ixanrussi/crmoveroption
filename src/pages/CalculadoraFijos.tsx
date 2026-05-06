@@ -80,21 +80,38 @@ export default function CalculadoraFijos() {
     return set;
   };
 
+  // Expand the SELECTED country/region into the set of acceptable country ids
+  const selectedTargets = useMemo((): Set<string> => {
+    const set = new Set<string>();
+    if (!countryId || countryId === "all") return set;
+    set.add(countryId);
+    if (wwId && countryId === wwId) countries.forEach((c) => set.add(c.id));
+    if (latamId && countryId === latamId) latamCountryIds.forEach((id) => set.add(id));
+    return set;
+  }, [countryId, countries, wwId, latamId, latamCountryIds]);
+
+  const matchesSelected = (ids: string[] | null | undefined): boolean => {
+    if (countryId === "all") return true;
+    const expanded = expandRegions(ids);
+    for (const id of expanded) if (selectedTargets.has(id)) return true;
+    return false;
+  };
+
   const filteredOperators = useMemo(() => {
     if (countryId === "all") return operators;
     return operators.filter((o: any) => {
-      const opHas = expandRegions(o.country_ids).has(countryId);
-      const planHas = (o.client_commission_plans ?? []).some((p: Plan) => expandRegions(p.country_ids).has(countryId));
+      const opHas = matchesSelected(o.country_ids);
+      const planHas = (o.client_commission_plans ?? []).some((p: Plan) => matchesSelected(p.country_ids));
       return opHas && planHas;
     });
-  }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
+  }, [operators, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
 
   const operator = filteredOperators.find((o) => o.id === opId);
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
     if (countryId === "all") return operator.client_commission_plans;
-    return operator.client_commission_plans.filter((p) => expandRegions(p.country_ids).has(countryId));
-  }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
+    return operator.client_commission_plans.filter((p) => matchesSelected(p.country_ids));
+  }, [operator, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
   const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;

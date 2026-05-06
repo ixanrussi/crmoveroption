@@ -227,6 +227,8 @@ export default function Afiliados() {
       notes: form.notes || null,
       fixed_remuneration: form.fixed_remuneration === "" || form.fixed_remuneration == null ? null : Number(form.fixed_remuneration),
       fixed_remuneration_currency: form.fixed_remuneration_currency || null,
+      fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
+      fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {

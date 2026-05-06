@@ -77,12 +77,14 @@ export default function Afiliados() {
     setList(data ?? []);
   };
   const loadLookups = async () => {
-    const [c, ch] = await Promise.all([
+    const [c, ch, cl] = await Promise.all([
       supabase.from("countries").select("*").order("name"),
       supabase.from("affiliate_channels").select("*").order("name"),
+      supabase.from("clients").select("id, company_name, brands").order("company_name"),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
+    setClients(cl.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 

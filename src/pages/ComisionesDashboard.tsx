@@ -71,22 +71,60 @@ export default function ComisionesDashboard() {
   const clientMap = useMemo(() => new Map(clients.map(c => [c.id, c.company_name])), [clients]);
   const countryMap = useMemo(() => new Map(countries.map(c => [c.id, c])), [countries]);
 
-  // Resolve affiliate CPA cost (€ per qualified) for a given affiliate/brand/period
+  // Extract country code (alpha-2) from brand string (e.g. "Betway.es ES" -> "ES")
+  const countryCodeFromBrand = (raw: string | null | undefined): string | null => {
+    if (!raw) return null;
+    const s = String(raw).trim();
+    const m = s.match(/\s+([A-Z]{2})$/);
+    if (m) return m[1];
+    const lower = s.toLowerCase();
+    if (lower.endsWith(".es")) return "ES";
+    if (lower.endsWith(".mx")) return "MX";
+    if (lower === "betway mlt" || lower === "betway.mlt" || lower === "betway") return "LATAM";
+    return null;
+  };
+
+  // Resolve affiliate CPA (paid by overoption) for a given affiliate / client / brand / period.
+  // Matches by client_id (when set in plan), brand substring, and country (from brand suffix vs plan.country_ids).
   const affCpaFor = useMemo(() => {
-    return (affiliateId: string | null, brand: string | null, period: string): number | null => {
+    return (affiliateId: string | null, clientId: string | null, brand: string | null, period: string): { cpa: number; currency: string | null } | null => {
       if (!affiliateId) return null;
       const cands = affPlans.filter(p => p.affiliate_id === affiliateId && p.cpa != null);
       if (!cands.length) return null;
       const bl = (brand || "").toLowerCase();
-      const matches = (p: AffPlan) => !p.brand || bl.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(bl);
+      const code = countryCodeFromBrand(brand);
       const periodDate = period ? `${period}-01` : null;
+      const score = (p: AffPlan): number => {
+        let s = 0;
+        if (p.client_id && clientId && p.client_id === clientId) s += 4;
+        else if (p.client_id && clientId && p.client_id !== clientId) return -1;
+        if (p.brand && bl && (bl.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(bl))) s += 2;
+        else if (!p.brand) s += 1;
+        // country match via plan.country_ids → countries.code
+        if (code && code !== "LATAM" && p.country_ids?.length) {
+          const matchCountry = p.country_ids.some(cid => (countryMap.get(cid)?.code || "").toUpperCase() === code);
+          if (matchCountry) s += 3;
+          else s -= 2; // plan is country-restricted but doesn't match
+        } else if (code === "LATAM" && p.country_ids?.length && p.country_ids.length > 1) {
+          s += 1; // multi-country plan → treat as LATAM-friendly
+        } else if (!p.country_ids?.length) {
+          s += 0.5;
+        }
+        return s;
+      };
       const elig = cands
-        .filter(matches)
         .filter(p => !periodDate || !p.plan_start_date || p.plan_start_date <= periodDate)
-        .sort((a, b) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
-      return elig[0]?.cpa ?? null;
+        .map(p => ({ p, s: score(p) }))
+        .filter(x => x.s >= 0)
+        .sort((a, b) => b.s - a.s || (b.p.plan_start_date || "").localeCompare(a.p.plan_start_date || ""));
+      const best = elig[0]?.p;
+      return best ? { cpa: Number(best.cpa), currency: best.cpa_currency || best.currency || null } : null;
     };
-  }, [affPlans]);
+  }, [affPlans, countryMap]);
+
+  // Approved CPA count per item = qualified + locked (lo que el cliente reporta como CPA contabilizado).
+  const approvedCpas = (i: { qualified_players: number; locked_players: number }) =>
+    (i.qualified_players || 0) + (i.locked_players || 0);
 
   const periods = useMemo(() => [...new Set(closures.map(c => c.period))].sort().reverse(), [closures]);
 

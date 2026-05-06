@@ -195,6 +195,14 @@ export default function Afiliados() {
   const toggleCh = (id: string) => setChannelIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
   const canEditFixed = !editing || isSuperAdmin;
+  const [fixedNameUnlocked, setFixedNameUnlocked] = useState(false);
+  useEffect(() => { setFixedNameUnlocked(!editing); }, [editing, open]);
+  const requestUnlockFixedName = () => {
+    if (!isSuperAdmin) return;
+    if (window.confirm("¿Confirmas que deseas editar el nombre fijo de este afiliado? Esta acción es sensible y queda auditada.")) {
+      setFixedNameUnlocked(true);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -225,11 +233,24 @@ export default function Afiliados() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label className="flex items-center gap-1">
-                    Nombre fijo * {!canEditFixed && <Lock className="h-3 w-3 text-muted-foreground" />}
+                    Nombre fijo * {!fixedNameUnlocked && <Lock className="h-3 w-3 text-muted-foreground" />}
                   </Label>
-                  <Input value={form.fixed_name ?? ""} disabled={!canEditFixed}
-                    onChange={(e) => setForm({ ...form, fixed_name: e.target.value })} />
-                  {!canEditFixed && <p className="text-xs text-muted-foreground">Solo el super admin puede modificarlo.</p>}
+                  <div className="flex gap-2">
+                    <Input value={form.fixed_name ?? ""} disabled={!fixedNameUnlocked}
+                      onChange={(e) => setForm({ ...form, fixed_name: e.target.value })} />
+                    {editing && isSuperAdmin && !fixedNameUnlocked && (
+                      <Button type="button" variant="outline" size="sm" onClick={requestUnlockFixedName}>
+                        Editar
+                      </Button>
+                    )}
+                  </div>
+                  {!fixedNameUnlocked && editing && (
+                    <p className="text-xs text-muted-foreground">
+                      {isSuperAdmin
+                        ? "Bloqueado. Pulsa Editar y confirma para modificarlo."
+                        : "Solo el super admin puede modificarlo."}
+                    </p>
+                  )}
                 </div>
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>

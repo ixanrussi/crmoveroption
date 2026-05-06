@@ -115,9 +115,12 @@ export default function Afiliados() {
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
+    const aliasesArr: string[] = Array.isArray(form.aliases) ? form.aliases.filter((x: string) => x && x.trim()) : [];
     const payload: any = {
       fixed_name: form.fixed_name,
-      alias: form.alias || null, email: form.email || null, phone: form.phone || null,
+      alias: aliasesArr[0] || form.alias || null,
+      aliases: aliasesArr,
+      email: form.email || null, phone: form.phone || null,
       country_ids: Array.isArray(form.country_ids) ? form.country_ids : [],
       notes: form.notes || null,
     };

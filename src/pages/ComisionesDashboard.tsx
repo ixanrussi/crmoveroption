@@ -100,13 +100,16 @@ export default function ComisionesDashboard() {
         else if (p.client_id && clientId && p.client_id !== clientId) return -1;
         if (p.brand && bl && (bl.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(bl))) s += 2;
         else if (!p.brand) s += 1;
-        // country match via plan.country_ids → countries.code
+        // country match via plan.country_ids → countries.code (hard reject if mismatch)
         if (code && code !== "LATAM" && p.country_ids?.length) {
           const matchCountry = p.country_ids.some(cid => (countryMap.get(cid)?.code || "").toUpperCase() === code);
           if (matchCountry) s += 3;
-          else s -= 2; // plan is country-restricted but doesn't match
-        } else if (code === "LATAM" && p.country_ids?.length && p.country_ids.length > 1) {
-          s += 1; // multi-country plan → treat as LATAM-friendly
+          else return -1;
+        } else if (code === "LATAM") {
+          // LATAM (e.g. "Betway MLT"): prefer multi-country plans, reject single-country (ES/MX) plans
+          if (p.country_ids?.length > 1) s += 2;
+          else if (p.country_ids?.length === 1) return -1;
+          else s += 0.5;
         } else if (!p.country_ids?.length) {
           s += 0.5;
         }

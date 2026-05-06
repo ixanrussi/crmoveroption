@@ -205,24 +205,25 @@ export default function CalculadoraFijos() {
                     <span className="text-muted-foreground">CPA neto disponible por FTD</span>
                     <span className="font-semibold">{fmt(cpaNeto, plan.currency)}</span>
                   </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">CPA fallback (bajo objetivo)</span>
-                    <span className="font-semibold">
-                      {fallbackCpa > 0 ? fmt(fallbackCpa, plan.currency) : <Badge variant="destructive">No configurado</Badge>}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">CPA al ≥80% del objetivo</span>
-                    <span className="font-semibold">
-                      {cpa80 > 0 ? fmt(cpa80, plan.currency) : <span className="text-muted-foreground">— usa fallback</span>}
-                    </span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">CPA al ≥90% del objetivo</span>
-                    <span className="font-semibold">
-                      {cpa90 > 0 ? fmt(cpa90, plan.currency) : <span className="text-muted-foreground">— usa fallback</span>}
-                    </span>
-                  </div>
+                  {[
+                    { label: "CPA neto disponible por FTD", value: cpaNeto },
+                    { label: "CPA fallback (bajo objetivo)", value: fallbackCpa, fallbackBadge: true },
+                    { label: "CPA al ≥90% del objetivo", value: cpa90 },
+                    { label: "CPA al ≥80% del objetivo", value: cpa80 },
+                  ]
+                    .sort((a, b) => (b.value || 0) - (a.value || 0))
+                    .map((r) => (
+                      <div key={r.label} className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">{r.label}</span>
+                        <span className="font-semibold">
+                          {r.value > 0
+                            ? fmt(r.value, plan.currency)
+                            : r.fallbackBadge
+                              ? <Badge variant="destructive">No configurado</Badge>
+                              : <span className="text-muted-foreground">— usa fallback</span>}
+                        </span>
+                      </div>
+                    ))}
                 </div>
 
                 {calc && (

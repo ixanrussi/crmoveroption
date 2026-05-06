@@ -195,6 +195,14 @@ export default function Afiliados() {
   const toggleCh = (id: string) => setChannelIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
 
   const canEditFixed = !editing || isSuperAdmin;
+  const [fixedNameUnlocked, setFixedNameUnlocked] = useState(false);
+  useEffect(() => { setFixedNameUnlocked(!editing); }, [editing, open]);
+  const requestUnlockFixedName = () => {
+    if (!isSuperAdmin) return;
+    if (window.confirm("¿Confirmas que deseas editar el nombre fijo de este afiliado? Esta acción es sensible y queda auditada.")) {
+      setFixedNameUnlocked(true);
+    }
+  };
 
   return (
     <div className="space-y-6">

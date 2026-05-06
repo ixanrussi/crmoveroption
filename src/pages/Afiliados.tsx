@@ -18,24 +18,35 @@ import { toast } from "sonner";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
+const CURRENCIES = ["USD", "EUR", "BRL", "MXN", "ARS", "CLP", "COP", "PEN", "GBP"] as const;
 
 type CommissionPlan = {
   plan_start_date: string;
   currency: string;
   description: string;
   country_ids: string[];
+  client_id: string;
   brand: string;
   baseline: string;
+  baseline_currency: string;
   cpa: string;
+  cpa_currency: string;
   rev_share_pct: string;
   cpl: string;
+  cpl_currency: string;
   wager: string;
+  wager_currency: string;
   conversion_type: string;
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
-  plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
-  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+  plan_start_date: "", currency: "", description: "", country_ids: [], client_id: "", brand: "",
+  baseline: "", baseline_currency: "",
+  cpa: "", cpa_currency: "",
+  rev_share_pct: "",
+  cpl: "", cpl_currency: "",
+  wager: "", wager_currency: "",
+  conversion_type: "", cap: "",
 };
 
 export default function Afiliados() {

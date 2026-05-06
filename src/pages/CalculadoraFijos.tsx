@@ -200,9 +200,9 @@ export default function CalculadoraFijos() {
             <div className="space-y-1">
               <Label>País / región</Label>
               <Select value={countryId} onValueChange={(v) => { setCountryId(v); setOpId(""); setPlanId(""); }}>
-                <SelectTrigger><SelectValue placeholder="Todos los países" /></SelectTrigger>
+                <SelectTrigger><SelectValue placeholder="Seleccionar país o región" /></SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">Todos los países</SelectItem>
+                  <SelectItem value="all">Seleccionar país o región</SelectItem>
                   {countries.map((c) => (
                     <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>
                   ))}

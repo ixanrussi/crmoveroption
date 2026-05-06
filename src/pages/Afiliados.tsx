@@ -745,6 +745,18 @@ export default function Afiliados() {
                     >
                       {r.fixed_name}
                     </button>
+                    {(() => {
+                      const g = goalProgress[r.id];
+                      if (!g || g.target === 0) return null;
+                      const now = new Date();
+                      const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+                      const daily = g.target / daysInMonth;
+                      return (
+                        <div className="text-[10px] text-muted-foreground mt-0.5">
+                          Meta diaria: {daily.toFixed(1)} FTD
+                        </div>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell>
@@ -758,10 +770,28 @@ export default function Afiliados() {
                     {(() => {
                       const g = goalProgress[r.id];
                       if (!g || g.target === 0) return <span className="text-muted-foreground text-xs">—</span>;
+                      const size = 44;
+                      const stroke = 4;
+                      const r2 = (size - stroke) / 2;
+                      const c = 2 * Math.PI * r2;
+                      const offset = c - (g.pct / 100) * c;
+                      const done = g.pct >= 100;
                       return (
                         <div className="flex items-center gap-2">
-                          <Progress value={g.pct} className="h-2 flex-1" />
-                          <span className={`text-xs font-medium ${g.pct >= 100 ? "text-success" : ""}`}>{g.pct}%</span>
+                          <svg width={size} height={size} className="-rotate-90">
+                            <circle cx={size/2} cy={size/2} r={r2} stroke="hsl(var(--muted))" strokeWidth={stroke} fill="none" />
+                            <circle
+                              cx={size/2} cy={size/2} r={r2}
+                              stroke={done ? "hsl(var(--success, var(--primary)))" : "hsl(var(--primary))"}
+                              strokeWidth={stroke}
+                              fill="none"
+                              strokeDasharray={c}
+                              strokeDashoffset={offset}
+                              strokeLinecap="round"
+                              className="transition-all"
+                            />
+                          </svg>
+                          <span className={`text-xs font-medium ${done ? "text-success" : ""}`}>{g.pct}%</span>
                         </div>
                       );
                     })()}

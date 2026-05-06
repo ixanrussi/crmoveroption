@@ -51,6 +51,7 @@ const emptyPlan: CommissionPlan = {
 
 export default function Afiliados() {
   const { isAdmin, isSuperAdmin } = useAuth();
+  const CURRENCIES = useCurrencies();
   const [list, setList] = useState<any[]>([]);
   const [countries, setCountries] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);

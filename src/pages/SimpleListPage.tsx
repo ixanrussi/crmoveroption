@@ -21,7 +21,7 @@ import {
 import WorldActivityMap from "@/components/WorldActivityMap";
 
 interface Props {
-  table: "countries" | "softwares" | "affiliate_channels";
+  table: "countries" | "softwares" | "affiliate_channels" | "currencies";
   title: string;
   withCode?: boolean;
 }

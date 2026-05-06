@@ -55,7 +55,7 @@ export default function ComisionesDashboard() {
         supabase.from("affiliates").select("id, fixed_name, alias, country_ids, status"),
         supabase.from("clients").select("id, company_name"),
         supabase.from("countries").select("id, name, code"),
-        supabase.from("affiliate_commission_plans").select("id, affiliate_id, brand, cpa, currency, plan_start_date"),
+        supabase.from("affiliate_commission_plans").select("id, affiliate_id, client_id, brand, cpa, cpa_currency, currency, country_ids, plan_start_date"),
       ]);
       setItems((it.data ?? []) as Item[]);
       setClosures((cs.data ?? []) as Closure[]);

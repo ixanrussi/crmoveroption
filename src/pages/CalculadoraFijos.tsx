@@ -436,6 +436,24 @@ export default function CalculadoraFijos() {
             )}
           </CardContent>
         </Card>
+        {isSuperAdmin && hasAny && (
+          <Card className="lg:col-start-2 border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10 no-print">
+            <CardHeader>
+              <CardTitle className="text-base text-amber-700 dark:text-amber-400">
+                Margen Overoption (solo super admin)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm text-muted-foreground">Margen estimado</span>
+                <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Diferencia entre el bruto del CPA y el fijo recomendado, consolidada en EUR. Esta información no se incluye en la oferta compartida.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

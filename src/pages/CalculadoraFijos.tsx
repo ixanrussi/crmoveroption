@@ -461,104 +461,133 @@ export default function CalculadoraFijos() {
           </CardContent>
         </Card>
 
-        <Card id="print-area">
-          <CardHeader>
-            <CardTitle className="text-lg">
-              Oferta {prospectName ? `para ${prospectName}` : "— Resultado"}
-            </CardTitle>
-            {prospectName && validRows.length > 0 && (
-              <p className="text-sm text-muted-foreground">
-                {validRows.map((r) => `${r.operator.company_name}${r.plan.brand ? " · " + r.plan.brand : ""}`).join(" + ")}
-              </p>
-            )}
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {!hasAny ? (
-              <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y CPAs objetivo para ver el cálculo.</p>
-            ) : (
-              <>
-                {totalFijoUsd > 0 && (
-                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-3 bg-primary/5">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Rango de oferta (USD)</div>
-                    <div className="grid grid-cols-2 gap-3">
-                      <div>
-                        <div className="text-xs text-muted-foreground">Fijo recomendado</div>
-                        <div className="text-2xl font-bold">{fmt(totalFijoRecomendadoUsd, "USD")}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-muted-foreground">Fijo máximo</div>
-                        <div className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</div>
-                      </div>
-                    </div>
-                    <div className="text-xs text-muted-foreground pt-1 border-t">
-                      Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
-                    </div>
-                  </div>
-                )}
-
-                {validRows.map((r, i) => (
-                  <div key={r.sel.uid} className="rounded-lg border p-4 space-y-3">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <div className="font-semibold">{r.operator.company_name}</div>
-                        <div className="text-xs text-muted-foreground">
-                          {r.plan.brand ? `${r.plan.brand} · ` : ""}{r.plan.description || ""}
-                        </div>
-                      </div>
-                      <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
-                    </div>
-
-                    <div className="grid grid-cols-3 gap-3 text-sm pt-2 border-t">
-                      <div className="flex flex-col">
-                        <span className="text-muted-foreground text-xs">CPA neto</span>
-                        <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-muted-foreground text-xs">Fijo recomendado</span>
-                        <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
-                      </div>
-                      <div className="flex flex-col">
-                        <span className="text-muted-foreground text-xs">Fijo máximo</span>
-                        <span className="font-semibold">{fmt(r.fijoMaximo, r.plan.currency)}</span>
-                      </div>
-                    </div>
-
-                    {r.tierLabel && (
-                      <div className="pt-2 border-t space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-xs text-muted-foreground uppercase">Escenario real</span>
-                          <Badge variant={r.ftdA >= r.ftdT ? "default" : "secondary"}>{r.tierLabel}</Badge>
-                        </div>
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Pago al afiliado ({r.ftdA} CPAs)</span>
-                          <span className="font-semibold">{fmt(r.pagoRealAfiliado, r.plan.currency)}</span>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </>
-            )}
-          </CardContent>
-        </Card>
-        {isSuperAdmin && hasAny && (
-          <Card className="lg:col-start-2 border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10 no-print">
+        <div className="space-y-6">
+          <Card id="print-area">
             <CardHeader>
-              <CardTitle className="text-base text-amber-700 dark:text-amber-400">
-                Margen Overoption (solo super admin)
+              <CardTitle className="text-lg">
+                Oferta {prospectName ? `para ${prospectName}` : "— Resultado"}
               </CardTitle>
+              {prospectName && validRows.length > 0 && (
+                <p className="text-sm text-muted-foreground">
+                  {validRows.map((r) => `${r.operator.company_name}${r.plan.brand ? " · " + r.plan.brand : ""}`).join(" + ")}
+                </p>
+              )}
             </CardHeader>
-            <CardContent className="space-y-2">
-              <div className="flex justify-between items-baseline">
-                <span className="text-sm text-muted-foreground">Margen estimado</span>
-                <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Diferencia entre el bruto del CPA y el fijo recomendado, consolidada en EUR. Esta información no se incluye en la oferta compartida.
-              </p>
+            <CardContent className="space-y-4">
+              {!hasAny ? (
+                <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y CPAs objetivo para ver el cálculo.</p>
+              ) : (
+                <>
+                  {totalFijoUsd > 0 && (
+                    <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
+                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo propuesta (USD)</div>
+                      <div className="text-3xl font-bold">{fmt(totalFijoPropuestaUsd, "USD")}</div>
+                      <div className="text-xs text-muted-foreground pt-1 border-t">
+                        Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
+                      </div>
+                    </div>
+                  )}
+
+                  {validRows.map((r) => (
+                    <div key={r.sel.uid} className="rounded-lg border p-4 space-y-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <div>
+                          <div className="font-semibold">{r.operator.company_name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {r.plan.brand ? `${r.plan.brand} · ` : ""}{r.plan.description || ""}
+                          </div>
+                        </div>
+                        <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">CPA neto</span>
+                          <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
+                        </div>
+                        <div className="flex flex-col">
+                          <span className="text-muted-foreground text-xs">Fijo propuesta</span>
+                          <span className="font-semibold">{fmt(computePropuesta(r), r.plan.currency)}</span>
+                        </div>
+                      </div>
+
+                      {r.tierLabel && (
+                        <div className="pt-2 border-t space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-muted-foreground uppercase">Escenario real</span>
+                            <Badge variant={r.ftdA >= r.ftdT ? "default" : "secondary"}>{r.tierLabel}</Badge>
+                          </div>
+                          <div className="flex justify-between text-sm">
+                            <span className="text-muted-foreground">Pago al afiliado ({r.ftdA} CPAs)</span>
+                            <span className="font-semibold">{fmt(r.pagoRealAfiliado, r.plan.currency)}</span>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </>
+              )}
             </CardContent>
           </Card>
-        )}
+
+          {hasAny && (
+            <Card className="no-print border-primary/30">
+              <CardHeader>
+                <CardTitle className="text-base">Ajuste de propuesta (uso interno)</CardTitle>
+                <p className="text-xs text-muted-foreground">
+                  Desliza para definir el "Fijo propuesta" entre el recomendado y el máximo. Estos valores no se incluyen al compartir ni en el PDF.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-3 text-center">
+                  <div className="rounded-md border p-2 bg-muted/40">
+                    <div className="text-[10px] uppercase text-muted-foreground">Recomendado</div>
+                    <div className="font-semibold">{fmt(totalFijoRecomendadoUsd, "USD")}</div>
+                  </div>
+                  <div className="rounded-md border-2 border-primary p-2 bg-primary/10">
+                    <div className="text-[10px] uppercase text-muted-foreground">Propuesta</div>
+                    <div className="font-bold">{fmt(totalFijoPropuestaUsd, "USD")}</div>
+                  </div>
+                  <div className="rounded-md border p-2 bg-muted/40">
+                    <div className="text-[10px] uppercase text-muted-foreground">Máximo</div>
+                    <div className="font-semibold">{fmt(totalFijoUsd, "USD")}</div>
+                  </div>
+                </div>
+                <Slider
+                  value={[proposalPct]}
+                  onValueChange={(v) => setProposalPct(v[0])}
+                  min={0}
+                  max={100}
+                  step={1}
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>Recomendado</span>
+                  <span>{proposalPct}%</span>
+                  <span>Máximo</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {isSuperAdmin && hasAny && (
+            <Card className="border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10 no-print">
+              <CardHeader>
+                <CardTitle className="text-base text-amber-700 dark:text-amber-400">
+                  Margen Overoption (solo super admin)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <div className="flex justify-between items-baseline">
+                  <span className="text-sm text-muted-foreground">Margen estimado</span>
+                  <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Diferencia entre el bruto del CPA y el fijo máximo, consolidada en EUR. Esta información no se incluye en la oferta compartida.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>

@@ -307,13 +307,19 @@ export default function CalculadoraFijos() {
                     <div className="rounded-lg border p-4 space-y-3">
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">Si cumple el objetivo</div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado</span>
-                        <span className="text-2xl font-bold">{fmt(fixed, plan.currency)}</span>
+                        <span className="text-sm">Pago al afiliado{fixedMarginPct > 0 ? ` (margen ${fixedMarginPct}%)` : ""}</span>
+                        <span className="text-2xl font-bold">{fmt(calc.pagoObjetivoAfiliado, plan.currency)}</span>
                       </div>
+                      {fixedMarginPct > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Fijo bruto ofrecido</span>
+                          <span>{fmt(fixed, plan.currency)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">CPA neto efectivo (fijo / FTDs)</span>
-                        <span className={`font-semibold ${calc.cpaEfectivoObjetivo > cpaNeto ? "text-destructive" : ""}`}>
-                          {fmt(calc.cpaEfectivoObjetivo, plan.currency)}
+                        <span className="text-muted-foreground">CPA neto efectivo (pago afiliado / FTDs)</span>
+                        <span className={`font-semibold ${calc.cpaEfectivoObjetivoAfiliado > cpaNeto ? "text-destructive" : ""}`}>
+                          {fmt(calc.cpaEfectivoObjetivoAfiliado, plan.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">

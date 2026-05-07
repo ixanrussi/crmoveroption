@@ -73,28 +73,22 @@ export default function CalculadoraFijos() {
     () => countries.filter((c) => c.id !== wwId && c.id !== latamId && c.name.toLowerCase() !== "españa").map((c) => c.id),
     [countries, wwId, latamId],
   );
-  const expandRegions = (ids: string[] | null | undefined): Set<string> => {
-    const set = new Set<string>(ids ?? []);
-    if (wwId && set.has(wwId)) countries.forEach((c) => set.add(c.id));
-    if (latamId && set.has(latamId)) latamCountryIds.forEach((id) => set.add(id));
-    return set;
-  };
-
-  // Expand the SELECTED country/region into the set of acceptable country ids
-  const selectedTargets = useMemo((): Set<string> => {
-    const set = new Set<string>();
-    if (!countryId || countryId === "all") return set;
-    set.add(countryId);
-    if (wwId && countryId === wwId) countries.forEach((c) => set.add(c.id));
-    if (latamId && countryId === latamId) latamCountryIds.forEach((id) => set.add(id));
-    return set;
-  }, [countryId, countries, wwId, latamId, latamCountryIds]);
-
   const matchesSelected = (ids: string[] | null | undefined): boolean => {
     if (countryId === "all") return true;
-    const expanded = expandRegions(ids);
-    for (const id of expanded) if (selectedTargets.has(id)) return true;
-    return false;
+    const arr = ids ?? [];
+    // WW selected: only operators/plans explícitamente marcados como WW
+    if (wwId && countryId === wwId) return arr.includes(wwId);
+    // Cualquier otro país/región: WW siempre aplica (opera en todos)
+    if (wwId && arr.includes(wwId)) return true;
+    // Expandir LATAM en los ids del operador/plan
+    const expanded = new Set<string>(arr);
+    if (latamId && arr.includes(latamId)) latamCountryIds.forEach((id) => expanded.add(id));
+    // LATAM seleccionado: aceptar si tiene LATAM o cualquier país de LATAM
+    if (latamId && countryId === latamId) {
+      if (arr.includes(latamId)) return true;
+      return latamCountryIds.some((id) => expanded.has(id));
+    }
+    return expanded.has(countryId);
   };
 
   const filteredOperators = useMemo(() => {
@@ -104,14 +98,14 @@ export default function CalculadoraFijos() {
       const planHas = (o.client_commission_plans ?? []).some((p: Plan) => matchesSelected(p.country_ids));
       return opHas && planHas;
     });
-  }, [operators, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
+  }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
 
   const operator = filteredOperators.find((o) => o.id === opId);
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
     if (countryId === "all") return operator.client_commission_plans;
     return operator.client_commission_plans.filter((p) => matchesSelected(p.country_ids));
-  }, [operator, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
+  }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
   const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;

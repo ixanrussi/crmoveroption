@@ -455,7 +455,7 @@ export default function CalculadoraFijos() {
               <>
                 {totalFijoUsd > 0 && (
                   <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo total recomendado al afiliado</div>
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo máximo</div>
                     <div className="flex justify-between items-baseline">
                       <span className="text-sm text-muted-foreground">USD</span>
                       <span className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</span>

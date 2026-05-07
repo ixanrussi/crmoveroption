@@ -355,6 +355,42 @@ export type Database = {
           },
         ]
       }
+      calculator_simulations: {
+        Row: {
+          country_id: string | null
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          prospect_name: string | null
+          selections: Json
+          total_fijo_usd: number
+          updated_at: string
+        }
+        Insert: {
+          country_id?: string | null
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          prospect_name?: string | null
+          selections?: Json
+          total_fijo_usd?: number
+          updated_at?: string
+        }
+        Update: {
+          country_id?: string | null
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          prospect_name?: string | null
+          selections?: Json
+          total_fijo_usd?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       client_commission_plans: {
         Row: {
           baseline: number | null

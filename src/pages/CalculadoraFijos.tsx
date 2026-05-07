@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Printer, Share2, Plus, Trash2 } from "lucide-react";
+import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
@@ -58,10 +59,25 @@ const newSelection = (): Selection => ({
   opId: "", planId: "", ftdTarget: "", ftdActual: "",
 });
 
+type SavedSimulation = {
+  id: string;
+  name: string;
+  prospect_name: string | null;
+  country_id: string | null;
+  selections: Selection[];
+  total_fijo_usd: number;
+  created_at: string;
+};
+
 export default function CalculadoraFijos() {
-  const { isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [simName, setSimName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<SavedSimulation[]>([]);
   const [countryId, setCountryId] = useState<string>("all");
   const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");
@@ -117,6 +133,55 @@ export default function CalculadoraFijos() {
     } catch (e: any) {
       if (e?.name !== "AbortError") toast.error("No se pudo compartir el PDF");
     }
+  };
+
+  const loadHistory = async () => {
+    const { data, error } = await supabase
+      .from("calculator_simulations")
+      .select("id, name, prospect_name, country_id, selections, total_fijo_usd, created_at")
+      .order("created_at", { ascending: false });
+    if (error) { toast.error("No se pudo cargar el historial"); return; }
+    setSaved((data ?? []) as any);
+  };
+
+  const handleOpenSave = () => {
+    setSimName(prospectName ? `Simulación ${prospectName}` : "");
+    setSaveDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!simName.trim()) { toast.error("Ingresa un nombre para la simulación"); return; }
+    if (!user) { toast.error("Debes iniciar sesión"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("calculator_simulations").insert({
+      name: simName.trim(),
+      prospect_name: prospectName || null,
+      country_id: countryId === "all" ? null : countryId,
+      selections: selections as any,
+      total_fijo_usd: totalFijoUsd,
+      created_by: user.id,
+    });
+    setSaving(false);
+    if (error) { toast.error("No se pudo guardar"); return; }
+    toast.success("Simulación guardada");
+    setSaveDialogOpen(false);
+    setSimName("");
+    if (historyOpen) loadHistory();
+  };
+
+  const handleLoadSim = (s: SavedSimulation) => {
+    setProspectName(s.prospect_name ?? "");
+    setCountryId(s.country_id ?? "all");
+    setSelections(Array.isArray(s.selections) && s.selections.length ? s.selections : [newSelection()]);
+    setHistoryOpen(false);
+    toast.success(`Simulación "${s.name}" cargada`);
+  };
+
+  const handleDeleteSim = async (id: string) => {
+    const { error } = await supabase.from("calculator_simulations").delete().eq("id", id);
+    if (error) { toast.error("No se pudo eliminar"); return; }
+    setSaved((prev) => prev.filter((x) => x.id !== id));
+    toast.success("Simulación eliminada");
   };
 
   useEffect(() => {
@@ -253,7 +318,13 @@ export default function CalculadoraFijos() {
             Simula el valor fijo a ofrecer a un afiliado en base a CPAs comprometidos por uno o varios operadores.
           </p>
         </div>
-        <div className="flex gap-2 no-print">
+        <div className="flex gap-2 no-print flex-wrap justify-end">
+          <Button onClick={() => { setHistoryOpen(true); loadHistory(); }} variant="outline">
+            <History className="h-4 w-4 mr-2" /> Historial
+          </Button>
+          <Button onClick={handleOpenSave} variant="secondary" disabled={!hasAny}>
+            <Save className="h-4 w-4 mr-2" /> Guardar
+          </Button>
           <Button onClick={handleShare} variant="default" disabled={!hasAny}>
             <Share2 className="h-4 w-4 mr-2" /> Compartir
           </Button>
@@ -455,6 +526,55 @@ export default function CalculadoraFijos() {
           </Card>
         )}
       </div>
+
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Guardar simulación</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <Label>Nombre de la simulación *</Label>
+            <Input
+              autoFocus
+              value={simName}
+              onChange={(e) => setSimName(e.target.value)}
+              placeholder="Ej. Propuesta Juan Pérez - Mayo"
+              onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving || !simName.trim()}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Historial de simulaciones</DialogTitle></DialogHeader>
+          {saved.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No hay simulaciones guardadas todavía.</p>
+          ) : (
+            <div className="space-y-2">
+              {saved.map((s) => (
+                <div key={s.id} className="flex items-center justify-between gap-3 border rounded-lg p-3 hover:bg-muted/50">
+                  <button className="text-left flex-1 min-w-0" onClick={() => handleLoadSim(s)}>
+                    <div className="font-semibold truncate">{s.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {s.prospect_name ? `${s.prospect_name} · ` : ""}
+                      {fmt(Number(s.total_fijo_usd) || 0, "USD")} ·{" "}
+                      {new Date(s.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                    </div>
+                  </button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteSim(s.id)}>
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

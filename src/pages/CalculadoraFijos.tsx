@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 type Plan = {
   id: string;

@@ -244,12 +244,15 @@ export default function CalculadoraFijos() {
               </div>
               <div className="space-y-1">
                 <Label>Valor fijo ofrecido</Label>
-                <Input type="number" min="0" step="0.01" value={fixedAmount} onChange={(e) => setFixedAmount(e.target.value)} placeholder={plan && ftdT > 0 ? String((cpaNeto * ftdT).toFixed(2)) : ""} />
-                {plan && ftdT > 0 && (
-                  <p className="text-xs text-muted-foreground">
-                    Referencia (CPA neto × FTDs): <button type="button" className="underline" onClick={() => setFixedAmount(String((cpaNeto * ftdT).toFixed(2)))}>{fmt(cpaNeto * ftdT, plan.currency)}</button>
-                  </p>
-                )}
+                <Input
+                  type="text"
+                  readOnly
+                  tabIndex={-1}
+                  className="bg-muted cursor-not-allowed"
+                  value={plan && ftdT > 0 ? fmt(cpaNeto * ftdT, plan.currency) : ""}
+                  placeholder="Se calcula con CPA neto × FTDs objetivo"
+                />
+                <p className="text-xs text-muted-foreground">Calculado automáticamente: CPA neto × FTDs objetivo.</p>
               </div>
             </div>
 

@@ -212,17 +212,17 @@ export default function CalculadoraFijos() {
   const rows = selections.map(computeRow).filter(Boolean) as NonNullable<ReturnType<typeof computeRow>>[];
   const validRows = rows.filter((r) => r.ftdT > 0);
 
-  const totalsByCurrency = useMemo(() => {
-    const map = new Map<string, { recomendado: number; pagoReal: number }>();
-    for (const r of validRows) {
-      const cur = r.plan.currency || "—";
-      const cur2 = map.get(cur) || { recomendado: 0, pagoReal: 0 };
-      cur2.recomendado += r.fijoRecomendado;
-      cur2.pagoReal += r.pagoRealAfiliado;
-      map.set(cur, cur2);
-    }
-    return Array.from(map.entries());
-  }, [validRows]);
+  // Tasas de cambio aproximadas a USD para consolidar la oferta en una sola moneda
+  const FX_TO_USD: Record<string, number> = { USD: 1, EUR: 1.08, GBP: 1.27, BRL: 0.20, MXN: 0.055, ARS: 0.001 };
+  const toUsd = (amount: number, currency?: string | null) => {
+    const cur = (currency || "USD").toUpperCase();
+    const rate = FX_TO_USD[cur] ?? 1;
+    return amount * rate;
+  };
+  const totalFijoUsd = useMemo(
+    () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
+    [validRows],
+  );
 
   const hasAny = validRows.length > 0;
 

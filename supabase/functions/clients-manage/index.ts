@@ -279,6 +279,7 @@ Deno.serve(async (req) => {
             proportional_enabled: !!p?.proportional_enabled,
             proportional_min_pct: num(p?.proportional_min_pct),
             fixed_margin_pct: num(p?.fixed_margin_pct),
+            recommended_margin_pct: num(p?.recommended_margin_pct),
           };
         })
       : [];

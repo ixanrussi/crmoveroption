@@ -118,6 +118,7 @@ export default function CalculadoraFijos() {
   const cpa90 = plan?.cpa_at_90 ?? 0;
   const proportionalEnabled = !!plan?.proportional_enabled;
   const proportionalMinPct = plan?.proportional_min_pct ?? 0;
+  const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
 
   const ftdT = parseFloat(ftdTarget) || 0;
   const fixed = parseFloat(fixedAmount) || 0;
@@ -154,9 +155,13 @@ export default function CalculadoraFijos() {
       tierLabel = "Bajo objetivo (fallback)";
       pagoReal = ftdA * cpaTier;
     }
-    const cpaEfectivoReal = ftdA > 0 ? pagoReal / ftdA : 0;
-    return { cpaEfectivoObjetivo, maxFijoPosible, cumplio, pagoReal, cpaEfectivoReal, tierLabel, cpaTier };
-  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct]);
+    const marginFactor = Math.max(0, 1 - (fixedMarginPct || 0) / 100);
+    const pagoObjetivoAfiliado = fixed * marginFactor;
+    const pagoRealAfiliado = pagoReal * marginFactor;
+    const cpaEfectivoReal = ftdA > 0 ? pagoRealAfiliado / ftdA : 0;
+    const cpaEfectivoObjetivoAfiliado = ftdT > 0 ? pagoObjetivoAfiliado / ftdT : 0;
+    return { cpaEfectivoObjetivo, cpaEfectivoObjetivoAfiliado, maxFijoPosible, cumplio, pagoReal, pagoRealAfiliado, pagoObjetivoAfiliado, cpaEfectivoReal, tierLabel, cpaTier, marginFactor };
+  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct, fixedMarginPct]);
 
   return (
     <div className="space-y-6">

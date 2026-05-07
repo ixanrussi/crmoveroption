@@ -341,9 +341,15 @@ export default function CalculadoraFijos() {
                         </Badge>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado ({ftdA} FTDs)</span>
-                        <span className="text-2xl font-bold">{fmt(calc.pagoReal, plan.currency)}</span>
+                        <span className="text-sm">Pago al afiliado ({ftdA} FTDs){fixedMarginPct > 0 ? ` · margen ${fixedMarginPct}%` : ""}</span>
+                        <span className="text-2xl font-bold">{fmt(calc.pagoRealAfiliado, plan.currency)}</span>
                       </div>
+                      {fixedMarginPct > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Antes de margen</span>
+                          <span>{fmt(calc.pagoReal, plan.currency)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">CPA neto efectivo</span>
                         <span className="font-semibold">{fmt(calc.cpaEfectivoReal, plan.currency)}</span>

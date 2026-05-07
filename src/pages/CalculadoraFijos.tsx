@@ -243,7 +243,7 @@ export default function CalculadoraFijos() {
                 <Input type="number" min="0" value={ftdTarget} onChange={(e) => setFtdTarget(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label>Valor fijo ofrecido</Label>
+                <Label>Fijo recomendado</Label>
                 <Input
                   type="text"
                   readOnly
@@ -252,7 +252,6 @@ export default function CalculadoraFijos() {
                   value={plan && ftdT > 0 ? fmt(cpaNeto * ftdT, plan.currency) : ""}
                   placeholder="Se calcula con CPA neto × FTDs objetivo"
                 />
-                <p className="text-xs text-muted-foreground">Calculado automáticamente: CPA neto × FTDs objetivo.</p>
               </div>
             </div>
 

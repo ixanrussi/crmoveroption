@@ -55,6 +55,7 @@ type CommissionPlanPayload = {
   proportional_enabled?: boolean | null;
   proportional_min_pct?: number | string | null;
   fixed_margin_pct?: number | string | null;
+  recommended_margin_pct?: number | string | null;
 };
 
 type RequestBody = {

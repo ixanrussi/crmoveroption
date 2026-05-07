@@ -291,6 +291,10 @@ export default function CalculadoraFijos() {
     return amount * rate;
   };
   const totalFijoUsd = useMemo(
+    () => validRows.reduce((s, r) => s + toUsd(r.fijoMaximo, r.plan.currency), 0),
+    [validRows],
+  );
+  const totalFijoRecomendadoUsd = useMemo(
     () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
     [validRows],
   );
@@ -299,7 +303,7 @@ export default function CalculadoraFijos() {
     return usd / (FX_TO_USD.EUR || 1);
   };
   const totalMarginEur = useMemo(
-    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoRecomendado, r.plan.currency), 0),
+    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoMaximo, r.plan.currency), 0),
     [validRows],
   );
 

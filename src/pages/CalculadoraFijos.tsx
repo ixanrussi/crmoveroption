@@ -43,8 +43,8 @@ const fmt = (n: number, currency?: string | null) =>
   new Intl.NumberFormat("es-ES", {
     style: currency ? "currency" : "decimal",
     currency: currency || undefined,
-    maximumFractionDigits: 2,
-  }).format(n);
+    maximumFractionDigits: 0,
+  }).format(Math.round(n));
 
 type Country = { id: string; name: string; code: string | null };
 

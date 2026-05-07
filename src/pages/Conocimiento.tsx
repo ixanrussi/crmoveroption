@@ -64,6 +64,7 @@ export default function Conocimiento() {
     ]);
     setDocs((d.data ?? []) as Doc[]);
     setFindings((f.data ?? []) as Finding[]);
+    refreshCounts();
   };
   useEffect(() => { refresh(); }, [clientId]);
 

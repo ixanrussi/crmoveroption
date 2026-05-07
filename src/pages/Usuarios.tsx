@@ -3,6 +3,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
@@ -29,6 +31,7 @@ type UserRow = {
   email: string;
   full_name: string;
   job_title: string | null;
+  is_active: boolean;
   roles: Role[];
 };
 
@@ -58,6 +61,14 @@ export default function Usuarios() {
     load();
   };
 
+  const toggleActive = async (u: UserRow) => {
+    const next = !u.is_active;
+    const { error } = await supabase.from("profiles").update({ is_active: next }).eq("id", u.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Usuario activado" : "Usuario desactivado");
+    load();
+  };
+
   if (!isSuperAdmin) {
     return <p className="text-muted-foreground">Acceso restringido a Super Admins.</p>;
   }
@@ -76,7 +87,9 @@ export default function Usuarios() {
           <Table>
             <TableHeader><TableRow>
               <TableHead>Nombre</TableHead><TableHead>Email</TableHead>
-              <TableHead>Cargo</TableHead><TableHead>Rol actual</TableHead><TableHead className="w-56">Definir rol</TableHead>
+              <TableHead>Cargo</TableHead><TableHead>Rol actual</TableHead>
+              <TableHead className="w-56">Definir rol</TableHead>
+              <TableHead className="w-40">Estado</TableHead>
             </TableRow></TableHeader>
             <TableBody>
               {users.map((u) => {
@@ -95,7 +108,7 @@ export default function Usuarios() {
                     <TableCell>
                       {hasRole
                         ? <Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge>
-                        : <Badge variant="destructive">Pendiente de validación</Badge>}
+                        : <Badge variant="destructive">Sin rol</Badge>}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -112,6 +125,18 @@ export default function Usuarios() {
                         </SelectContent>
                       </Select>
                       {isSelf && <p className="text-xs text-muted-foreground mt-1">No puedes cambiar tu propio rol</p>}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={u.is_active}
+                          onCheckedChange={() => toggleActive(u)}
+                          disabled={isSelf}
+                        />
+                        <Badge variant={u.is_active ? "default" : "outline"}>
+                          {u.is_active ? "Activo" : "Inactivo"}
+                        </Badge>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

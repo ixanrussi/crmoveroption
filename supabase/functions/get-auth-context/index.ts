@@ -51,18 +51,18 @@ Deno.serve(async (req) => {
     }
     const userData = { user: { id: userId } };
 
-    let roles: AppRole[] = ["user"];
+    let roles: AppRole[] = [];
+    let isActive = false;
 
     if (serviceRoleKey) {
       const adminClient = createClient(supabaseUrl, serviceRoleKey);
-      const { data, error } = await adminClient
-        .from("user_roles")
-        .select("role")
-        .eq("user_id", userData.user.id)
-        .order("role", { ascending: true });
-
-      if (error) throw error;
-      roles = data?.map((row) => row.role as AppRole) ?? ["user"];
+      const [rolesRes, profileRes] = await Promise.all([
+        adminClient.from("user_roles").select("role").eq("user_id", userData.user.id).order("role", { ascending: true }),
+        adminClient.from("profiles").select("is_active").eq("id", userData.user.id).maybeSingle(),
+      ]);
+      if (rolesRes.error) throw rolesRes.error;
+      roles = rolesRes.data?.map((row) => row.role as AppRole) ?? [];
+      isActive = !!profileRes.data?.is_active;
     } else if (dbUrl) {
       const sql = postgres(dbUrl, { prepare: false, max: 1 });
       const rows = await sql<{ role: AppRole }[]>`
@@ -75,13 +75,17 @@ Deno.serve(async (req) => {
           else 3
         end
       `;
+      const profileRows = await sql<{ is_active: boolean }[]>`
+        select is_active from public.profiles where id = ${userData.user.id} limit 1
+      `;
       await sql.end({ timeout: 1 });
       roles = rows.map((row) => row.role);
+      isActive = !!profileRows[0]?.is_active;
     } else {
       throw new Error("No hay acceso backend para roles");
     }
 
-    return new Response(JSON.stringify({ roles }), {
+    return new Response(JSON.stringify({ roles, isActive }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (error) {

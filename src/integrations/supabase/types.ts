@@ -981,6 +981,7 @@ export type Database = {
           first_name: string | null
           full_name: string
           id: string
+          is_active: boolean
           job_title: string | null
           last_name: string | null
           phone: string | null
@@ -993,6 +994,7 @@ export type Database = {
           first_name?: string | null
           full_name?: string
           id: string
+          is_active?: boolean
           job_title?: string | null
           last_name?: string | null
           phone?: string | null
@@ -1005,6 +1007,7 @@ export type Database = {
           first_name?: string | null
           full_name?: string
           id?: string
+          is_active?: boolean
           job_title?: string | null
           last_name?: string | null
           phone?: string | null

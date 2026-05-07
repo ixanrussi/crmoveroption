@@ -18,6 +18,7 @@ type Profile = {
   avatar_url: string | null;
   job_title: string | null;
   created_at: string;
+  is_active: boolean;
 };
 
 Deno.serve(async (req) => {
@@ -66,7 +67,7 @@ Deno.serve(async (req) => {
     }
 
     const [profilesResult, rolesResult] = await Promise.all([
-      adminClient.from("profiles").select("id,email,full_name,phone,avatar_url,job_title,created_at").order("created_at"),
+      adminClient.from("profiles").select("id,email,full_name,phone,avatar_url,job_title,created_at,is_active").order("created_at"),
       adminClient.from("user_roles").select("user_id,role"),
     ]);
 

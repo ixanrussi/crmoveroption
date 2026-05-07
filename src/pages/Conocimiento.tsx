@@ -161,7 +161,16 @@ export default function Conocimiento() {
           <Select value={clientId} onValueChange={setClientId}>
             <SelectTrigger><SelectValue placeholder="Selecciona cliente" /></SelectTrigger>
             <SelectContent>
-              {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+              {clients.map(c => (
+                <SelectItem key={c.id} value={c.id}>
+                  <span className="flex items-center gap-2">
+                    <span>{c.company_name}</span>
+                    <span className="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
+                      {docCounts[c.id] ?? 0}
+                    </span>
+                  </span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

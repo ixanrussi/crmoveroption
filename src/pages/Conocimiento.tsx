@@ -12,7 +12,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
-import { Upload, Sparkles, FileText, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle2, MessageSquare } from "lucide-react";
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Upload, Sparkles, FileText, Trash2, Download, RefreshCw, AlertTriangle, CheckCircle2, MessageSquare, ChevronDown } from "lucide-react";
 
 type Client = { id: string; company_name: string };
 type Doc = {

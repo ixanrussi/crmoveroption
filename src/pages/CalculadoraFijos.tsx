@@ -249,11 +249,14 @@ export default function CalculadoraFijos() {
     const proportionalEnabled = !!plan.proportional_enabled;
     const proportionalMinPct = plan.proportional_min_pct ?? 0;
     const fixedMarginPct = plan.fixed_margin_pct ?? 0;
+    const recommendedMarginPct = plan.recommended_margin_pct ?? 0;
     const ftdT = parseFloat(sel.ftdTarget) || 0;
     const ftdA = sel.ftdActual === "" ? ftdT : (parseFloat(sel.ftdActual) || 0);
     const fixed = cpaNeto * ftdT;
     const marginFactor = Math.max(0, 1 - fixedMarginPct / 100);
-    const fijoRecomendado = fixed * marginFactor;
+    const recommendedFactor = Math.max(0, 1 - recommendedMarginPct / 100);
+    const fijoMaximo = fixed * marginFactor;
+    const fijoRecomendado = fixed * recommendedFactor;
 
     let cpaTier = 0; let tierLabel = ""; let pagoReal = 0;
     if (ftdT > 0) {
@@ -272,8 +275,8 @@ export default function CalculadoraFijos() {
     }
     const pagoRealAfiliado = pagoReal * marginFactor;
     return {
-      sel, operator, plan, cpaNeto, fallbackCpa, cpa80, cpa90, fixedMarginPct,
-      ftdT, ftdA, fixed, fijoRecomendado, pagoReal, pagoRealAfiliado, tierLabel, cpaTier,
+      sel, operator, plan, cpaNeto, fallbackCpa, cpa80, cpa90, fixedMarginPct, recommendedMarginPct,
+      ftdT, ftdA, fixed, fijoMaximo, fijoRecomendado, pagoReal, pagoRealAfiliado, tierLabel, cpaTier,
     };
   };
 

@@ -174,7 +174,7 @@ export default function ConocimientoDashboard() {
             {byOperator.map((row) => (
               <Link
                 key={row.client.id}
-                to="/conocimiento/operador"
+                to={`/conocimiento/operador?client=${row.client.id}`}
                 className="flex items-center justify-between gap-4 p-4 hover:bg-muted/50 transition-colors"
               >
                 <div className="min-w-0">

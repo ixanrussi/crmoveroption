@@ -526,6 +526,55 @@ export default function CalculadoraFijos() {
           </Card>
         )}
       </div>
+
+      <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Guardar simulación</DialogTitle></DialogHeader>
+          <div className="space-y-2">
+            <Label>Nombre de la simulación *</Label>
+            <Input
+              autoFocus
+              value={simName}
+              onChange={(e) => setSimName(e.target.value)}
+              placeholder="Ej. Propuesta Juan Pérez - Mayo"
+              onKeyDown={(e) => { if (e.key === "Enter") handleSave(); }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setSaveDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSave} disabled={saving || !simName.trim()}>
+              {saving ? "Guardando..." : "Guardar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={historyOpen} onOpenChange={setHistoryOpen}>
+        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+          <DialogHeader><DialogTitle>Historial de simulaciones</DialogTitle></DialogHeader>
+          {saved.length === 0 ? (
+            <p className="text-sm text-muted-foreground py-8 text-center">No hay simulaciones guardadas todavía.</p>
+          ) : (
+            <div className="space-y-2">
+              {saved.map((s) => (
+                <div key={s.id} className="flex items-center justify-between gap-3 border rounded-lg p-3 hover:bg-muted/50">
+                  <button className="text-left flex-1 min-w-0" onClick={() => handleLoadSim(s)}>
+                    <div className="font-semibold truncate">{s.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {s.prospect_name ? `${s.prospect_name} · ` : ""}
+                      {fmt(Number(s.total_fijo_usd) || 0, "USD")} ·{" "}
+                      {new Date(s.created_at).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                    </div>
+                  </button>
+                  <Button variant="ghost" size="sm" onClick={() => handleDeleteSim(s.id)}>
+                    <Trash className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

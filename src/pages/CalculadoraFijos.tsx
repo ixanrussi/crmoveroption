@@ -59,6 +59,7 @@ const newSelection = (): Selection => ({
 });
 
 export default function CalculadoraFijos() {
+  const { isSuperAdmin } = useAuth();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [countryId, setCountryId] = useState<string>("all");

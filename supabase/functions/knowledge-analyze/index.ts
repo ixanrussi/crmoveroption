@@ -148,6 +148,31 @@ Deno.serve(async (req) => {
     const baseText = `Cliente ID: ${doc.client_id}\nArchivo: ${name}\nCategoría: ${doc.category ?? "—"}\nNotas: ${doc.notes ?? "—"}\n\nAnaliza el contenido y devuelve summary + extracted + findings vía la función submit_analysis.`;
     const userParts: any[] = [{ type: "text", text: baseText }];
 
+    // Memoria: traer findings previos respondidos/resueltos del MISMO cliente (excluyendo este doc)
+    const { data: prevFindings } = await admin
+      .from("knowledge_findings")
+      .select("title, detail, kind, severity, status, answer, answered_at")
+      .eq("client_id", doc.client_id)
+      .neq("document_id", document_id)
+      .in("status", ["answered", "resolved", "dismissed"])
+      .not("answer", "is", null)
+      .order("answered_at", { ascending: false })
+      .limit(80);
+
+    if (prevFindings && prevFindings.length) {
+      const memo = prevFindings.map((p: any, i: number) =>
+        `${i + 1}. [${p.status}/${p.severity}] ${p.title}` +
+        (p.detail ? `\n   Contexto: ${String(p.detail).slice(0, 300)}` : "") +
+        `\n   Respuesta del operador: ${String(p.answer).slice(0, 600)}`
+      ).join("\n\n");
+      userParts.push({
+        type: "text",
+        text: `### Preguntas ya respondidas previamente por el operador (memoria del cliente)\n` +
+              `Usa esto para NO repetir preguntas ya aclaradas. Solo vuelve a preguntar si la respuesta previa es ambigua o no aplica al nuevo documento.\n\n${memo}`,
+      });
+    }
+
+
     let pdfTextOnly = false;
     if (mime === "application/pdf" || ext === "pdf") {
       // Try to pre-extract text — much more reliable than sending binary PDF

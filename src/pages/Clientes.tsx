@@ -55,12 +55,13 @@ type CommissionPlan = {
   cpa_at_90: string;
   proportional_enabled: boolean;
   proportional_min_pct: string;
+  fixed_margin_pct: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
-  proportional_enabled: false, proportional_min_pct: "",
+  proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -175,6 +176,7 @@ export default function Clientes() {
         cpa_at_90: p.cpa_at_90?.toString() ?? "",
         proportional_enabled: !!p.proportional_enabled,
         proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
+        fixed_margin_pct: p.fixed_margin_pct?.toString() ?? "",
       })),
     );
     setBrandInput("");
@@ -240,6 +242,7 @@ export default function Clientes() {
           cpa_at_90: p.cpa_at_90 === "" ? null : p.cpa_at_90,
           proportional_enabled: !!p.proportional_enabled,
           proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
+          fixed_margin_pct: p.fixed_margin_pct === "" ? null : p.fixed_margin_pct,
         })),
       },
     });
@@ -652,6 +655,14 @@ export default function Clientes() {
                             <Input type="number" step="0.01" value={pl.cpa_at_90}
                               onChange={(e) => updatePlan(i, { cpa_at_90: e.target.value })}
                               placeholder="Valor CPA si cumple ≥90%" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Margen fijo Overoption (%)</Label>
+                            <Input type="number" step="0.01" min="0" max="100" value={pl.fixed_margin_pct}
+                              onChange={(e) => updatePlan(i, { fixed_margin_pct: e.target.value })}
+                              placeholder="Ej. 10 (= 10% retenido)" />
+                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora.</p>
+                          </div>
                           <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
                             <div className="flex items-center justify-between gap-3">
                               <div>
@@ -672,7 +683,6 @@ export default function Clientes() {
                             )}
                           </div>
                         </div>
-                      </div>
                       </div>
                       </CollapsibleContent>
                     </Collapsible>

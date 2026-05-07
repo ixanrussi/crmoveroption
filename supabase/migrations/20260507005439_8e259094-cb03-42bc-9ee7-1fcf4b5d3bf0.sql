@@ -1,0 +1,1 @@
+ALTER TABLE public.client_commission_plans ADD COLUMN fixed_margin_pct numeric;

@@ -373,6 +373,7 @@ export type Database = {
           currency: string | null
           description: string | null
           fallback_cpa: number | null
+          fixed_margin_pct: number | null
           id: string
           overoption_retention: number | null
           plan_start_date: string | null
@@ -399,6 +400,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           fallback_cpa?: number | null
+          fixed_margin_pct?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null
@@ -425,6 +427,7 @@ export type Database = {
           currency?: string | null
           description?: string | null
           fallback_cpa?: number | null
+          fixed_margin_pct?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null

@@ -21,6 +21,7 @@ type Plan = {
   proportional_enabled: boolean | null;
   proportional_min_pct: number | null;
   country_ids: string[] | null;
+  fixed_margin_pct: number | null;
 };
 
 type Operator = {
@@ -58,7 +59,7 @@ export default function CalculadoraFijos() {
       const [{ data: ops }, { data: cs }] = await Promise.all([
         supabase
           .from("clients")
-          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
+          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct)")
           .order("company_name"),
         supabase.from("countries").select("id, name, code").order("name"),
       ]);
@@ -117,6 +118,7 @@ export default function CalculadoraFijos() {
   const cpa90 = plan?.cpa_at_90 ?? 0;
   const proportionalEnabled = !!plan?.proportional_enabled;
   const proportionalMinPct = plan?.proportional_min_pct ?? 0;
+  const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
 
   const ftdT = parseFloat(ftdTarget) || 0;
   const fixed = parseFloat(fixedAmount) || 0;
@@ -153,9 +155,13 @@ export default function CalculadoraFijos() {
       tierLabel = "Bajo objetivo (fallback)";
       pagoReal = ftdA * cpaTier;
     }
-    const cpaEfectivoReal = ftdA > 0 ? pagoReal / ftdA : 0;
-    return { cpaEfectivoObjetivo, maxFijoPosible, cumplio, pagoReal, cpaEfectivoReal, tierLabel, cpaTier };
-  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct]);
+    const marginFactor = Math.max(0, 1 - (fixedMarginPct || 0) / 100);
+    const pagoObjetivoAfiliado = fixed * marginFactor;
+    const pagoRealAfiliado = pagoReal * marginFactor;
+    const cpaEfectivoReal = ftdA > 0 ? pagoRealAfiliado / ftdA : 0;
+    const cpaEfectivoObjetivoAfiliado = ftdT > 0 ? pagoObjetivoAfiliado / ftdT : 0;
+    return { cpaEfectivoObjetivo, cpaEfectivoObjetivoAfiliado, maxFijoPosible, cumplio, pagoReal, pagoRealAfiliado, pagoObjetivoAfiliado, cpaEfectivoReal, tierLabel, cpaTier, marginFactor };
+  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct, fixedMarginPct]);
 
   return (
     <div className="space-y-6">
@@ -301,13 +307,19 @@ export default function CalculadoraFijos() {
                     <div className="rounded-lg border p-4 space-y-3">
                       <div className="text-xs uppercase tracking-wide text-muted-foreground">Si cumple el objetivo</div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado</span>
-                        <span className="text-2xl font-bold">{fmt(fixed, plan.currency)}</span>
+                        <span className="text-sm">Pago al afiliado{fixedMarginPct > 0 ? ` (margen ${fixedMarginPct}%)` : ""}</span>
+                        <span className="text-2xl font-bold">{fmt(calc.pagoObjetivoAfiliado, plan.currency)}</span>
                       </div>
+                      {fixedMarginPct > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Fijo bruto ofrecido</span>
+                          <span>{fmt(fixed, plan.currency)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">CPA neto efectivo (fijo / FTDs)</span>
-                        <span className={`font-semibold ${calc.cpaEfectivoObjetivo > cpaNeto ? "text-destructive" : ""}`}>
-                          {fmt(calc.cpaEfectivoObjetivo, plan.currency)}
+                        <span className="text-muted-foreground">CPA neto efectivo (pago afiliado / FTDs)</span>
+                        <span className={`font-semibold ${calc.cpaEfectivoObjetivoAfiliado > cpaNeto ? "text-destructive" : ""}`}>
+                          {fmt(calc.cpaEfectivoObjetivoAfiliado, plan.currency)}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm">
@@ -329,9 +341,15 @@ export default function CalculadoraFijos() {
                         </Badge>
                       </div>
                       <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado ({ftdA} FTDs)</span>
-                        <span className="text-2xl font-bold">{fmt(calc.pagoReal, plan.currency)}</span>
+                        <span className="text-sm">Pago al afiliado ({ftdA} FTDs){fixedMarginPct > 0 ? ` · margen ${fixedMarginPct}%` : ""}</span>
+                        <span className="text-2xl font-bold">{fmt(calc.pagoRealAfiliado, plan.currency)}</span>
                       </div>
+                      {fixedMarginPct > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Antes de margen</span>
+                          <span>{fmt(calc.pagoReal, plan.currency)}</span>
+                        </div>
+                      )}
                       <div className="flex justify-between text-sm">
                         <span className="text-muted-foreground">CPA neto efectivo</span>
                         <span className="font-semibold">{fmt(calc.cpaEfectivoReal, plan.currency)}</span>

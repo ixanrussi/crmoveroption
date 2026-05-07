@@ -372,15 +372,13 @@ export default function CalculadoraFijos() {
               <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y CPAs objetivo para ver el cálculo.</p>
             ) : (
               <>
-                {totalsByCurrency.length > 0 && (
+                {totalFijoUsd > 0 && (
                   <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
                     <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo total recomendado al afiliado</div>
-                    {totalsByCurrency.map(([cur, t]) => (
-                      <div key={cur} className="flex justify-between items-baseline">
-                        <span className="text-sm text-muted-foreground">{cur}</span>
-                        <span className="text-2xl font-bold">{fmt(t.recomendado, cur === "—" ? null : cur)}</span>
-                      </div>
-                    ))}
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-sm text-muted-foreground">USD</span>
+                      <span className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</span>
+                    </div>
                     <div className="text-xs text-muted-foreground pt-1 border-t">
                       Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
                     </div>

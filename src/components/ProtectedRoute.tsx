@@ -10,7 +10,7 @@ interface Props {
 }
 
 export const ProtectedRoute = ({ children, requireRole }: Props) => {
-  const { session, roles, loading, signOut } = useAuth();
+  const { session, roles, isActive, loading, signOut } = useAuth();
   const location = useLocation();
 
   if (loading) {
@@ -23,8 +23,8 @@ export const ProtectedRoute = ({ children, requireRole }: Props) => {
 
   if (!session) return <Navigate to="/auth" state={{ from: location }} replace />;
 
-  // User authenticated but not yet validated by a super admin (no roles assigned)
-  if (roles.length === 0) {
+  // User authenticated but not yet validated/activated by a super admin
+  if (!isActive || roles.length === 0) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background p-4">
         <Card className="max-w-md w-full">

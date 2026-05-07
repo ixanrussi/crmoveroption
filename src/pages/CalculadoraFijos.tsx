@@ -619,7 +619,7 @@ export default function CalculadoraFijos() {
                   <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Diferencia entre el bruto del CPA y el fijo máximo, consolidada en EUR. Esta información no se incluye en la oferta compartida.
+                  Diferencia entre el bruto del CPA y el fijo propuesta actual, consolidada en EUR. Esta información no se incluye en la oferta compartida.
                 </p>
               </CardContent>
             </Card>

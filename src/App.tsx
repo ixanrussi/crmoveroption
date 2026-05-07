@@ -17,6 +17,7 @@ import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import Conocimiento from "./pages/Conocimiento";
+import ConocimientoDashboard from "./pages/ConocimientoDashboard";
 import CalculadoraFijos from "./pages/CalculadoraFijos";
 import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./pages/NotFound";
@@ -40,7 +41,8 @@ const App = () => (
               <Route path="/cierres" element={<Cierres />} />
               <Route path="/comisiones-dashboard" element={<ComisionesDashboard />} />
               <Route path="/calculadora-fijos" element={<CalculadoraFijos />} />
-              <Route path="/conocimiento" element={<Conocimiento />} />
+              <Route path="/conocimiento" element={<ConocimientoDashboard />} />
+              <Route path="/conocimiento/operador" element={<Conocimiento />} />
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />
               <Route path="/listas/software" element={<SimpleListPage table="softwares" title="Software" />} />
               <Route path="/listas/canales" element={<SimpleListPage table="affiliate_channels" title="Canales de afiliados" />} />

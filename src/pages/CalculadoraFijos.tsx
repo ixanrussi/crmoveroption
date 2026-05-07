@@ -135,6 +135,55 @@ export default function CalculadoraFijos() {
     }
   };
 
+  const loadHistory = async () => {
+    const { data, error } = await supabase
+      .from("calculator_simulations")
+      .select("id, name, prospect_name, country_id, selections, total_fijo_usd, created_at")
+      .order("created_at", { ascending: false });
+    if (error) { toast.error("No se pudo cargar el historial"); return; }
+    setSaved((data ?? []) as any);
+  };
+
+  const handleOpenSave = () => {
+    setSimName(prospectName ? `Simulación ${prospectName}` : "");
+    setSaveDialogOpen(true);
+  };
+
+  const handleSave = async () => {
+    if (!simName.trim()) { toast.error("Ingresa un nombre para la simulación"); return; }
+    if (!user) { toast.error("Debes iniciar sesión"); return; }
+    setSaving(true);
+    const { error } = await supabase.from("calculator_simulations").insert({
+      name: simName.trim(),
+      prospect_name: prospectName || null,
+      country_id: countryId === "all" ? null : countryId,
+      selections: selections as any,
+      total_fijo_usd: totalFijoUsd,
+      created_by: user.id,
+    });
+    setSaving(false);
+    if (error) { toast.error("No se pudo guardar"); return; }
+    toast.success("Simulación guardada");
+    setSaveDialogOpen(false);
+    setSimName("");
+    if (historyOpen) loadHistory();
+  };
+
+  const handleLoadSim = (s: SavedSimulation) => {
+    setProspectName(s.prospect_name ?? "");
+    setCountryId(s.country_id ?? "all");
+    setSelections(Array.isArray(s.selections) && s.selections.length ? s.selections : [newSelection()]);
+    setHistoryOpen(false);
+    toast.success(`Simulación "${s.name}" cargada`);
+  };
+
+  const handleDeleteSim = async (id: string) => {
+    const { error } = await supabase.from("calculator_simulations").delete().eq("id", id);
+    if (error) { toast.error("No se pudo eliminar"); return; }
+    setSaved((prev) => prev.filter((x) => x.id !== id));
+    toast.success("Simulación eliminada");
+  };
+
   useEffect(() => {
     (async () => {
       const [{ data: ops }, { data: cs }] = await Promise.all([

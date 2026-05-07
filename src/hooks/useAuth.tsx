@@ -8,6 +8,7 @@ interface AuthContextType {
   session: Session | null;
   user: User | null;
   roles: AppRole[];
+  isActive: boolean;
   loading: boolean;
   isSuperAdmin: boolean;
   isAdmin: boolean;
@@ -21,14 +22,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
   const [roles, setRoles] = useState<AppRole[]>([]);
+  const [isActive, setIsActive] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const fetchRoles = async () => {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
-      const { data, error } = await supabase.functions.invoke<{ roles: AppRole[] }>("get-auth-context");
+      const { data, error } = await supabase.functions.invoke<{ roles: AppRole[]; isActive: boolean }>("get-auth-context");
 
       if (!error && data) {
         setRoles(data.roles ?? []);
+        setIsActive(!!data.isActive);
         return;
       }
 
@@ -38,6 +41,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     }
 
     setRoles([]);
+    setIsActive(false);
   };
 
   useEffect(() => {

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
+import { useAuth } from "@/hooks/useAuth";
 
 type Plan = {
   id: string;
@@ -58,6 +59,7 @@ const newSelection = (): Selection => ({
 });
 
 export default function CalculadoraFijos() {
+  const { isSuperAdmin } = useAuth();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [countryId, setCountryId] = useState<string>("all");
@@ -221,6 +223,14 @@ export default function CalculadoraFijos() {
   };
   const totalFijoUsd = useMemo(
     () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
+    [validRows],
+  );
+  const toEur = (amount: number, currency?: string | null) => {
+    const usd = toUsd(amount, currency);
+    return usd / (FX_TO_USD.EUR || 1);
+  };
+  const totalMarginEur = useMemo(
+    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoRecomendado, r.plan.currency), 0),
     [validRows],
   );
 
@@ -426,6 +436,24 @@ export default function CalculadoraFijos() {
             )}
           </CardContent>
         </Card>
+        {isSuperAdmin && hasAny && (
+          <Card className="lg:col-start-2 border-amber-500/40 bg-amber-50/40 dark:bg-amber-950/10 no-print">
+            <CardHeader>
+              <CardTitle className="text-base text-amber-700 dark:text-amber-400">
+                Margen Overoption (solo super admin)
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <div className="flex justify-between items-baseline">
+                <span className="text-sm text-muted-foreground">Margen estimado</span>
+                <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Diferencia entre el bruto del CPA y el fijo recomendado, consolidada en EUR. Esta información no se incluye en la oferta compartida.
+              </p>
+            </CardContent>
+          </Card>
+        )}
       </div>
     </div>
   );

@@ -9,17 +9,19 @@ import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { Link } from "react-router-dom";
 
-type Role = "super_admin" | "admin" | "user";
-const ROLES: Role[] = ["super_admin", "admin", "user"];
+type Role = "super_admin" | "admin" | "user" | "comercial";
+const ROLES: Role[] = ["super_admin", "admin", "user", "comercial"];
 const ROLE_LABELS: Record<Role, string> = {
   super_admin: "Super Admin",
   admin: "Administrador",
   user: "Usuario",
+  comercial: "Comercial",
 };
 const ROLE_VARIANT: Record<Role, "default" | "secondary" | "outline"> = {
   super_admin: "default",
   admin: "secondary",
   user: "outline",
+  comercial: "outline",
 };
 
 type UserRow = {

@@ -8,7 +8,7 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./ui/button";
 
-const mainItems = [
+const allMainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Operadores", url: "/clientes", icon: Users },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
@@ -27,8 +27,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { isAdmin, isSuperAdmin, signOut, user } = useAuth();
+  const { isAdmin, isSuperAdmin, isComercial, signOut, user } = useAuth();
   const isActive = (p: string) => pathname === p;
+  const mainItems = isComercial && !isAdmin
+    ? allMainItems.filter((i) => i.url === "/calculadora-fijos")
+    : allMainItems;
 
   return (
     <Sidebar collapsible="icon">

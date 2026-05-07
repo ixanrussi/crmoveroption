@@ -1034,7 +1034,7 @@ export type Database = {
     }
     Enums: {
       affiliate_status: "active" | "inactive" | "pending"
-      app_role: "super_admin" | "admin" | "user"
+      app_role: "super_admin" | "admin" | "user" | "comercial"
       client_status: "active" | "inactive" | "prospect"
       closure_status: "draft" | "confirmed" | "paid"
     }
@@ -1165,7 +1165,7 @@ export const Constants = {
   public: {
     Enums: {
       affiliate_status: ["active", "inactive", "pending"],
-      app_role: ["super_admin", "admin", "user"],
+      app_role: ["super_admin", "admin", "user", "comercial"],
       client_status: ["active", "inactive", "prospect"],
       closure_status: ["draft", "confirmed", "paid"],
     },

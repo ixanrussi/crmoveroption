@@ -31,6 +31,7 @@ type UserRow = {
   email: string;
   full_name: string;
   job_title: string | null;
+  is_active: boolean;
   roles: Role[];
 };
 
@@ -57,6 +58,14 @@ export default function Usuarios() {
     if (insErr) { toast.error(insErr.message); return; }
     toast.success(`Rol actualizado a ${ROLE_LABELS[pending.next]}`);
     setPending(null);
+    load();
+  };
+
+  const toggleActive = async (u: UserRow) => {
+    const next = !u.is_active;
+    const { error } = await supabase.from("profiles").update({ is_active: next }).eq("id", u.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success(next ? "Usuario activado" : "Usuario desactivado");
     load();
   };
 

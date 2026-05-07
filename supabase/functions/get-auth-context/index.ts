@@ -81,8 +81,6 @@ Deno.serve(async (req) => {
       throw new Error("No hay acceso backend para roles");
     }
 
-    if (roles.length === 0) roles = ["user"];
-
     return new Response(JSON.stringify({ roles }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

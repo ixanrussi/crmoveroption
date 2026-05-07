@@ -43,8 +43,8 @@ const fmt = (n: number, currency?: string | null) =>
   new Intl.NumberFormat("es-ES", {
     style: currency ? "currency" : "decimal",
     currency: currency || undefined,
-    maximumFractionDigits: 2,
-  }).format(n);
+    maximumFractionDigits: 0,
+  }).format(Math.round(n));
 
 type Country = { id: string; name: string; code: string | null };
 
@@ -544,9 +544,25 @@ export default function CalculadoraFijos() {
                     <div className="text-[10px] uppercase text-muted-foreground">Recomendado</div>
                     <div className="font-semibold">{fmt(totalFijoRecomendadoUsd, "USD")}</div>
                   </div>
-                  <div className="rounded-md border-2 border-primary p-2 bg-primary/10">
-                    <div className="text-[10px] uppercase text-muted-foreground">Propuesta</div>
-                    <div className="font-bold">{fmt(totalFijoPropuestaUsd, "USD")}</div>
+                  <div className="rounded-md border-2 border-primary p-2 bg-primary/10 space-y-1">
+                    <div className="text-[10px] uppercase text-muted-foreground">Propuesta (USD)</div>
+                    <Input
+                      type="number"
+                      step={10}
+                      min={Math.round(totalFijoRecomendadoUsd)}
+                      max={Math.round(totalFijoUsd)}
+                      value={Math.round(totalFijoPropuestaUsd)}
+                      onChange={(e) => {
+                        const range = totalFijoUsd - totalFijoRecomendadoUsd;
+                        if (range <= 0) return;
+                        const raw = Number(e.target.value);
+                        if (!Number.isFinite(raw)) return;
+                        const snapped = Math.round(raw / 10) * 10;
+                        const clamped = Math.min(Math.max(snapped, totalFijoRecomendadoUsd), totalFijoUsd);
+                        setProposalPct(((clamped - totalFijoRecomendadoUsd) / range) * 100);
+                      }}
+                      className="h-8 text-center font-bold text-base"
+                    />
                   </div>
                   <div className="rounded-md border p-2 bg-muted/40">
                     <div className="text-[10px] uppercase text-muted-foreground">Máximo</div>
@@ -555,16 +571,24 @@ export default function CalculadoraFijos() {
                 </div>
                 <Slider
                   value={[proposalPct]}
-                  onValueChange={(v) => setProposalPct(v[0])}
+                  onValueChange={(v) => {
+                    const range = totalFijoUsd - totalFijoRecomendadoUsd;
+                    if (range <= 0) { setProposalPct(v[0]); return; }
+                    const usd = totalFijoRecomendadoUsd + (v[0] / 100) * range;
+                    const snapped = Math.round(usd / 10) * 10;
+                    const clamped = Math.min(Math.max(snapped, totalFijoRecomendadoUsd), totalFijoUsd);
+                    setProposalPct(((clamped - totalFijoRecomendadoUsd) / range) * 100);
+                  }}
                   min={0}
                   max={100}
-                  step={1}
+                  step={0.01}
                 />
                 <div className="flex justify-between text-xs text-muted-foreground">
                   <span>Recomendado</span>
-                  <span>{proposalPct}%</span>
+                  <span>{Math.round(proposalPct)}%</span>
                   <span>Máximo</span>
                 </div>
+
               </CardContent>
             </Card>
           )}

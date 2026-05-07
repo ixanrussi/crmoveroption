@@ -212,17 +212,17 @@ export default function CalculadoraFijos() {
   const rows = selections.map(computeRow).filter(Boolean) as NonNullable<ReturnType<typeof computeRow>>[];
   const validRows = rows.filter((r) => r.ftdT > 0);
 
-  const totalsByCurrency = useMemo(() => {
-    const map = new Map<string, { recomendado: number; pagoReal: number }>();
-    for (const r of validRows) {
-      const cur = r.plan.currency || "—";
-      const cur2 = map.get(cur) || { recomendado: 0, pagoReal: 0 };
-      cur2.recomendado += r.fijoRecomendado;
-      cur2.pagoReal += r.pagoRealAfiliado;
-      map.set(cur, cur2);
-    }
-    return Array.from(map.entries());
-  }, [validRows]);
+  // Tasas de cambio aproximadas a USD para consolidar la oferta en una sola moneda
+  const FX_TO_USD: Record<string, number> = { USD: 1, EUR: 1.08, GBP: 1.27, BRL: 0.20, MXN: 0.055, ARS: 0.001 };
+  const toUsd = (amount: number, currency?: string | null) => {
+    const cur = (currency || "USD").toUpperCase();
+    const rate = FX_TO_USD[cur] ?? 1;
+    return amount * rate;
+  };
+  const totalFijoUsd = useMemo(
+    () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
+    [validRows],
+  );
 
   const hasAny = validRows.length > 0;
 
@@ -372,15 +372,13 @@ export default function CalculadoraFijos() {
               <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y CPAs objetivo para ver el cálculo.</p>
             ) : (
               <>
-                {totalsByCurrency.length > 0 && (
+                {totalFijoUsd > 0 && (
                   <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
                     <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo total recomendado al afiliado</div>
-                    {totalsByCurrency.map(([cur, t]) => (
-                      <div key={cur} className="flex justify-between items-baseline">
-                        <span className="text-sm text-muted-foreground">{cur}</span>
-                        <span className="text-2xl font-bold">{fmt(t.recomendado, cur === "—" ? null : cur)}</span>
-                      </div>
-                    ))}
+                    <div className="flex justify-between items-baseline">
+                      <span className="text-sm text-muted-foreground">USD</span>
+                      <span className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</span>
+                    </div>
                     <div className="text-xs text-muted-foreground pt-1 border-t">
                       Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
                     </div>
@@ -408,12 +406,6 @@ export default function CalculadoraFijos() {
                         <span className="text-muted-foreground">Fijo recomendado</span>
                         <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
                       </div>
-                      {r.fixedMarginPct > 0 && (
-                        <div className="flex justify-between col-span-2 text-xs">
-                          <span className="text-muted-foreground">Margen Overoption</span>
-                          <span>{r.fixedMarginPct}% (bruto: {fmt(r.fixed, r.plan.currency)})</span>
-                        </div>
-                      )}
                     </div>
 
                     {r.tierLabel && (

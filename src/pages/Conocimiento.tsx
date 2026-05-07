@@ -34,10 +34,18 @@ export default function Conocimiento() {
   const [clientId, setClientId] = useState<string>("");
   const [docs, setDocs] = useState<Doc[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
+  const [docCounts, setDocCounts] = useState<Record<string, number>>({});
   const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<string>("");
   const [notes, setNotes] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const refreshCounts = async () => {
+    const { data } = await supabase.from("knowledge_documents").select("client_id");
+    const map: Record<string, number> = {};
+    (data ?? []).forEach((r: any) => { map[r.client_id] = (map[r.client_id] || 0) + 1; });
+    setDocCounts(map);
+  };
 
   useEffect(() => {
     supabase.from("clients").select("id, company_name").order("company_name")
@@ -45,6 +53,7 @@ export default function Conocimiento() {
         setClients((data ?? []) as Client[]);
         if (data?.length && !clientId) setClientId(data[0].id);
       });
+    refreshCounts();
   }, []);
 
   const refresh = async () => {

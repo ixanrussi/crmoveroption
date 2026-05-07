@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -47,14 +48,20 @@ export default function Conocimiento() {
     setDocCounts(map);
   };
 
+  const [searchParams] = useSearchParams();
   useEffect(() => {
     supabase.from("clients").select("id, company_name").order("company_name")
       .then(({ data }) => {
         setClients((data ?? []) as Client[]);
-        if (data?.length && !clientId) setClientId(data[0].id);
+        const requested = searchParams.get("client");
+        if (requested && data?.some((c: any) => c.id === requested)) {
+          setClientId(requested);
+        } else if (data?.length && !clientId) {
+          setClientId(data[0].id);
+        }
       });
     refreshCounts();
-  }, []);
+  }, [searchParams]);
 
   const refresh = async () => {
     if (!clientId) return;

@@ -27,8 +27,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     for (let attempt = 1; attempt <= 3; attempt += 1) {
       const { data, error } = await supabase.functions.invoke<{ roles: AppRole[] }>("get-auth-context");
 
-      if (!error && data?.roles?.length) {
-        setRoles(data.roles);
+      if (!error && data) {
+        setRoles(data.roles ?? []);
         return;
       }
 
@@ -37,7 +37,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       }
     }
 
-    setRoles(["user"]);
+    setRoles([]);
   };
 
   useEffect(() => {

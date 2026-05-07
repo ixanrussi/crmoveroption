@@ -80,6 +80,7 @@ export default function Usuarios() {
             </TableRow></TableHeader>
             <TableBody>
               {users.map((u) => {
+                const hasRole = u.roles.length > 0;
                 const current = (u.roles[0] ?? "user") as Role;
                 const isSelf = u.id === me?.id;
                 return (
@@ -91,7 +92,11 @@ export default function Usuarios() {
                     </TableCell>
                     <TableCell>{u.email}</TableCell>
                     <TableCell>{u.job_title || "—"}</TableCell>
-                    <TableCell><Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge></TableCell>
+                    <TableCell>
+                      {hasRole
+                        ? <Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge>
+                        : <Badge variant="destructive">Pendiente de validación</Badge>}
+                    </TableCell>
                     <TableCell>
                       <Select
                         value={current}

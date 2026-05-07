@@ -250,7 +250,7 @@ export default function CalculadoraFijos() {
                   tabIndex={-1}
                   className="bg-muted cursor-not-allowed"
                   value={plan && ftdT > 0 ? fmt(cpaNeto * ftdT, plan.currency) : ""}
-                  placeholder="Se calcula con CPA neto × FTDs objetivo"
+                  placeholder=""
                 />
               </div>
             </div>

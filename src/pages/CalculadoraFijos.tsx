@@ -27,6 +27,7 @@ type Plan = {
   proportional_min_pct: number | null;
   country_ids: string[] | null;
   fixed_margin_pct: number | null;
+  recommended_margin_pct: number | null;
 };
 
 type Operator = {

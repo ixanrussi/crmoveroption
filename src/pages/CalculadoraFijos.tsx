@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Printer, Share2 } from "lucide-react";
+import { Calculator, Printer, Share2, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
@@ -44,15 +44,24 @@ const fmt = (n: number, currency?: string | null) =>
 
 type Country = { id: string; name: string; code: string | null };
 
+type Selection = {
+  uid: string;
+  opId: string;
+  planId: string;
+  ftdTarget: string;
+  ftdActual: string;
+};
+
+const newSelection = (): Selection => ({
+  uid: Math.random().toString(36).slice(2),
+  opId: "", planId: "", ftdTarget: "", ftdActual: "",
+});
+
 export default function CalculadoraFijos() {
   const [operators, setOperators] = useState<Operator[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [countryId, setCountryId] = useState<string>("all");
-  const [opId, setOpId] = useState<string>("");
-  const [planId, setPlanId] = useState<string>("");
-  const [ftdTarget, setFtdTarget] = useState<string>("");
-  const [fixedAmount, setFixedAmount] = useState<string>("");
-  const [ftdActual, setFtdActual] = useState<string>("");
+  const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");
 
   const handlePrint = () => window.print();
@@ -98,7 +107,6 @@ export default function CalculadoraFijos() {
         });
         return;
       }
-      // Fallback: descargar + abrir opciones
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url; a.download = fileName; a.click();
@@ -132,14 +140,10 @@ export default function CalculadoraFijos() {
   const matchesSelected = (ids: string[] | null | undefined): boolean => {
     if (countryId === "all") return true;
     const arr = ids ?? [];
-    // WW selected: only operators/plans explícitamente marcados como WW
     if (wwId && countryId === wwId) return arr.includes(wwId);
-    // Cualquier otro país/región: WW siempre aplica (opera en todos)
     if (wwId && arr.includes(wwId)) return true;
-    // Expandir LATAM en los ids del operador/plan
     const expanded = new Set<string>(arr);
     if (latamId && arr.includes(latamId)) latamCountryIds.forEach((id) => expanded.add(id));
-    // LATAM seleccionado: aceptar si tiene LATAM o cualquier país de LATAM
     if (latamId && countryId === latamId) {
       if (arr.includes(latamId)) return true;
       return latamCountryIds.some((id) => expanded.has(id));
@@ -158,65 +162,69 @@ export default function CalculadoraFijos() {
     });
   }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
 
-  const operator = filteredOperators.find((o) => o.id === opId);
-  const filteredPlans = useMemo(() => {
-    if (!operator) return [];
-    return operator.client_commission_plans;
-  }, [operator]);
-  const plan = filteredPlans.find((p) => p.id === planId);
+  const updateSelection = (uid: string, patch: Partial<Selection>) =>
+    setSelections((prev) => prev.map((s) => (s.uid === uid ? { ...s, ...patch } : s)));
+  const addSelection = () => setSelections((prev) => [...prev, newSelection()]);
+  const removeSelection = (uid: string) =>
+    setSelections((prev) => (prev.length === 1 ? prev : prev.filter((s) => s.uid !== uid)));
 
-  const cpaBruto = plan?.cpa ?? 0;
-  const retencion = plan?.overoption_retention ?? 0;
-  const cpaNeto = Math.max(0, cpaBruto - retencion);
-  const fallbackCpa = plan?.fallback_cpa ?? operator?.net_min_cpa ?? 0;
-  const cpa80 = plan?.cpa_at_80 ?? 0;
-  const cpa90 = plan?.cpa_at_90 ?? 0;
-  const proportionalEnabled = !!plan?.proportional_enabled;
-  const proportionalMinPct = plan?.proportional_min_pct ?? 0;
-  const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
+  const computeRow = (sel: Selection) => {
+    const operator = filteredOperators.find((o) => o.id === sel.opId);
+    const plan = operator?.client_commission_plans.find((p) => p.id === sel.planId);
+    if (!plan || !operator) return null;
+    const cpaBruto = plan.cpa ?? 0;
+    const retencion = plan.overoption_retention ?? 0;
+    const cpaNeto = Math.max(0, cpaBruto - retencion);
+    const fallbackCpa = plan.fallback_cpa ?? operator.net_min_cpa ?? 0;
+    const cpa80 = plan.cpa_at_80 ?? 0;
+    const cpa90 = plan.cpa_at_90 ?? 0;
+    const proportionalEnabled = !!plan.proportional_enabled;
+    const proportionalMinPct = plan.proportional_min_pct ?? 0;
+    const fixedMarginPct = plan.fixed_margin_pct ?? 0;
+    const ftdT = parseFloat(sel.ftdTarget) || 0;
+    const ftdA = sel.ftdActual === "" ? ftdT : (parseFloat(sel.ftdActual) || 0);
+    const fixed = cpaNeto * ftdT;
+    const marginFactor = Math.max(0, 1 - fixedMarginPct / 100);
+    const fijoRecomendado = fixed * marginFactor;
 
-  const ftdT = parseFloat(ftdTarget) || 0;
-  const fixed = cpaNeto * ftdT;
-  const ftdA = ftdActual === "" ? ftdT : (parseFloat(ftdActual) || 0);
-
-  const calc = useMemo(() => {
-    if (!plan || ftdT <= 0) return null;
-    const cpaEfectivoObjetivo = fixed / ftdT;
-    const maxFijoPosible = cpaNeto * ftdT;
-    const pct = ftdA / ftdT;
-    const cumplio = pct >= 1;
-    let cpaTier = 0;
-    let tierLabel = "";
-    let pagoReal = 0;
-    if (cumplio) {
-      tierLabel = "Objetivo alcanzado (100%)";
-      pagoReal = fixed;
-    } else if (proportionalEnabled) {
-      const minPct = (proportionalMinPct || 0) / 100;
-      const appliedPct = Math.max(pct, minPct);
-      cpaTier = cpaNeto * appliedPct;
-      tierLabel = `Proporcional (${(appliedPct * 100).toFixed(0)}% del CPA${minPct > pct ? ` · piso ${(minPct*100).toFixed(0)}%` : ""})`;
-      pagoReal = ftdA * cpaTier;
-    } else if (pct >= 0.9 && cpa90 > 0) {
-      cpaTier = cpa90;
-      tierLabel = "≥ 90% del objetivo";
-      pagoReal = ftdA * cpaTier;
-    } else if (pct >= 0.8 && cpa80 > 0) {
-      cpaTier = cpa80;
-      tierLabel = "≥ 80% del objetivo";
-      pagoReal = ftdA * cpaTier;
-    } else {
-      cpaTier = fallbackCpa;
-      tierLabel = "Bajo objetivo (fallback)";
-      pagoReal = ftdA * cpaTier;
+    let cpaTier = 0; let tierLabel = ""; let pagoReal = 0;
+    if (ftdT > 0) {
+      const pct = ftdA / ftdT;
+      const cumplio = pct >= 1;
+      if (cumplio) { tierLabel = "Objetivo alcanzado (100%)"; pagoReal = fixed; }
+      else if (proportionalEnabled) {
+        const minPct = proportionalMinPct / 100;
+        const appliedPct = Math.max(pct, minPct);
+        cpaTier = cpaNeto * appliedPct;
+        tierLabel = `Proporcional (${(appliedPct * 100).toFixed(0)}% del CPA)`;
+        pagoReal = ftdA * cpaTier;
+      } else if (pct >= 0.9 && cpa90 > 0) { cpaTier = cpa90; tierLabel = "≥ 90% del objetivo"; pagoReal = ftdA * cpaTier; }
+      else if (pct >= 0.8 && cpa80 > 0) { cpaTier = cpa80; tierLabel = "≥ 80% del objetivo"; pagoReal = ftdA * cpaTier; }
+      else { cpaTier = fallbackCpa; tierLabel = "Bajo objetivo (fallback)"; pagoReal = ftdA * cpaTier; }
     }
-    const marginFactor = Math.max(0, 1 - (fixedMarginPct || 0) / 100);
-    const pagoObjetivoAfiliado = fixed * marginFactor;
     const pagoRealAfiliado = pagoReal * marginFactor;
-    const cpaEfectivoReal = ftdA > 0 ? pagoRealAfiliado / ftdA : 0;
-    const cpaEfectivoObjetivoAfiliado = ftdT > 0 ? pagoObjetivoAfiliado / ftdT : 0;
-    return { cpaEfectivoObjetivo, cpaEfectivoObjetivoAfiliado, maxFijoPosible, cumplio, pagoReal, pagoRealAfiliado, pagoObjetivoAfiliado, cpaEfectivoReal, tierLabel, cpaTier, marginFactor };
-  }, [plan, ftdT, fixed, ftdA, cpaNeto, fallbackCpa, cpa80, cpa90, proportionalEnabled, proportionalMinPct, fixedMarginPct]);
+    return {
+      sel, operator, plan, cpaNeto, fallbackCpa, cpa80, cpa90, fixedMarginPct,
+      ftdT, ftdA, fixed, fijoRecomendado, pagoReal, pagoRealAfiliado, tierLabel, cpaTier,
+    };
+  };
+
+  const rows = selections.map(computeRow).filter(Boolean) as NonNullable<ReturnType<typeof computeRow>>[];
+  const validRows = rows.filter((r) => r.ftdT > 0);
+
+  const totalsByCurrency = useMemo(() => {
+    const map = new Map<string, { recomendado: number; pagoReal: number }>();
+    for (const r of validRows) {
+      const cur = r.plan.currency || "—";
+      const cur2 = map.get(cur) || { recomendado: 0, pagoReal: 0 };
+      cur2.recomendado += r.fijoRecomendado;
+      cur2.pagoReal += r.pagoRealAfiliado;
+      map.set(cur, cur2);
+    }
+    return Array.from(map.entries());
+  }, [validRows]);
+
+  const hasAny = validRows.length > 0;
 
   return (
     <div className="space-y-6">
@@ -232,14 +240,14 @@ export default function CalculadoraFijos() {
             <Calculator className="h-6 w-6" /> Calculadora de Fijos
           </h1>
           <p className="text-muted-foreground text-sm">
-            Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos.
+            Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos por uno o varios operadores.
           </p>
         </div>
         <div className="flex gap-2 no-print">
-          <Button onClick={handleShare} variant="default" disabled={!plan}>
+          <Button onClick={handleShare} variant="default" disabled={!hasAny}>
             <Share2 className="h-4 w-4 mr-2" /> Compartir
           </Button>
-          <Button onClick={handlePrint} variant="outline" disabled={!plan}>
+          <Button onClick={handlePrint} variant="outline" disabled={!hasAny}>
             <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
           </Button>
         </div>
@@ -260,7 +268,10 @@ export default function CalculadoraFijos() {
           <CardContent className="space-y-4">
             <div className="space-y-1">
               <Label>País / región</Label>
-              <Select value={countryId} onValueChange={(v) => { setCountryId(v); setOpId(""); setPlanId(""); }}>
+              <Select value={countryId} onValueChange={(v) => {
+                setCountryId(v);
+                setSelections((prev) => prev.map((s) => ({ ...s, opId: "", planId: "" })));
+              }}>
                 <SelectTrigger><SelectValue placeholder="Seleccionar país o región" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">Seleccionar país o región</SelectItem>
@@ -271,56 +282,77 @@ export default function CalculadoraFijos() {
               </Select>
             </div>
 
-            <div className="space-y-1">
-              <Label>Operador</Label>
-              <Select value={opId} onValueChange={(v) => { setOpId(v); setPlanId(""); }}>
-                <SelectTrigger><SelectValue placeholder={filteredOperators.length ? "Selecciona un operador" : "Sin operadores para el país"} /></SelectTrigger>
-                <SelectContent>
-                  {filteredOperators.map((o) => (
-                    <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            {selections.map((sel, idx) => {
+              const operator = filteredOperators.find((o) => o.id === sel.opId);
+              const plans = operator?.client_commission_plans ?? [];
+              const plan = plans.find((p) => p.id === sel.planId);
+              const cpaBruto = plan?.cpa ?? 0;
+              const retencion = plan?.overoption_retention ?? 0;
+              const cpaNeto = Math.max(0, cpaBruto - retencion);
+              const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
+              const ftdT = parseFloat(sel.ftdTarget) || 0;
+              const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
 
-            <div className="space-y-1">
-              <Label>Commission Plan (marca / país)</Label>
-              <Select value={planId} onValueChange={setPlanId} disabled={!operator}>
-                <SelectTrigger><SelectValue placeholder={operator ? "Selecciona un plan" : "Primero elige operador"} /></SelectTrigger>
-                <SelectContent>
-                  {filteredPlans.map((p) => (
-                    <SelectItem key={p.id} value={p.id}>
-                      {p.description || "Sin nombre"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+              return (
+                <div key={sel.uid} className="rounded-lg border p-3 space-y-3 relative">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-muted-foreground uppercase">Operador {idx + 1}</span>
+                    {selections.length > 1 && (
+                      <Button variant="ghost" size="sm" onClick={() => removeSelection(sel.uid)}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1">
-                <Label>FTDs objetivo</Label>
-                <Input type="number" min="0" value={ftdTarget} onChange={(e) => setFtdTarget(e.target.value)} />
-              </div>
-              <div className="space-y-1">
-                <Label>Fijo recomendado</Label>
-                <Input
-                  type="text"
-                  readOnly
-                  tabIndex={-1}
-                  className="bg-muted cursor-not-allowed"
-                  value={plan && ftdT > 0 ? fmt(cpaNeto * ftdT, plan.currency) : ""}
-                  placeholder=""
-                />
-              </div>
-            </div>
+                  <div className="space-y-1">
+                    <Label>Operador</Label>
+                    <Select value={sel.opId} onValueChange={(v) => updateSelection(sel.uid, { opId: v, planId: "" })}>
+                      <SelectTrigger><SelectValue placeholder={filteredOperators.length ? "Selecciona un operador" : "Sin operadores para el país"} /></SelectTrigger>
+                      <SelectContent>
+                        {filteredOperators.map((o) => (
+                          <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
 
-            <div className="space-y-1">
-              <Label>FTDs reales (simulación)</Label>
-              <Input type="number" min="0" placeholder={`Por defecto = objetivo (${ftdT || 0})`}
-                value={ftdActual} onChange={(e) => setFtdActual(e.target.value)} />
-              <p className="text-xs text-muted-foreground">Cambia para ver el escenario si el afiliado no cumple.</p>
-            </div>
+                  <div className="space-y-1">
+                    <Label>Commission Plan (marca / país)</Label>
+                    <Select value={sel.planId} onValueChange={(v) => updateSelection(sel.uid, { planId: v })} disabled={!operator}>
+                      <SelectTrigger><SelectValue placeholder={operator ? "Selecciona un plan" : "Primero elige operador"} /></SelectTrigger>
+                      <SelectContent>
+                        {plans.map((p) => (
+                          <SelectItem key={p.id} value={p.id}>{p.description || "Sin nombre"}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-1">
+                      <Label>FTDs objetivo</Label>
+                      <Input type="number" min="0" value={sel.ftdTarget}
+                        onChange={(e) => updateSelection(sel.uid, { ftdTarget: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Fijo recomendado</Label>
+                      <Input type="text" readOnly tabIndex={-1} className="bg-muted cursor-not-allowed"
+                        value={plan && ftdT > 0 ? fmt(fijoRec, plan.currency) : ""} placeholder="" />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1">
+                    <Label>FTDs reales (simulación)</Label>
+                    <Input type="number" min="0" placeholder={`Por defecto = objetivo (${ftdT || 0})`}
+                      value={sel.ftdActual} onChange={(e) => updateSelection(sel.uid, { ftdActual: e.target.value })} />
+                  </div>
+                </div>
+              );
+            })}
+
+            <Button variant="outline" onClick={addSelection} className="w-full">
+              <Plus className="h-4 w-4 mr-2" /> Añadir otro operador
+            </Button>
           </CardContent>
         </Card>
 
@@ -329,101 +361,75 @@ export default function CalculadoraFijos() {
             <CardTitle className="text-lg">
               Oferta {prospectName ? `para ${prospectName}` : "— Resultado"}
             </CardTitle>
-            {prospectName && operator && (
+            {prospectName && validRows.length > 0 && (
               <p className="text-sm text-muted-foreground">
-                Operador: {operator.company_name}
-                {plan?.brand ? ` · ${plan.brand}` : ""}
-                {plan?.description ? ` · ${plan.description}` : ""}
+                {validRows.map((r) => `${r.operator.company_name}${r.plan.brand ? " · " + r.plan.brand : ""}`).join(" + ")}
               </p>
             )}
           </CardHeader>
           <CardContent className="space-y-4">
-            {!plan ? (
-              <p className="text-sm text-muted-foreground">Selecciona un operador y un plan para ver el cálculo.</p>
+            {!hasAny ? (
+              <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y FTDs objetivo para ver el cálculo.</p>
             ) : (
               <>
-                <div className="rounded-lg border p-3 space-y-2 bg-muted/30">
-                  {[
-                    { label: "CPA neto disponible por FTD", value: cpaNeto },
-                    { label: "CPA fallback (bajo objetivo)", value: fallbackCpa, fallbackBadge: true },
-                    { label: "CPA al ≥90% del objetivo", value: cpa90 },
-                    { label: "CPA al ≥80% del objetivo", value: cpa80 },
-                  ]
-                    .sort((a, b) => (b.value || 0) - (a.value || 0))
-                    .map((r) => (
-                      <div key={r.label} className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">{r.label}</span>
-                        <span className="font-semibold">
-                          {r.value > 0
-                            ? fmt(r.value, plan.currency)
-                            : r.fallbackBadge
-                              ? <Badge variant="destructive">No configurado</Badge>
-                              : <span className="text-muted-foreground">— usa fallback</span>}
-                        </span>
+                {totalsByCurrency.length > 0 && (
+                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo total recomendado al afiliado</div>
+                    {totalsByCurrency.map(([cur, t]) => (
+                      <div key={cur} className="flex justify-between items-baseline">
+                        <span className="text-sm text-muted-foreground">{cur}</span>
+                        <span className="text-2xl font-bold">{fmt(t.recomendado, cur === "—" ? null : cur)}</span>
                       </div>
                     ))}
-                </div>
-
-                {calc && (
-                  <>
-                    <div className="rounded-lg border p-4 space-y-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground">Si cumple el objetivo</div>
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado{fixedMarginPct > 0 ? ` (margen ${fixedMarginPct}%)` : ""}</span>
-                        <span className="text-2xl font-bold">{fmt(calc.pagoObjetivoAfiliado, plan.currency)}</span>
-                      </div>
-                      {fixedMarginPct > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Fijo bruto ofrecido</span>
-                          <span>{fmt(fixed, plan.currency)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">CPA neto efectivo (pago afiliado / FTDs)</span>
-                        <span className={`font-semibold ${calc.cpaEfectivoObjetivoAfiliado > cpaNeto ? "text-destructive" : ""}`}>
-                          {fmt(calc.cpaEfectivoObjetivoAfiliado, plan.currency)}
-                        </span>
-                      </div>
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Fijo máximo recomendado</span>
-                        <span className="font-semibold">{fmt(calc.maxFijoPosible, plan.currency)}</span>
-                      </div>
-                      {calc.cpaEfectivoObjetivo > cpaNeto && (
-                        <p className="text-xs text-destructive">
-                          ⚠ El fijo ofrecido excede el CPA neto disponible. Reduce el valor o aumenta el objetivo de FTDs.
-                        </p>
-                      )}
+                    <div className="text-xs text-muted-foreground pt-1 border-t">
+                      Total FTDs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
                     </div>
-
-                    <div className="rounded-lg border p-4 space-y-3">
-                      <div className="text-xs uppercase tracking-wide text-muted-foreground flex items-center gap-2">
-                        Escenario real
-                        <Badge variant={calc.cumplio ? "default" : "secondary"}>
-                          {calc.tierLabel}
-                        </Badge>
-                      </div>
-                      <div className="flex justify-between items-baseline">
-                        <span className="text-sm">Pago al afiliado ({ftdA} FTDs){fixedMarginPct > 0 ? ` · margen ${fixedMarginPct}%` : ""}</span>
-                        <span className="text-2xl font-bold">{fmt(calc.pagoRealAfiliado, plan.currency)}</span>
-                      </div>
-                      {fixedMarginPct > 0 && (
-                        <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Antes de margen</span>
-                          <span>{fmt(calc.pagoReal, plan.currency)}</span>
-                        </div>
-                      )}
-                      <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">CPA neto efectivo</span>
-                        <span className="font-semibold">{fmt(calc.cpaEfectivoReal, plan.currency)}</span>
-                      </div>
-                      {!calc.cumplio && calc.cpaTier === 0 && (
-                        <p className="text-xs text-destructive">
-                          ⚠ No hay CPA configurado para este escenario. Edita el Commission Plan del Operador.
-                        </p>
-                      )}
-                    </div>
-                  </>
+                  </div>
                 )}
+
+                {validRows.map((r, i) => (
+                  <div key={r.sel.uid} className="rounded-lg border p-4 space-y-3">
+                    <div className="flex items-center justify-between gap-2">
+                      <div>
+                        <div className="font-semibold">{r.operator.company_name}</div>
+                        <div className="text-xs text-muted-foreground">
+                          {r.plan.brand ? `${r.plan.brand} · ` : ""}{r.plan.description || ""}
+                        </div>
+                      </div>
+                      <Badge variant="outline">{r.ftdT} FTDs objetivo</Badge>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">CPA neto</span>
+                        <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className="text-muted-foreground">Fijo recomendado</span>
+                        <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
+                      </div>
+                      {r.fixedMarginPct > 0 && (
+                        <div className="flex justify-between col-span-2 text-xs">
+                          <span className="text-muted-foreground">Margen Overoption</span>
+                          <span>{r.fixedMarginPct}% (bruto: {fmt(r.fixed, r.plan.currency)})</span>
+                        </div>
+                      )}
+                    </div>
+
+                    {r.tierLabel && (
+                      <div className="pt-2 border-t space-y-2">
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-muted-foreground uppercase">Escenario real</span>
+                          <Badge variant={r.ftdA >= r.ftdT ? "default" : "secondary"}>{r.tierLabel}</Badge>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">Pago al afiliado ({r.ftdA} FTDs)</span>
+                          <span className="font-semibold">{fmt(r.pagoRealAfiliado, r.plan.currency)}</span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </>
             )}
           </CardContent>

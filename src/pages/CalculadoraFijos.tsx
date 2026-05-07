@@ -469,11 +469,17 @@ export default function CalculadoraFijos() {
             ) : (
               <>
                 {totalFijoUsd > 0 && (
-                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo máximo</div>
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-sm text-muted-foreground">USD</span>
-                      <span className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</span>
+                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-3 bg-primary/5">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Rango de oferta (USD)</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs text-muted-foreground">Fijo recomendado</div>
+                        <div className="text-2xl font-bold">{fmt(totalFijoRecomendadoUsd, "USD")}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Fijo máximo</div>
+                        <div className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</div>
+                      </div>
                     </div>
                     <div className="text-xs text-muted-foreground pt-1 border-t">
                       Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
@@ -493,14 +499,18 @@ export default function CalculadoraFijos() {
                       <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">CPA neto</span>
+                    <div className="grid grid-cols-3 gap-3 text-sm pt-2 border-t">
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">CPA neto</span>
                         <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Fijo recomendado</span>
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">Fijo recomendado</span>
                         <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">Fijo máximo</span>
+                        <span className="font-semibold">{fmt(r.fijoMaximo, r.plan.currency)}</span>
                       </div>
                     </div>
 

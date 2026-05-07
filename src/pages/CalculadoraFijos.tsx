@@ -406,12 +406,6 @@ export default function CalculadoraFijos() {
                         <span className="text-muted-foreground">Fijo recomendado</span>
                         <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
                       </div>
-                      {r.fixedMarginPct > 0 && (
-                        <div className="flex justify-between col-span-2 text-xs">
-                          <span className="text-muted-foreground">Margen Overoption</span>
-                          <span>{r.fixedMarginPct}% (bruto: {fmt(r.fixed, r.plan.currency)})</span>
-                        </div>
-                      )}
                     </div>
 
                     {r.tierLabel && (

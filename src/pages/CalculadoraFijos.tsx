@@ -5,8 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Printer } from "lucide-react";
+import { Calculator, Printer, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import jsPDF from "jspdf";
+import html2canvas from "html2canvas";
+import { toast } from "sonner";
 
 type Plan = {
   id: string;
@@ -53,6 +56,58 @@ export default function CalculadoraFijos() {
   const [prospectName, setProspectName] = useState<string>("");
 
   const handlePrint = () => window.print();
+
+  const buildPdf = async (): Promise<{ blob: Blob; fileName: string } | null> => {
+    const el = document.getElementById("print-area");
+    if (!el) return null;
+    const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
+    const imgData = canvas.toDataURL("image/png");
+    const pdf = new jsPDF({ unit: "pt", format: "a4" });
+    const pageW = pdf.internal.pageSize.getWidth();
+    const pageH = pdf.internal.pageSize.getHeight();
+    const margin = 24;
+    const imgW = pageW - margin * 2;
+    const imgH = (canvas.height * imgW) / canvas.width;
+    let heightLeft = imgH;
+    let position = margin;
+    pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
+    heightLeft -= pageH - margin * 2;
+    while (heightLeft > 0) {
+      position = margin - (imgH - heightLeft);
+      pdf.addPage();
+      pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
+      heightLeft -= pageH - margin * 2;
+    }
+    const safe = (prospectName || "afiliado").replace(/[^a-z0-9-_]+/gi, "_");
+    const fileName = `oferta-fijo-${safe}.pdf`;
+    return { blob: pdf.output("blob"), fileName };
+  };
+
+  const handleShare = async () => {
+    try {
+      const result = await buildPdf();
+      if (!result) return;
+      const { blob, fileName } = result;
+      const file = new File([blob], fileName, { type: "application/pdf" });
+      const nav = navigator as any;
+      if (nav.canShare && nav.canShare({ files: [file] })) {
+        await nav.share({
+          files: [file],
+          title: "Oferta de Fijo",
+          text: prospectName ? `Oferta para ${prospectName}` : "Oferta de Fijo",
+        });
+        return;
+      }
+      // Fallback: descargar + abrir opciones
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url; a.download = fileName; a.click();
+      URL.revokeObjectURL(url);
+      toast.info("PDF descargado. Adjúntalo en WhatsApp o email para compartir.");
+    } catch (e: any) {
+      if (e?.name !== "AbortError") toast.error("No se pudo compartir el PDF");
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -180,9 +235,14 @@ export default function CalculadoraFijos() {
             Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos.
           </p>
         </div>
-        <Button onClick={handlePrint} variant="outline" className="no-print" disabled={!plan}>
-          <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
-        </Button>
+        <div className="flex gap-2 no-print">
+          <Button onClick={handleShare} variant="default" disabled={!plan}>
+            <Share2 className="h-4 w-4 mr-2" /> Compartir
+          </Button>
+          <Button onClick={handlePrint} variant="outline" disabled={!plan}>
+            <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
+          </Button>
+        </div>
       </div>
 
       <div className="space-y-1 max-w-md">

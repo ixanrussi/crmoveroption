@@ -27,6 +27,7 @@ type Plan = {
   proportional_min_pct: number | null;
   country_ids: string[] | null;
   fixed_margin_pct: number | null;
+  recommended_margin_pct: number | null;
 };
 
 type Operator = {
@@ -189,7 +190,7 @@ export default function CalculadoraFijos() {
       const [{ data: ops }, { data: cs }] = await Promise.all([
         supabase
           .from("clients")
-          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct)")
+          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct, recommended_margin_pct)")
           .order("company_name"),
         supabase.from("countries").select("id, name, code").order("name"),
       ]);
@@ -248,11 +249,14 @@ export default function CalculadoraFijos() {
     const proportionalEnabled = !!plan.proportional_enabled;
     const proportionalMinPct = plan.proportional_min_pct ?? 0;
     const fixedMarginPct = plan.fixed_margin_pct ?? 0;
+    const recommendedMarginPct = plan.recommended_margin_pct ?? 0;
     const ftdT = parseFloat(sel.ftdTarget) || 0;
     const ftdA = sel.ftdActual === "" ? ftdT : (parseFloat(sel.ftdActual) || 0);
     const fixed = cpaNeto * ftdT;
     const marginFactor = Math.max(0, 1 - fixedMarginPct / 100);
-    const fijoRecomendado = fixed * marginFactor;
+    const recommendedFactor = Math.max(0, 1 - recommendedMarginPct / 100);
+    const fijoMaximo = fixed * marginFactor;
+    const fijoRecomendado = fixed * recommendedFactor;
 
     let cpaTier = 0; let tierLabel = ""; let pagoReal = 0;
     if (ftdT > 0) {
@@ -271,8 +275,8 @@ export default function CalculadoraFijos() {
     }
     const pagoRealAfiliado = pagoReal * marginFactor;
     return {
-      sel, operator, plan, cpaNeto, fallbackCpa, cpa80, cpa90, fixedMarginPct,
-      ftdT, ftdA, fixed, fijoRecomendado, pagoReal, pagoRealAfiliado, tierLabel, cpaTier,
+      sel, operator, plan, cpaNeto, fallbackCpa, cpa80, cpa90, fixedMarginPct, recommendedMarginPct,
+      ftdT, ftdA, fixed, fijoMaximo, fijoRecomendado, pagoReal, pagoRealAfiliado, tierLabel, cpaTier,
     };
   };
 
@@ -287,6 +291,10 @@ export default function CalculadoraFijos() {
     return amount * rate;
   };
   const totalFijoUsd = useMemo(
+    () => validRows.reduce((s, r) => s + toUsd(r.fijoMaximo, r.plan.currency), 0),
+    [validRows],
+  );
+  const totalFijoRecomendadoUsd = useMemo(
     () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
     [validRows],
   );
@@ -295,7 +303,7 @@ export default function CalculadoraFijos() {
     return usd / (FX_TO_USD.EUR || 1);
   };
   const totalMarginEur = useMemo(
-    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoRecomendado, r.plan.currency), 0),
+    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoMaximo, r.plan.currency), 0),
     [validRows],
   );
 
@@ -371,8 +379,10 @@ export default function CalculadoraFijos() {
               const retencion = plan?.overoption_retention ?? 0;
               const cpaNeto = Math.max(0, cpaBruto - retencion);
               const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
+              const recommendedMarginPct = plan?.recommended_margin_pct ?? 0;
               const ftdT = parseFloat(sel.ftdTarget) || 0;
-              const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
+              const fijoMax = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
+              const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - recommendedMarginPct / 100);
 
               return (
                 <div key={sel.uid} className="rounded-lg border p-3 space-y-3 relative">
@@ -409,11 +419,16 @@ export default function CalculadoraFijos() {
                     </Select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <Label>CPAs objetivo</Label>
                       <Input type="number" min="0" value={sel.ftdTarget}
                         onChange={(e) => updateSelection(sel.uid, { ftdTarget: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Fijo máximo</Label>
+                      <Input type="text" readOnly tabIndex={-1} className="bg-muted cursor-not-allowed"
+                        value={plan && ftdT > 0 ? fmt(fijoMax, plan.currency) : ""} placeholder="" />
                     </div>
                     <div className="space-y-1">
                       <Label>Fijo recomendado</Label>
@@ -454,11 +469,17 @@ export default function CalculadoraFijos() {
             ) : (
               <>
                 {totalFijoUsd > 0 && (
-                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-2 bg-primary/5">
-                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Fijo máximo</div>
-                    <div className="flex justify-between items-baseline">
-                      <span className="text-sm text-muted-foreground">USD</span>
-                      <span className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</span>
+                  <div className="rounded-lg border-2 border-primary/40 p-4 space-y-3 bg-primary/5">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground">Rango de oferta (USD)</div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <div className="text-xs text-muted-foreground">Fijo recomendado</div>
+                        <div className="text-2xl font-bold">{fmt(totalFijoRecomendadoUsd, "USD")}</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-muted-foreground">Fijo máximo</div>
+                        <div className="text-2xl font-bold">{fmt(totalFijoUsd, "USD")}</div>
+                      </div>
                     </div>
                     <div className="text-xs text-muted-foreground pt-1 border-t">
                       Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
@@ -478,14 +499,18 @@ export default function CalculadoraFijos() {
                       <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">CPA neto</span>
+                    <div className="grid grid-cols-3 gap-3 text-sm pt-2 border-t">
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">CPA neto</span>
                         <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">Fijo recomendado</span>
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">Fijo recomendado</span>
                         <span className="font-semibold">{fmt(r.fijoRecomendado, r.plan.currency)}</span>
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-muted-foreground text-xs">Fijo máximo</span>
+                        <span className="font-semibold">{fmt(r.fijoMaximo, r.plan.currency)}</span>
                       </div>
                     </div>
 

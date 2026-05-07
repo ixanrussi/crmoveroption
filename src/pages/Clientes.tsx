@@ -56,12 +56,13 @@ type CommissionPlan = {
   proportional_enabled: boolean;
   proportional_min_pct: string;
   fixed_margin_pct: string;
+  recommended_margin_pct: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
-  proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "",
+  proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "", recommended_margin_pct: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -177,6 +178,7 @@ export default function Clientes() {
         proportional_enabled: !!p.proportional_enabled,
         proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
         fixed_margin_pct: p.fixed_margin_pct?.toString() ?? "",
+        recommended_margin_pct: p.recommended_margin_pct?.toString() ?? "",
       })),
     );
     setBrandInput("");
@@ -243,6 +245,7 @@ export default function Clientes() {
           proportional_enabled: !!p.proportional_enabled,
           proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
           fixed_margin_pct: p.fixed_margin_pct === "" ? null : p.fixed_margin_pct,
+          recommended_margin_pct: p.recommended_margin_pct === "" ? null : p.recommended_margin_pct,
         })),
       },
     });
@@ -661,7 +664,14 @@ export default function Clientes() {
                             <Input type="number" step="0.01" min="0" max="100" value={pl.fixed_margin_pct}
                               onChange={(e) => updatePlan(i, { fixed_margin_pct: e.target.value })}
                               placeholder="Ej. 10 (= 10% retenido)" />
-                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora.</p>
+                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora (Fijo máximo).</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Margen recomendado (%)</Label>
+                            <Input type="number" step="0.01" min="0" max="100" value={pl.recommended_margin_pct}
+                              onChange={(e) => updatePlan(i, { recommended_margin_pct: e.target.value })}
+                              placeholder="Ej. 20 (= 20% retenido)" />
+                            <p className="text-xs text-muted-foreground">Define el "Fijo recomendado" (más bajo que el Fijo máximo) para dar al comercial un rango de oferta.</p>
                           </div>
                           <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
                             <div className="flex items-center justify-between gap-3">

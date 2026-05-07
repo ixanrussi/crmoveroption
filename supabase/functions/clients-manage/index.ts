@@ -55,6 +55,7 @@ type CommissionPlanPayload = {
   proportional_enabled?: boolean | null;
   proportional_min_pct?: number | string | null;
   fixed_margin_pct?: number | string | null;
+  recommended_margin_pct?: number | string | null;
 };
 
 type RequestBody = {
@@ -278,6 +279,7 @@ Deno.serve(async (req) => {
             proportional_enabled: !!p?.proportional_enabled,
             proportional_min_pct: num(p?.proportional_min_pct),
             fixed_margin_pct: num(p?.fixed_margin_pct),
+            recommended_margin_pct: num(p?.recommended_margin_pct),
           };
         })
       : [];
@@ -288,7 +290,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct", "fixed_margin_pct"
+        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct", "fixed_margin_pct", "recommended_margin_pct"
       )}`;
     }
 

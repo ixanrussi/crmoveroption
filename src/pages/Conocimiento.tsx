@@ -269,11 +269,17 @@ export default function Conocimiento() {
                       <TableCell className="max-w-md text-xs text-muted-foreground">
                         {d.analysis_summary ? <span className="line-clamp-3">{d.analysis_summary}</span> : "—"}
                       </TableCell>
-                      <TableCell className="text-right space-x-1">
+                      <TableCell className="text-right space-x-1 whitespace-nowrap">
                         <Button size="sm" variant="ghost" onClick={() => downloadUrl(d)}><Download className="h-4 w-4" /></Button>
-                        <Button size="sm" variant="ghost" onClick={() => analyze(d.id)} disabled={d.status === "analyzing"}>
-                          {d.status === "analyzing" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
-                        </Button>
+                        {d.status === "failed" ? (
+                          <Button size="sm" variant="outline" onClick={() => analyze(d.id)}>
+                            <RefreshCw className="h-4 w-4 mr-1" /> Reanalizar
+                          </Button>
+                        ) : (
+                          <Button size="sm" variant="ghost" onClick={() => analyze(d.id)} disabled={d.status === "analyzing"} title="Reanalizar">
+                            {d.status === "analyzing" ? <RefreshCw className="h-4 w-4 animate-spin" /> : <Sparkles className="h-4 w-4" />}
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" onClick={() => remove(d)}><Trash2 className="h-4 w-4 text-destructive" /></Button>
                       </TableCell>
                     </TableRow>

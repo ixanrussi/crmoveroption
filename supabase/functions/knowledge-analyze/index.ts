@@ -1,6 +1,7 @@
 // Edge function: analyze a knowledge document with Lovable AI
 // Downloads the file from Storage, asks the model for summary + extracted data + findings.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+import { extractText, getDocumentProxy } from "https://esm.sh/unpdf@0.12.1";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -19,6 +20,18 @@ function bytesToBase64(bytes: Uint8Array): string {
     bin += String.fromCharCode.apply(null, Array.from(bytes.subarray(i, i + chunk)) as any);
   }
   return btoa(bin);
+}
+
+async function tryExtractPdfText(buf: Uint8Array): Promise<string | null> {
+  try {
+    const pdf = await getDocumentProxy(buf);
+    const { text } = await extractText(pdf, { mergePages: true });
+    const t = (text || "").trim();
+    return t.length >= 30 ? t : null;
+  } catch (e) {
+    console.warn("pdf text extract failed:", (e as any)?.message);
+    return null;
+  }
 }
 
 const SYSTEM = `Eres un analista experto en reportes de afiliación iGaming para "Overoption", una red de afiliados que cobra CPA y RevShare a casinos/operadores y paga CPA a sus afiliados (tipsters/influencers).
@@ -73,6 +86,23 @@ const TOOL = {
   },
 };
 
+async function callModel(model: string, userParts: any[]) {
+  const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
+    method: "POST",
+    headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      model,
+      messages: [
+        { role: "system", content: SYSTEM },
+        { role: "user", content: userParts },
+      ],
+      tools: [TOOL],
+      tool_choice: { type: "function", function: { name: "submit_analysis" } },
+    }),
+  });
+  return aiResp;
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
@@ -108,19 +138,33 @@ Deno.serve(async (req) => {
     const name = doc.file_name as string;
     const ext = name.toLowerCase().split(".").pop() || "";
 
-    // Build user message: PDFs go as base64 image_url (gemini supports inline data); CSV/Excel -> read as text/raw.
-    const userParts: any[] = [
-      { type: "text", text: `Cliente ID: ${doc.client_id}\nArchivo: ${name}\nCategoría: ${doc.category ?? "—"}\nNotas: ${doc.notes ?? "—"}\n\nAnaliza el contenido y devuelve summary + extracted + findings vía la función submit_analysis.` },
-    ];
+    // Build user message
+    const baseText = `Cliente ID: ${doc.client_id}\nArchivo: ${name}\nCategoría: ${doc.category ?? "—"}\nNotas: ${doc.notes ?? "—"}\n\nAnaliza el contenido y devuelve summary + extracted + findings vía la función submit_analysis.`;
+    const userParts: any[] = [{ type: "text", text: baseText }];
 
+    let pdfTextOnly = false;
     if (mime === "application/pdf" || ext === "pdf") {
-      const b64 = bytesToBase64(buf);
-      userParts.push({ type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } });
+      // Try to pre-extract text — much more reliable than sending binary PDF
+      const txt = await tryExtractPdfText(buf);
+      if (txt) {
+        pdfTextOnly = true;
+        userParts.push({
+          type: "text",
+          text: `Texto extraído del PDF "${name}" (puede estar truncado a 80k caracteres):\n\n${txt.slice(0, 80000)}`,
+        });
+      } else {
+        // Fallback: send PDF as base64 inline (works for image/scanned PDFs via Gemini)
+        const b64 = bytesToBase64(buf);
+        userParts.push({ type: "image_url", image_url: { url: `data:application/pdf;base64,${b64}` } });
+        userParts.push({
+          type: "text",
+          text: "No se pudo extraer texto del PDF (probablemente es una imagen escaneada). Intenta interpretarlo igualmente; si no es legible, indícalo en findings con severity=high.",
+        });
+      }
     } else if (ext === "csv" || mime.includes("csv") || mime.startsWith("text/")) {
-      const txt = new TextDecoder("utf-8", { fatal: false }).decode(buf).slice(0, 60000);
-      userParts.push({ type: "text", text: `Contenido del archivo (texto, posiblemente truncado a 60k caracteres):\n\n${txt}` });
+      const txt = new TextDecoder("utf-8", { fatal: false }).decode(buf).slice(0, 80000);
+      userParts.push({ type: "text", text: `Contenido del archivo (texto, posiblemente truncado a 80k caracteres):\n\n${txt}` });
     } else if (ext === "xlsx" || ext === "xls" || mime.includes("sheet") || mime.includes("excel")) {
-      // Send as base64 with hint; Gemini puede inspeccionar binarios pequeños vía image_url? — fallback: pedir resumen del nombre + categoría.
       const b64 = bytesToBase64(buf);
       userParts.push({
         type: "text",
@@ -131,38 +175,48 @@ Deno.serve(async (req) => {
       userParts.push({ type: "text", text: `Archivo desconocido (${mime || ext}). Base64 parcial: ${b64.slice(0, 2000)}...` });
     }
 
-    const aiResp = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${LOVABLE_API_KEY}`, "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: "google/gemini-2.5-pro",
-        messages: [
-          { role: "system", content: SYSTEM },
-          { role: "user", content: userParts },
-        ],
-        tools: [TOOL],
-        tool_choice: { type: "function", function: { name: "submit_analysis" } },
-      }),
-    });
+    // First attempt: Pro for binary PDFs (vision), Flash for text-only payloads (faster + cheaper)
+    const primaryModel = pdfTextOnly || ext === "csv" || mime.includes("csv") || mime.startsWith("text/")
+      ? "google/gemini-2.5-flash"
+      : "google/gemini-2.5-pro";
 
-    if (!aiResp.ok) {
-      const t = await aiResp.text();
-      const msg = aiResp.status === 429 ? "Rate limit excedido. Intenta nuevamente en un minuto."
-                : aiResp.status === 402 ? "Sin créditos en Lovable AI. Agrega créditos en Settings → Workspace → Usage."
-                : `AI error ${aiResp.status}: ${t.slice(0, 300)}`;
-      await admin.from("knowledge_documents").update({ status: "failed", analysis_error: msg }).eq("id", document_id);
-      return json({ error: msg }, aiResp.status);
+    let aiResp = await callModel(primaryModel, userParts);
+    let usedModel = primaryModel;
+
+    let parsed: any = null;
+    let lastRaw = "";
+
+    if (aiResp.ok) {
+      const data = await aiResp.json();
+      const call = data?.choices?.[0]?.message?.tool_calls?.[0];
+      try { parsed = call?.function?.arguments ? JSON.parse(call.function.arguments) : null; } catch { parsed = null; }
+      if (!parsed) lastRaw = data?.choices?.[0]?.message?.content || "";
+    } else {
+      lastRaw = await aiResp.text();
     }
 
-    const data = await aiResp.json();
-    const call = data?.choices?.[0]?.message?.tool_calls?.[0];
-    let parsed: any = null;
-    try { parsed = call?.function?.arguments ? JSON.parse(call.function.arguments) : null; } catch { parsed = null; }
+    // Fallback to flash if primary failed or returned no structured output
+    if (!parsed && primaryModel !== "google/gemini-2.5-flash") {
+      console.log("Retrying with gemini-2.5-flash…");
+      aiResp = await callModel("google/gemini-2.5-flash", userParts);
+      usedModel = "google/gemini-2.5-flash";
+      if (aiResp.ok) {
+        const data = await aiResp.json();
+        const call = data?.choices?.[0]?.message?.tool_calls?.[0];
+        try { parsed = call?.function?.arguments ? JSON.parse(call.function.arguments) : null; } catch { parsed = null; }
+        if (!parsed) lastRaw = data?.choices?.[0]?.message?.content || lastRaw;
+      } else {
+        lastRaw = await aiResp.text();
+      }
+    }
 
     if (!parsed) {
-      const fallback = data?.choices?.[0]?.message?.content || "Sin respuesta estructurada del modelo";
-      await admin.from("knowledge_documents").update({ status: "failed", analysis_error: String(fallback).slice(0, 500) }).eq("id", document_id);
-      return json({ error: "no structured output", raw: fallback }, 500);
+      const status = aiResp.status;
+      const msg = status === 429 ? "Rate limit excedido. Intenta nuevamente en un minuto."
+                : status === 402 ? "Sin créditos en Lovable AI. Agrega créditos en Settings → Workspace → Usage."
+                : `Sin respuesta estructurada del modelo (${usedModel}). ${String(lastRaw).slice(0, 300)}`;
+      await admin.from("knowledge_documents").update({ status: "failed", analysis_error: msg.slice(0, 1000) }).eq("id", document_id);
+      return json({ error: msg }, 500);
     }
 
     // Persist
@@ -190,7 +244,7 @@ Deno.serve(async (req) => {
       await admin.from("knowledge_findings").insert(rows);
     }
 
-    return json({ ok: true, findings: findings.length });
+    return json({ ok: true, findings: findings.length, model: usedModel });
   } catch (e: any) {
     console.error("knowledge-analyze error:", e);
     return json({ error: e?.message ?? "unknown" }, 500);

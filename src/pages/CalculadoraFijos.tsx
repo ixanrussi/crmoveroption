@@ -59,10 +59,25 @@ const newSelection = (): Selection => ({
   opId: "", planId: "", ftdTarget: "", ftdActual: "",
 });
 
+type SavedSimulation = {
+  id: string;
+  name: string;
+  prospect_name: string | null;
+  country_id: string | null;
+  selections: Selection[];
+  total_fijo_usd: number;
+  created_at: string;
+};
+
 export default function CalculadoraFijos() {
-  const { isSuperAdmin } = useAuth();
+  const { user, isSuperAdmin } = useAuth();
   const [operators, setOperators] = useState<Operator[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
+  const [saveDialogOpen, setSaveDialogOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [simName, setSimName] = useState("");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState<SavedSimulation[]>([]);
   const [countryId, setCountryId] = useState<string>("all");
   const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");

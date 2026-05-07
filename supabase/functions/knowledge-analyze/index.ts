@@ -41,6 +41,12 @@ Recibirás un documento (PDF, Excel/CSV, o resumen de texto) con datos de un cli
 2. Extraer datos estructurados clave (períodos, marcas, monedas, IDs de campañas, métricas como FTD, NGR, jugadores calificados, comisión, etc.).
 3. Identificar DUDAS, INCONSISTENCIAS y ALERTAS que un humano debería responder antes de facturar al cliente o pagar al afiliado. Sé exhaustivo: monedas mezcladas, totales que no cuadran, jugadores bloqueados sin explicación, campañas no mapeadas, períodos faltantes, valores negativos sospechosos, formatos extraños, etc.
 
+MEMORIA DEL CLIENTE — MUY IMPORTANTE:
+Si en el mensaje del usuario aparece un bloque "### Preguntas ya respondidas previamente por el operador", significa que ese cliente YA RESPONDIÓ esas dudas en documentos anteriores similares.
+- NO vuelvas a generar un finding sobre un tema ya respondido satisfactoriamente, salvo que la respuesta previa sea claramente insuficiente, ambigua, evasiva, o que el dato del documento actual NO ENCAJE con esa respuesta.
+- Si la respuesta previa NO ACLARA la duda para este nuevo documento, vuelves a preguntar, pero cita textualmente la respuesta previa en el campo "detail" y explica por qué no es suficiente esta vez.
+- Si una respuesta previa SÍ resuelve un patrón recurrente (p.ej. "esa moneda es siempre BRL"), aplícala como dato confirmado en "extracted" y no la conviertas en finding.
+
 Devuelve SIEMPRE la respuesta llamando a la función "submit_analysis".`;
 
 const TOOL = {

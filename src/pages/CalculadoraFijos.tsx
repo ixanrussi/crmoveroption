@@ -379,8 +379,10 @@ export default function CalculadoraFijos() {
               const retencion = plan?.overoption_retention ?? 0;
               const cpaNeto = Math.max(0, cpaBruto - retencion);
               const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
+              const recommendedMarginPct = plan?.recommended_margin_pct ?? 0;
               const ftdT = parseFloat(sel.ftdTarget) || 0;
-              const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
+              const fijoMax = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
+              const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - recommendedMarginPct / 100);
 
               return (
                 <div key={sel.uid} className="rounded-lg border p-3 space-y-3 relative">
@@ -417,11 +419,16 @@ export default function CalculadoraFijos() {
                     </Select>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-3 gap-3">
                     <div className="space-y-1">
                       <Label>CPAs objetivo</Label>
                       <Input type="number" min="0" value={sel.ftdTarget}
                         onChange={(e) => updateSelection(sel.uid, { ftdTarget: e.target.value })} />
+                    </div>
+                    <div className="space-y-1">
+                      <Label>Fijo máximo</Label>
+                      <Input type="text" readOnly tabIndex={-1} className="bg-muted cursor-not-allowed"
+                        value={plan && ftdT > 0 ? fmt(fijoMax, plan.currency) : ""} placeholder="" />
                     </div>
                     <div className="space-y-1">
                       <Label>Fijo recomendado</Label>

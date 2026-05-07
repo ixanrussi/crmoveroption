@@ -513,11 +513,7 @@ export default function CalculadoraFijos() {
                         <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
-                        <div className="flex flex-col">
-                          <span className="text-muted-foreground text-xs">CPA neto</span>
-                          <span className="font-semibold">{fmt(r.cpaNeto, r.plan.currency)}</span>
-                        </div>
+                      <div className="pt-2 border-t text-sm">
                         <div className="flex flex-col">
                           <span className="text-muted-foreground text-xs">Fijo propuesta</span>
                           <span className="font-semibold">{fmt(computePropuesta(r), r.plan.currency)}</span>

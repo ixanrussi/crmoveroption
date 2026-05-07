@@ -178,6 +178,7 @@ export default function Clientes() {
         proportional_enabled: !!p.proportional_enabled,
         proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
         fixed_margin_pct: p.fixed_margin_pct?.toString() ?? "",
+        recommended_margin_pct: p.recommended_margin_pct?.toString() ?? "",
       })),
     );
     setBrandInput("");

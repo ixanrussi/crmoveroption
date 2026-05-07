@@ -98,14 +98,14 @@ export default function CalculadoraFijos() {
       const planHas = (o.client_commission_plans ?? []).some((p: Plan) => matchesSelected(p.country_ids));
       return opHas && planHas;
     });
-  }, [operators, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
+  }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
 
   const operator = filteredOperators.find((o) => o.id === opId);
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
     if (countryId === "all") return operator.client_commission_plans;
     return operator.client_commission_plans.filter((p) => matchesSelected(p.country_ids));
-  }, [operator, countryId, countries, wwId, latamId, latamCountryIds, selectedTargets]);
+  }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
   const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;

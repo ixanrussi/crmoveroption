@@ -56,12 +56,13 @@ type CommissionPlan = {
   proportional_enabled: boolean;
   proportional_min_pct: string;
   fixed_margin_pct: string;
+  recommended_margin_pct: string;
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
   baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
-  proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "",
+  proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "", recommended_margin_pct: "",
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 

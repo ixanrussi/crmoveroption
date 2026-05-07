@@ -227,10 +227,33 @@ export default function Conocimiento() {
             <CardHeader><CardTitle className="text-base">Hallazgos detectados por la IA</CardTitle></CardHeader>
             <CardContent className="space-y-3">
               {findings.length === 0 && <p className="text-sm text-muted-foreground py-6 text-center">Aún no hay hallazgos. Sube un archivo para comenzar.</p>}
-              {findings.map(f => {
-                const doc = docs.find(d => d.id === f.document_id);
-                return <FindingCard key={f.id} f={f} docName={doc?.file_name ?? "—"} onAnswer={answerFinding} />;
-              })}
+              {(() => {
+                const open = findings.filter(f => f.status === "open");
+                const closed = findings.filter(f => f.status !== "open");
+                return <>
+                  {open.map(f => {
+                    const doc = docs.find(d => d.id === f.document_id);
+                    return <FindingCard key={f.id} f={f} docName={doc?.file_name ?? "—"} onAnswer={answerFinding} />;
+                  })}
+                  {closed.length > 0 && (
+                    <Collapsible className="border rounded-lg">
+                      <CollapsibleTrigger className="w-full flex items-center justify-between p-3 text-sm font-medium hover:bg-muted/50 transition-colors [&[data-state=open]>svg]:rotate-180">
+                        <span className="flex items-center gap-2">
+                          <CheckCircle2 className="h-4 w-4 text-success" />
+                          Respondidas / resueltas ({closed.length})
+                        </span>
+                        <ChevronDown className="h-4 w-4 transition-transform" />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className="p-3 pt-0 space-y-3">
+                        {closed.map(f => {
+                          const doc = docs.find(d => d.id === f.document_id);
+                          return <FindingCard key={f.id} f={f} docName={doc?.file_name ?? "—"} onAnswer={answerFinding} />;
+                        })}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+                </>;
+              })()}
             </CardContent>
           </Card>
         </TabsContent>

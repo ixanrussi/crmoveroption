@@ -97,15 +97,6 @@ export default function Usuarios() {
                         ? <Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge>
                         : <Badge variant="destructive">Pendiente de validación</Badge>}
                     </TableCell>
-                  <TableRow key={u.id}>
-                    <TableCell className="font-medium">
-                      {isSelf ? (
-                        <Link to="/mi-cuenta" className="text-primary hover:underline">{u.full_name || "—"}</Link>
-                      ) : (u.full_name || "—")}
-                    </TableCell>
-                    <TableCell>{u.email}</TableCell>
-                    <TableCell>{u.job_title || "—"}</TableCell>
-                    <TableCell><Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge></TableCell>
                     <TableCell>
                       <Select
                         value={current}

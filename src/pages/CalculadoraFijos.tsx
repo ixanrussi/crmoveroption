@@ -83,6 +83,7 @@ export default function CalculadoraFijos() {
   const [countryId, setCountryId] = useState<string>("all");
   const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");
+  const [proposalPct, setProposalPct] = useState<number>(0); // 0 = recomendado, 100 = máximo
 
   const handlePrint = () => window.print();
 

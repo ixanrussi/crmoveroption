@@ -21,6 +21,7 @@ type Plan = {
   proportional_enabled: boolean | null;
   proportional_min_pct: number | null;
   country_ids: string[] | null;
+  fixed_margin_pct: number | null;
 };
 
 type Operator = {
@@ -58,7 +59,7 @@ export default function CalculadoraFijos() {
       const [{ data: ops }, { data: cs }] = await Promise.all([
         supabase
           .from("clients")
-          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids)")
+          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct)")
           .order("company_name"),
         supabase.from("countries").select("id, name, code").order("name"),
       ]);

@@ -87,7 +87,9 @@ export default function Usuarios() {
           <Table>
             <TableHeader><TableRow>
               <TableHead>Nombre</TableHead><TableHead>Email</TableHead>
-              <TableHead>Cargo</TableHead><TableHead>Rol actual</TableHead><TableHead className="w-56">Definir rol</TableHead>
+              <TableHead>Cargo</TableHead><TableHead>Rol actual</TableHead>
+              <TableHead className="w-56">Definir rol</TableHead>
+              <TableHead className="w-40">Estado</TableHead>
             </TableRow></TableHeader>
             <TableBody>
               {users.map((u) => {
@@ -106,7 +108,7 @@ export default function Usuarios() {
                     <TableCell>
                       {hasRole
                         ? <Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge>
-                        : <Badge variant="destructive">Pendiente de validación</Badge>}
+                        : <Badge variant="destructive">Sin rol</Badge>}
                     </TableCell>
                     <TableCell>
                       <Select
@@ -123,6 +125,18 @@ export default function Usuarios() {
                         </SelectContent>
                       </Select>
                       {isSelf && <p className="text-xs text-muted-foreground mt-1">No puedes cambiar tu propio rol</p>}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={u.is_active}
+                          onCheckedChange={() => toggleActive(u)}
+                          disabled={isSelf}
+                        />
+                        <Badge variant={u.is_active ? "default" : "outline"}>
+                          {u.is_active ? "Activo" : "Inactivo"}
+                        </Badge>
+                      </div>
                     </TableCell>
                   </TableRow>
                 );

@@ -240,7 +240,7 @@ export default function CalculadoraFijos() {
             <Calculator className="h-6 w-6" /> Calculadora de Fijos
           </h1>
           <p className="text-muted-foreground text-sm">
-            Simula el valor fijo a ofrecer a un afiliado en base a FTDs comprometidos por uno o varios operadores.
+            Simula el valor fijo a ofrecer a un afiliado en base a CPAs comprometidos por uno o varios operadores.
           </p>
         </div>
         <div className="flex gap-2 no-print">
@@ -330,7 +330,7 @@ export default function CalculadoraFijos() {
 
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-1">
-                      <Label>FTDs objetivo</Label>
+                      <Label>CPAs objetivo</Label>
                       <Input type="number" min="0" value={sel.ftdTarget}
                         onChange={(e) => updateSelection(sel.uid, { ftdTarget: e.target.value })} />
                     </div>
@@ -342,7 +342,7 @@ export default function CalculadoraFijos() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label>FTDs reales (simulación)</Label>
+                    <Label>CPAs reales (simulación)</Label>
                     <Input type="number" min="0" placeholder={`Por defecto = objetivo (${ftdT || 0})`}
                       value={sel.ftdActual} onChange={(e) => updateSelection(sel.uid, { ftdActual: e.target.value })} />
                   </div>
@@ -369,7 +369,7 @@ export default function CalculadoraFijos() {
           </CardHeader>
           <CardContent className="space-y-4">
             {!hasAny ? (
-              <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y FTDs objetivo para ver el cálculo.</p>
+              <p className="text-sm text-muted-foreground">Selecciona al menos un operador, plan y CPAs objetivo para ver el cálculo.</p>
             ) : (
               <>
                 {totalsByCurrency.length > 0 && (
@@ -382,7 +382,7 @@ export default function CalculadoraFijos() {
                       </div>
                     ))}
                     <div className="text-xs text-muted-foreground pt-1 border-t">
-                      Total FTDs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
+                      Total CPAs objetivo: <span className="font-semibold text-foreground">{validRows.reduce((s, r) => s + r.ftdT, 0)}</span>
                     </div>
                   </div>
                 )}
@@ -396,7 +396,7 @@ export default function CalculadoraFijos() {
                           {r.plan.brand ? `${r.plan.brand} · ` : ""}{r.plan.description || ""}
                         </div>
                       </div>
-                      <Badge variant="outline">{r.ftdT} FTDs objetivo</Badge>
+                      <Badge variant="outline">{r.ftdT} CPAs objetivo</Badge>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 text-sm pt-2 border-t">
@@ -423,7 +423,7 @@ export default function CalculadoraFijos() {
                           <Badge variant={r.ftdA >= r.ftdT ? "default" : "secondary"}>{r.tierLabel}</Badge>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-muted-foreground">Pago al afiliado ({r.ftdA} FTDs)</span>
+                          <span className="text-muted-foreground">Pago al afiliado ({r.ftdA} CPAs)</span>
                           <span className="font-semibold">{fmt(r.pagoRealAfiliado, r.plan.currency)}</span>
                         </div>
                       </div>

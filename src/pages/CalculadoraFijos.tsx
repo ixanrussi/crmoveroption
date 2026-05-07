@@ -97,11 +97,7 @@ export default function CalculadoraFijos() {
       const opHas = matchesSelected(o.country_ids);
       if (!opHas) return false;
       const plans = o.client_commission_plans ?? [];
-      const planHas = plans.some((p: Plan) => {
-        const ids = p.country_ids ?? [];
-        if (ids.length === 0) return true; // hereda cobertura del operador
-        return matchesSelected(ids);
-      });
+      const planHas = plans.some((p: Plan) => matchesSelected(p.country_ids));
       return planHas;
     });
   }, [operators, countryId, countries, wwId, latamId, latamCountryIds]);
@@ -110,11 +106,7 @@ export default function CalculadoraFijos() {
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
     if (countryId === "all") return operator.client_commission_plans;
-    return operator.client_commission_plans.filter((p) => {
-      const ids = p.country_ids ?? [];
-      if (ids.length === 0) return true;
-      return matchesSelected(ids);
-    });
+    return operator.client_commission_plans.filter((p) => matchesSelected(p.country_ids));
   }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
   const plan = filteredPlans.find((p) => p.id === planId);
 

@@ -80,9 +80,23 @@ export default function Usuarios() {
             </TableRow></TableHeader>
             <TableBody>
               {users.map((u) => {
+                const hasRole = u.roles.length > 0;
                 const current = (u.roles[0] ?? "user") as Role;
                 const isSelf = u.id === me?.id;
                 return (
+                  <TableRow key={u.id}>
+                    <TableCell className="font-medium">
+                      {isSelf ? (
+                        <Link to="/mi-cuenta" className="text-primary hover:underline">{u.full_name || "—"}</Link>
+                      ) : (u.full_name || "—")}
+                    </TableCell>
+                    <TableCell>{u.email}</TableCell>
+                    <TableCell>{u.job_title || "—"}</TableCell>
+                    <TableCell>
+                      {hasRole
+                        ? <Badge variant={ROLE_VARIANT[current]}>{ROLE_LABELS[current]}</Badge>
+                        : <Badge variant="destructive">Pendiente de validación</Badge>}
+                    </TableCell>
                   <TableRow key={u.id}>
                     <TableCell className="font-medium">
                       {isSelf ? (

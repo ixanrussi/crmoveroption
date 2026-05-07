@@ -225,6 +225,14 @@ export default function CalculadoraFijos() {
     () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
     [validRows],
   );
+  const toEur = (amount: number, currency?: string | null) => {
+    const usd = toUsd(amount, currency);
+    return usd / (FX_TO_USD.EUR || 1);
+  };
+  const totalMarginEur = useMemo(
+    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoRecomendado, r.plan.currency), 0),
+    [validRows],
+  );
 
   const hasAny = validRows.length > 0;
 

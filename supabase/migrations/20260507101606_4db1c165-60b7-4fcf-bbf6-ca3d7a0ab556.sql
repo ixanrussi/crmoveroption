@@ -1,0 +1,1 @@
+ALTER TABLE public.client_commission_plans ADD COLUMN IF NOT EXISTS recommended_margin_pct numeric;

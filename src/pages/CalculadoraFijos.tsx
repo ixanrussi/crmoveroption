@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Slider } from "@/components/ui/slider";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";

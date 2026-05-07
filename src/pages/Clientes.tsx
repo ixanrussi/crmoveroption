@@ -655,6 +655,14 @@ export default function Clientes() {
                             <Input type="number" step="0.01" value={pl.cpa_at_90}
                               onChange={(e) => updatePlan(i, { cpa_at_90: e.target.value })}
                               placeholder="Valor CPA si cumple ≥90%" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Margen fijo Overoption (%)</Label>
+                            <Input type="number" step="0.01" min="0" max="100" value={pl.fixed_margin_pct}
+                              onChange={(e) => updatePlan(i, { fixed_margin_pct: e.target.value })}
+                              placeholder="Ej. 10 (= 10% retenido)" />
+                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora.</p>
+                          </div>
                           <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
                             <div className="flex items-center justify-between gap-3">
                               <div>

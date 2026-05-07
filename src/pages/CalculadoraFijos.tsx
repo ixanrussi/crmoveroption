@@ -318,7 +318,13 @@ export default function CalculadoraFijos() {
             Simula el valor fijo a ofrecer a un afiliado en base a CPAs comprometidos por uno o varios operadores.
           </p>
         </div>
-        <div className="flex gap-2 no-print">
+        <div className="flex gap-2 no-print flex-wrap justify-end">
+          <Button onClick={() => { setHistoryOpen(true); loadHistory(); }} variant="outline">
+            <History className="h-4 w-4 mr-2" /> Historial
+          </Button>
+          <Button onClick={handleOpenSave} variant="secondary" disabled={!hasAny}>
+            <Save className="h-4 w-4 mr-2" /> Guardar
+          </Button>
           <Button onClick={handleShare} variant="default" disabled={!hasAny}>
             <Share2 className="h-4 w-4 mr-2" /> Compartir
           </Button>

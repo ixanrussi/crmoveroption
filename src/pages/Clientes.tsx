@@ -245,6 +245,7 @@ export default function Clientes() {
           proportional_enabled: !!p.proportional_enabled,
           proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
           fixed_margin_pct: p.fixed_margin_pct === "" ? null : p.fixed_margin_pct,
+          recommended_margin_pct: p.recommended_margin_pct === "" ? null : p.recommended_margin_pct,
         })),
       },
     });

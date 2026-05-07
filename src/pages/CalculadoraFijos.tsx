@@ -121,7 +121,7 @@ export default function CalculadoraFijos() {
   const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
 
   const ftdT = parseFloat(ftdTarget) || 0;
-  const fixed = parseFloat(fixedAmount) || 0;
+  const fixed = cpaNeto * ftdT;
   const ftdA = ftdActual === "" ? ftdT : (parseFloat(ftdActual) || 0);
 
   const calc = useMemo(() => {

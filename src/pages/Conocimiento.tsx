@@ -34,10 +34,18 @@ export default function Conocimiento() {
   const [clientId, setClientId] = useState<string>("");
   const [docs, setDocs] = useState<Doc[]>([]);
   const [findings, setFindings] = useState<Finding[]>([]);
+  const [docCounts, setDocCounts] = useState<Record<string, number>>({});
   const [uploading, setUploading] = useState(false);
   const [category, setCategory] = useState<string>("");
   const [notes, setNotes] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const refreshCounts = async () => {
+    const { data } = await supabase.from("knowledge_documents").select("client_id");
+    const map: Record<string, number> = {};
+    (data ?? []).forEach((r: any) => { map[r.client_id] = (map[r.client_id] || 0) + 1; });
+    setDocCounts(map);
+  };
 
   useEffect(() => {
     supabase.from("clients").select("id, company_name").order("company_name")
@@ -45,6 +53,7 @@ export default function Conocimiento() {
         setClients((data ?? []) as Client[]);
         if (data?.length && !clientId) setClientId(data[0].id);
       });
+    refreshCounts();
   }, []);
 
   const refresh = async () => {
@@ -55,6 +64,7 @@ export default function Conocimiento() {
     ]);
     setDocs((d.data ?? []) as Doc[]);
     setFindings((f.data ?? []) as Finding[]);
+    refreshCounts();
   };
   useEffect(() => { refresh(); }, [clientId]);
 
@@ -151,7 +161,16 @@ export default function Conocimiento() {
           <Select value={clientId} onValueChange={setClientId}>
             <SelectTrigger><SelectValue placeholder="Selecciona cliente" /></SelectTrigger>
             <SelectContent>
-              {clients.map(c => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+              {clients.map(c => (
+                <SelectItem key={c.id} value={c.id}>
+                  <span className="flex items-center gap-2">
+                    <span>{c.company_name}</span>
+                    <span className="inline-flex items-center justify-center min-w-[1.5rem] h-5 px-1.5 rounded-full bg-muted text-[11px] font-semibold text-muted-foreground">
+                      {docCounts[c.id] ?? 0}
+                    </span>
+                  </span>
+                </SelectItem>
+              ))}
             </SelectContent>
           </Select>
         </div>

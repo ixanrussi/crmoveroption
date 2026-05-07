@@ -77,7 +77,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const isComercial = roles.includes("comercial");
 
   return (
-    <AuthContext.Provider value={{ session, user, roles, loading, isSuperAdmin, isAdmin, isComercial, signOut }}>
+    <AuthContext.Provider value={{ session, user, roles, isActive, loading, isSuperAdmin, isAdmin, isComercial, signOut }}>
       {children}
     </AuthContext.Provider>
   );

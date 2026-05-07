@@ -325,7 +325,17 @@ export default function CalculadoraFijos() {
         #print-area, #print-area * { visibility: visible; }
         #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 24px; }
         .no-print { display: none !important; }
-      }`}</style>
+      }
+      /* Ocultar flechas de inputs numéricos */
+      input[type=number]::-webkit-inner-spin-button,
+      input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+      }
+      input[type=number] {
+        -moz-appearance: textfield;
+      }
+      `}</style>
       <div className="flex items-start justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

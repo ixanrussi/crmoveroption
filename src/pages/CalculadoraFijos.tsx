@@ -300,6 +300,10 @@ export default function CalculadoraFijos() {
     () => validRows.reduce((s, r) => s + toUsd(r.fijoRecomendado, r.plan.currency), 0),
     [validRows],
   );
+  const totalFijoPropuestaUsd = useMemo(
+    () => totalFijoRecomendadoUsd + (totalFijoUsd - totalFijoRecomendadoUsd) * (proposalPct / 100),
+    [totalFijoUsd, totalFijoRecomendadoUsd, proposalPct],
+  );
   const toEur = (amount: number, currency?: string | null) => {
     const usd = toUsd(amount, currency);
     return usd / (FX_TO_USD.EUR || 1);
@@ -308,6 +312,9 @@ export default function CalculadoraFijos() {
     () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoMaximo, r.plan.currency), 0),
     [validRows],
   );
+
+  const computePropuesta = (r: NonNullable<ReturnType<typeof computeRow>>) =>
+    r.fijoRecomendado + (r.fijoMaximo - r.fijoRecomendado) * (proposalPct / 100);
 
   const hasAny = validRows.length > 0;
 

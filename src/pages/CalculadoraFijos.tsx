@@ -190,7 +190,7 @@ export default function CalculadoraFijos() {
       const [{ data: ops }, { data: cs }] = await Promise.all([
         supabase
           .from("clients")
-          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct)")
+          .select("id, company_name, net_min_cpa, country_ids, client_commission_plans(id, description, brand, currency, cpa, overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90, proportional_enabled, proportional_min_pct, country_ids, fixed_margin_pct, recommended_margin_pct)")
           .order("company_name"),
         supabase.from("countries").select("id, name, code").order("name"),
       ]);

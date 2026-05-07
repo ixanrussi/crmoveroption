@@ -105,9 +105,8 @@ export default function CalculadoraFijos() {
   const operator = filteredOperators.find((o) => o.id === opId);
   const filteredPlans = useMemo(() => {
     if (!operator) return [];
-    if (countryId === "all") return operator.client_commission_plans;
-    return operator.client_commission_plans.filter((p) => matchesSelected(p.country_ids));
-  }, [operator, countryId, countries, wwId, latamId, latamCountryIds]);
+    return operator.client_commission_plans;
+  }, [operator]);
   const plan = filteredPlans.find((p) => p.id === planId);
 
   const cpaBruto = plan?.cpa ?? 0;

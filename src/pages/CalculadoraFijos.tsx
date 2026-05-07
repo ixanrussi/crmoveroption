@@ -309,8 +309,11 @@ export default function CalculadoraFijos() {
     return usd / (FX_TO_USD.EUR || 1);
   };
   const totalMarginEur = useMemo(
-    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoMaximo, r.plan.currency), 0),
-    [validRows],
+    () => validRows.reduce((s, r) => {
+      const propuesta = r.fijoRecomendado + (r.fijoMaximo - r.fijoRecomendado) * (proposalPct / 100);
+      return s + toEur(r.fixed - propuesta, r.plan.currency);
+    }, 0),
+    [validRows, proposalPct],
   );
 
   const computePropuesta = (r: NonNullable<ReturnType<typeof computeRow>>) =>

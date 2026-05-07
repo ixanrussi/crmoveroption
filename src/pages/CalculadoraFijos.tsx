@@ -423,7 +423,7 @@ export default function CalculadoraFijos() {
                   </div>
 
                   <div className="space-y-1">
-                    <Label>CPAs reales (simulación)</Label>
+                    <Label>CAPs logrados</Label>
                     <Input type="number" min="0" placeholder={`Por defecto = objetivo (${ftdT || 0})`}
                       value={sel.ftdActual} onChange={(e) => updateSelection(sel.uid, { ftdActual: e.target.value })} />
                   </div>

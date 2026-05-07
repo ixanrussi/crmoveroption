@@ -664,7 +664,14 @@ export default function Clientes() {
                             <Input type="number" step="0.01" min="0" max="100" value={pl.fixed_margin_pct}
                               onChange={(e) => updatePlan(i, { fixed_margin_pct: e.target.value })}
                               placeholder="Ej. 10 (= 10% retenido)" />
-                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora.</p>
+                            <p className="text-xs text-muted-foreground">Se descuenta del valor fijo ofrecido al afiliado en la calculadora (Fijo máximo).</p>
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Margen recomendado (%)</Label>
+                            <Input type="number" step="0.01" min="0" max="100" value={pl.recommended_margin_pct}
+                              onChange={(e) => updatePlan(i, { recommended_margin_pct: e.target.value })}
+                              placeholder="Ej. 20 (= 20% retenido)" />
+                            <p className="text-xs text-muted-foreground">Define el "Fijo recomendado" (más bajo que el Fijo máximo) para dar al comercial un rango de oferta.</p>
                           </div>
                           <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
                             <div className="flex items-center justify-between gap-3">

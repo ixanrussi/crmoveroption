@@ -309,8 +309,11 @@ export default function CalculadoraFijos() {
     return usd / (FX_TO_USD.EUR || 1);
   };
   const totalMarginEur = useMemo(
-    () => validRows.reduce((s, r) => s + toEur(r.fixed - r.fijoMaximo, r.plan.currency), 0),
-    [validRows],
+    () => validRows.reduce((s, r) => {
+      const propuesta = r.fijoRecomendado + (r.fijoMaximo - r.fijoRecomendado) * (proposalPct / 100);
+      return s + toEur(r.fixed - propuesta, r.plan.currency);
+    }, 0),
+    [validRows, proposalPct],
   );
 
   const computePropuesta = (r: NonNullable<ReturnType<typeof computeRow>>) =>
@@ -616,7 +619,7 @@ export default function CalculadoraFijos() {
                   <span className="text-2xl font-bold">{fmt(totalMarginEur, "EUR")}</span>
                 </div>
                 <p className="text-xs text-muted-foreground">
-                  Diferencia entre el bruto del CPA y el fijo máximo, consolidada en EUR. Esta información no se incluye en la oferta compartida.
+                  Diferencia entre el bruto del CPA y el fijo propuesta actual, consolidada en EUR. Esta información no se incluye en la oferta compartida.
                 </p>
               </CardContent>
             </Card>

@@ -17,6 +17,7 @@ import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
 import Conocimiento from "./pages/Conocimiento";
+import ConocimientoDashboard from "./pages/ConocimientoDashboard";
 import CalculadoraFijos from "./pages/CalculadoraFijos";
 import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./pages/NotFound";

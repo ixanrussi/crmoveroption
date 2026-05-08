@@ -217,7 +217,7 @@ export default function TrackerReport() {
           <h1 className="text-2xl font-semibold">Tracker Report</h1>
           <p className="text-sm text-muted-foreground">Reporte de trackers desde Routy</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => fetchData()} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recargar"}
         </Button>
       </div>
@@ -327,7 +327,7 @@ export default function TrackerReport() {
             <div className="py-12 text-center text-destructive">
               <div className="font-medium">Error</div>
               <div className="text-sm mt-1">{error}</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={fetchData}>Reintentar</Button>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData()}>Reintentar</Button>
             </div>
           )}
           {!loading && !error && sorted.length === 0 && (

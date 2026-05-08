@@ -391,17 +391,17 @@ export default function TrackerReport() {
           )}
           {!loading && !error && sorted.length > 0 && (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-auto max-h-[70vh] relative rounded-md border">
                 <Table>
-                  <TableHeader>
-                    <TableRow>
+                  <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
+                    <TableRow className="hover:bg-background">
                       {cols.map(c => (
                         <Fragment key={c.k}>
-                          <TableHead className={c.numeric ? "text-right" : ""}>
+                          <TableHead className={`bg-background ${c.numeric ? "text-right" : ""}`}>
                             <SortBtn k={c.k} label={c.label} />
                           </TableHead>
                           {c.k === "tracker" && (
-                            <TableHead className="min-w-[220px]">Afiliado</TableHead>
+                            <TableHead className="min-w-[220px] bg-background">Afiliado</TableHead>
                           )}
                         </Fragment>
                       ))}

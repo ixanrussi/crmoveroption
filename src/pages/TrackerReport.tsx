@@ -396,9 +396,14 @@ export default function TrackerReport() {
                   <TableHeader>
                     <TableRow>
                       {cols.map(c => (
-                        <TableHead key={c.k} className={c.numeric ? "text-right" : ""}>
-                          <SortBtn k={c.k} label={c.label} />
-                        </TableHead>
+                        <>
+                          <TableHead key={c.k} className={c.numeric ? "text-right" : ""}>
+                            <SortBtn k={c.k} label={c.label} />
+                          </TableHead>
+                          {c.k === "tracker" && (
+                            <TableHead key="__aff" className="min-w-[220px]">Afiliado</TableHead>
+                          )}
+                        </>
                       ))}
                     </TableRow>
                   </TableHeader>
@@ -411,10 +416,32 @@ export default function TrackerReport() {
                           if (c.k === "date") display = fmtDate(String(v ?? ""));
                           else if (c.numeric) display = fmtNum(v as number);
                           else display = String(v ?? "");
+                          const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
                           return (
-                            <TableCell key={c.k} className={c.numeric ? "text-right tabular-nums" : ""}>
-                              {display}
-                            </TableCell>
+                            <>
+                              <TableCell key={c.k} className={c.numeric ? "text-right tabular-nums" : ""}>
+                                {display}
+                              </TableCell>
+                              {c.k === "tracker" && (
+                                <TableCell key="__aff" className="min-w-[220px]">
+                                  <Select
+                                    value={currentAffId}
+                                    onValueChange={(val) => linkTrackerToAffiliate(r.tracker, val)}
+                                    disabled={savingTracker === r.tracker || !r.tracker}
+                                  >
+                                    <SelectTrigger className="h-8 text-xs">
+                                      <SelectValue placeholder="Sin asignar" />
+                                    </SelectTrigger>
+                                    <SelectContent className="max-h-72">
+                                      <SelectItem value={NONE_AFF}>— Sin asignar —</SelectItem>
+                                      {affiliates.map(a => (
+                                        <SelectItem key={a.id} value={a.id}>{a.fixed_name}</SelectItem>
+                                      ))}
+                                    </SelectContent>
+                                  </Select>
+                                </TableCell>
+                              )}
+                            </>
                           );
                         })}
                       </TableRow>

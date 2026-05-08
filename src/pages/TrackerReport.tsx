@@ -399,8 +399,8 @@ export default function TrackerReport() {
           {!loading && !error && sorted.length > 0 && (
             <>
               <div className="overflow-auto max-h-[70vh] relative rounded-md border">
-                <Table>
-                  <TableHeader>
+                <table className="w-full caption-bottom text-sm">
+                  <TableHeader className="[&_tr]:border-b">
                     <TableRow className="hover:bg-background">
                       {cols.map(c => (
                         <Fragment key={c.k}>
@@ -456,7 +456,7 @@ export default function TrackerReport() {
                       </TableRow>
                     ))}
                   </TableBody>
-                </Table>
+                </table>
               </div>
               <div className="flex items-center justify-between mt-4 text-sm">
                 <div className="text-muted-foreground">

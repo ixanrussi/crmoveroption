@@ -13,7 +13,8 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, ArrowUpDown, Loader2 } from "lucide-react";
 
-const API_URL = "http://localhost:3001/api/routy/dashboard";
+const API_URL = "https://public-api.routy.app/accounts/stats/trackers/pivot";
+const ROUTY_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwOTM4NTM3MTMsImlhdCI6MTc3ODIzNDUxMywibmFtZWlkIjoiQUstNjFkMDA3MWQ0MDk0NDUzNiIsInVuaXF1ZV9uYW1lIjoiQ1JNIFRlc3QiLCJBZmZpbGlhdGVJZCI6IjEwNDkwIiwic2NvcGUiOlsiYWRtaW4iLCJzZXJ2aWNlIl0sIm5iZiI6MTc3ODIzNDUxMywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIn0._usq_2EH1TQbIvQT11FZPWQUpMJNeJ7vgEYUjGhCuLU";
 const ALL = "__all__";
 
 type Row = {

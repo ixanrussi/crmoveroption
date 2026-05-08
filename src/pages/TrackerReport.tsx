@@ -13,7 +13,7 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, ArrowUpDown, Loader2 } from "lucide-react";
 
-const API_URL = "http://localhost:3001/api/routy/trackers-pivot";
+const API_URL = "http://localhost:3001/api/routy/dashboard";
 const ALL = "__all__";
 
 type Row = {

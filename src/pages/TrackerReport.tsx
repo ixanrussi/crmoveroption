@@ -146,6 +146,40 @@ export default function TrackerReport() {
     }
   };
 
+  const linkTrackersBulk = async (trackerVals: string[], affiliateId: string) => {
+    const uniqueVals = Array.from(new Set(trackerVals.filter(Boolean)));
+    if (uniqueVals.length === 0) return;
+    setSavingTracker(`__bulk_${uniqueVals[0]}`);
+    try {
+      // Remove these trackers from any affiliate that currently has them (except target)
+      for (const a of affiliates) {
+        if (a.id === affiliateId) continue;
+        const current = a.aliases ?? [];
+        const filtered = current.filter(x => !uniqueVals.includes(x));
+        if (filtered.length !== current.length) {
+          const { error } = await supabase.from("affiliates").update({ aliases: filtered }).eq("id", a.id);
+          if (error) throw error;
+        }
+      }
+      if (affiliateId !== NONE_AFF) {
+        const target = affiliates.find(a => a.id === affiliateId);
+        if (target) {
+          const merged = Array.from(new Set([...(target.aliases ?? []), ...uniqueVals]));
+          if (merged.length !== (target.aliases ?? []).length) {
+            const { error } = await supabase.from("affiliates").update({ aliases: merged }).eq("id", affiliateId);
+            if (error) throw error;
+          }
+        }
+      }
+      toast.success(`Vínculo aplicado a ${uniqueVals.length} tracker(s)`);
+      await loadAffiliates();
+    } catch (e: any) {
+      toast.error(e?.message || "No se pudo aplicar el vínculo en masa");
+    } finally {
+      setSavingTracker(null);
+    }
+  };
+
   const fetchData = async (range?: { from?: string; to?: string }) => {
     setLoading(true);
     setError(null);

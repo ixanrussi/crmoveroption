@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
+
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import overoptionLogo from "@/assets/overoption-logo.png";
@@ -88,43 +88,178 @@ export default function CalculadoraFijos() {
 
   const handlePrint = () => window.print();
 
+  const loadLogoDataUrl = async (): Promise<{ dataUrl: string; w: number; h: number } | null> => {
+    try {
+      const res = await fetch(overoptionLogo);
+      const blob = await res.blob();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        const fr = new FileReader();
+        fr.onload = () => resolve(fr.result as string);
+        fr.onerror = reject;
+        fr.readAsDataURL(blob);
+      });
+      const img = new Image();
+      img.src = dataUrl;
+      await new Promise((r) => { img.onload = r; img.onerror = r; });
+      return { dataUrl, w: img.width || 400, h: img.height || 100 };
+    } catch {
+      return null;
+    }
+  };
+
   const buildPdf = async (): Promise<{ blob: Blob; fileName: string } | null> => {
-    const el = document.getElementById("print-area");
-    if (!el) return null;
-    const canvas = await html2canvas(el, { scale: 2, backgroundColor: "#ffffff" });
-    const imgData = canvas.toDataURL("image/png");
+    if (!hasAny) return null;
     const pdf = new jsPDF({ unit: "pt", format: "a4" });
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
-    const margin = 24;
+    const margin = 40;
 
-    // Logo en la parte superior
-    const logoH = 40;
-    const logoImg = new Image();
-    logoImg.src = overoptionLogo;
-    await new Promise((res) => { logoImg.onload = res; logoImg.onerror = res; });
-    const logoRatio = logoImg.width && logoImg.height ? logoImg.width / logoImg.height : 4;
-    const logoW = logoH * logoRatio;
-    pdf.addImage(overoptionLogo, "PNG", margin, margin, logoW, logoH);
+    // Paleta
+    const COL_PRIMARY: [number, number, number] = [37, 99, 235]; // azul
+    const COL_DARK: [number, number, number] = [15, 23, 42];
+    const COL_MUTED: [number, number, number] = [100, 116, 139];
+    const COL_BORDER: [number, number, number] = [226, 232, 240];
+    const COL_BG_SOFT: [number, number, number] = [248, 250, 252];
 
-    const contentTop = margin + logoH + 12;
-    const imgW = pageW - margin * 2;
-    const imgH = (canvas.height * imgW) / canvas.width;
+    // Banda superior
+    pdf.setFillColor(...COL_PRIMARY);
+    pdf.rect(0, 0, pageW, 6, "F");
 
-    const firstPageAvail = pageH - contentTop - margin;
-    const otherPageAvail = pageH - margin * 2;
+    // Logo
+    const logo = await loadLogoDataUrl();
+    let headerBottom = margin;
+    if (logo) {
+      const logoH = 36;
+      const logoW = logoH * (logo.w / logo.h);
+      pdf.addImage(logo.dataUrl, "PNG", margin, margin, logoW, logoH);
+      headerBottom = margin + logoH;
+    }
 
-    if (imgH <= firstPageAvail + 0.5) {
-      pdf.addImage(imgData, "PNG", margin, contentTop, imgW, imgH);
-    } else {
-      pdf.addImage(imgData, "PNG", margin, contentTop, imgW, imgH);
-      let consumed = firstPageAvail;
-      while (imgH - consumed > 0.5) {
+    // Fecha (derecha)
+    const today = new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" });
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.setTextColor(...COL_MUTED);
+    pdf.text(today.toUpperCase(), pageW - margin, margin + 14, { align: "right" });
+
+    // Título
+    let y = headerBottom + 28;
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(20);
+    pdf.setTextColor(...COL_DARK);
+    pdf.text("Oferta de Fijo", margin, y);
+    if (prospectName) {
+      y += 18;
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(11);
+      pdf.setTextColor(...COL_MUTED);
+      pdf.text(`Preparada para ${prospectName}`, margin, y);
+    }
+
+    // Caja destacada del total
+    y += 24;
+    const boxH = 78;
+    pdf.setFillColor(...COL_PRIMARY);
+    pdf.roundedRect(margin, y, pageW - margin * 2, boxH, 8, 8, "F");
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.setTextColor(255, 255, 255);
+    pdf.text("FIJO PROPUESTA (USD)", margin + 18, y + 22);
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(28);
+    pdf.text(fmt(totalFijoPropuestaUsd, "USD"), margin + 18, y + 54);
+    const totalCpas = validRows.reduce((s, r) => s + r.ftdT, 0);
+    pdf.setFont("helvetica", "normal");
+    pdf.setFontSize(9);
+    pdf.text(`${totalCpas} CPAs objetivo`, pageW - margin - 18, y + 54, { align: "right" });
+
+    y += boxH + 24;
+
+    // Sección detalle
+    pdf.setFont("helvetica", "bold");
+    pdf.setFontSize(11);
+    pdf.setTextColor(...COL_DARK);
+    pdf.text("Detalle por operador", margin, y);
+    y += 14;
+
+    const ensureSpace = (needed: number) => {
+      if (y + needed > pageH - margin - 30) {
         pdf.addPage();
-        const position = margin - consumed;
-        pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
-        consumed += otherPageAvail;
+        pdf.setFillColor(...COL_PRIMARY);
+        pdf.rect(0, 0, pageW, 6, "F");
+        y = margin;
       }
+    };
+
+    for (const r of validRows) {
+      const cardH = r.tierLabel ? 92 : 64;
+      ensureSpace(cardH + 10);
+
+      pdf.setDrawColor(...COL_BORDER);
+      pdf.setFillColor(...COL_BG_SOFT);
+      pdf.roundedRect(margin, y, pageW - margin * 2, cardH, 6, 6, "FD");
+
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(12);
+      pdf.setTextColor(...COL_DARK);
+      pdf.text(r.operator.company_name, margin + 14, y + 20);
+
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(9);
+      pdf.setTextColor(...COL_MUTED);
+      const subtitle = `${r.plan.brand ? r.plan.brand + " · " : ""}${r.plan.description || ""}`.trim();
+      if (subtitle) pdf.text(subtitle, margin + 14, y + 34);
+
+      // Badge CPAs
+      const badge = `${r.ftdT} CPAs objetivo`;
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(9);
+      const badgeW = pdf.getTextWidth(badge) + 16;
+      pdf.setFillColor(...COL_DARK);
+      pdf.roundedRect(pageW - margin - 14 - badgeW, y + 10, badgeW, 18, 4, 4, "F");
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(badge, pageW - margin - 14 - badgeW / 2, y + 22, { align: "center" });
+
+      // Fijo propuesta de la fila
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(...COL_MUTED);
+      pdf.text("FIJO PROPUESTA", margin + 14, y + 50);
+      pdf.setFont("helvetica", "bold");
+      pdf.setFontSize(13);
+      pdf.setTextColor(...COL_DARK);
+      pdf.text(fmt(computePropuesta(r), r.plan.currency), margin + 14, y + 60);
+
+      if (r.tierLabel) {
+        pdf.setDrawColor(...COL_BORDER);
+        pdf.line(margin + 14, y + 70, pageW - margin - 14, y + 70);
+        pdf.setFont("helvetica", "normal");
+        pdf.setFontSize(8);
+        pdf.setTextColor(...COL_MUTED);
+        pdf.text(`ESCENARIO REAL · ${r.tierLabel.toUpperCase()}`, margin + 14, y + 82);
+        pdf.setFont("helvetica", "bold");
+        pdf.setFontSize(10);
+        pdf.setTextColor(...COL_DARK);
+        pdf.text(
+          `Pago al afiliado (${r.ftdA} CPAs): ${fmt(r.pagoRealAfiliado, r.plan.currency)}`,
+          pageW - margin - 14,
+          y + 82,
+          { align: "right" },
+        );
+      }
+
+      y += cardH + 10;
+    }
+
+    // Footer
+    const pageCount = pdf.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+      pdf.setPage(i);
+      pdf.setFont("helvetica", "normal");
+      pdf.setFontSize(8);
+      pdf.setTextColor(...COL_MUTED);
+      pdf.text("Overoption · Oferta confidencial", margin, pageH - 18);
+      pdf.text(`Página ${i} de ${pageCount}`, pageW - margin, pageH - 18, { align: "right" });
     }
 
     const fileName = `Oferta Overoption.pdf`;

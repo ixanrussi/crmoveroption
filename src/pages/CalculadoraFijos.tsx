@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import overoptionLogo from "@/assets/overoption-logo.png";
 
 type Plan = {
   id: string;

@@ -88,6 +88,58 @@ export default function TrackerReport() {
   const [showDebug, setShowDebug] = useState(false);
   const pageSize = 25;
 
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [savingTracker, setSavingTracker] = useState<string | null>(null);
+
+  const loadAffiliates = async () => {
+    const { data, error } = await supabase
+      .from("affiliates")
+      .select("id, fixed_name, aliases")
+      .order("fixed_name", { ascending: true });
+    if (error) {
+      console.error("Error loading affiliates", error);
+      return;
+    }
+    setAffiliates((data ?? []) as Affiliate[]);
+  };
+
+  useEffect(() => { loadAffiliates(); }, []);
+
+  const trackerToAffiliateId = useMemo(() => {
+    const m = new Map<string, string>();
+    affiliates.forEach(a => (a.aliases ?? []).forEach(al => m.set(al, a.id)));
+    return m;
+  }, [affiliates]);
+
+  const linkTrackerToAffiliate = async (trackerVal: string, affiliateId: string) => {
+    if (!trackerVal) return;
+    setSavingTracker(trackerVal);
+    try {
+      // Remove tracker from any affiliate that currently has it (except target)
+      const owners = affiliates.filter(a => (a.aliases ?? []).includes(trackerVal) && a.id !== affiliateId);
+      for (const a of owners) {
+        const newAliases = (a.aliases ?? []).filter(x => x !== trackerVal);
+        const { error } = await supabase.from("affiliates").update({ aliases: newAliases }).eq("id", a.id);
+        if (error) throw error;
+      }
+
+      if (affiliateId !== NONE_AFF) {
+        const target = affiliates.find(a => a.id === affiliateId);
+        if (target && !(target.aliases ?? []).includes(trackerVal)) {
+          const newAliases = [...(target.aliases ?? []), trackerVal];
+          const { error } = await supabase.from("affiliates").update({ aliases: newAliases }).eq("id", affiliateId);
+          if (error) throw error;
+        }
+      }
+      toast.success("Vínculo guardado");
+      await loadAffiliates();
+    } catch (e: any) {
+      toast.error(e?.message || "No se pudo guardar el vínculo");
+    } finally {
+      setSavingTracker(null);
+    }
+  };
+
   const fetchData = async (range?: { from?: string; to?: string }) => {
     setLoading(true);
     setError(null);

@@ -432,50 +432,82 @@ export default function TrackerReport() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {pageRows.map((r, i) => (
-                      <TableRow key={i}>
-                        {cols.map(c => {
-                          const v = r[c.k];
-                          let display: string;
-                          if (c.k === "date") display = fmtDate(String(v ?? ""));
-                          else if (c.numeric) display = fmtNum(v as number);
-                          else display = String(v ?? "");
-                          const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
-                          return (
-                            <Fragment key={c.k}>
-                              <TableCell className={c.numeric ? "text-right tabular-nums" : ""}>
-                                {display}
-                              </TableCell>
-                              {c.k === "tracker" && (
-                                <TableCell className="min-w-[220px]">
-                                  <Select
-                                    value={currentAffId}
-                                    onValueChange={(val) => linkTrackerToAffiliate(r.tracker, val)}
-                                    disabled={savingTracker === r.tracker || !r.tracker}
-                                  >
-                                    <SelectTrigger className="h-8 text-xs">
-                                      <SelectValue placeholder="Sin asignar" />
-                                    </SelectTrigger>
-                                    <SelectContent className="max-h-72">
-                                      <SelectItem value={NONE_AFF}>— Sin asignar —</SelectItem>
-                                      {affiliates.map(a => (
-                                        <SelectItem key={a.id} value={a.id}>{a.fixed_name}</SelectItem>
-                                      ))}
-                                    </SelectContent>
-                                  </Select>
-                                </TableCell>
-                              )}
-                            </Fragment>
-                          );
-                        })}
-                      </TableRow>
-                    ))}
+                    {pageGroups.map((g, gi) => {
+                      const totalCols = cols.length + 1; // +1 por columna Afiliado
+                      const sumK = (k: keyof Row) => g.rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
+                      const gVisits = sumK("visits");
+                      const gSignups = sumK("signups");
+                      const gFtd = sumK("firstTimeDeposits");
+                      const gNet = sumK("netRevenue");
+                      const gEarn = sumK("earning");
+                      return (
+                        <Fragment key={`g-${g.trackerId}-${gi}`}>
+                          <TableRow className="bg-muted/60 hover:bg-muted/60">
+                            <TableCell colSpan={totalCols} className="font-medium text-xs">
+                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                <span className="text-muted-foreground">Tracker ID:</span>
+                                <span className="font-semibold">{g.trackerId || "—"}</span>
+                                <span className="text-muted-foreground">·</span>
+                                <span>{g.tracker || "—"}</span>
+                                <span className="text-muted-foreground">·</span>
+                                <span>{g.rows.length} filas</span>
+                                <span className="ml-auto flex flex-wrap gap-x-4 tabular-nums">
+                                  <span>Visits: <b>{fmtNum(gVisits)}</b></span>
+                                  <span>Signups: <b>{fmtNum(gSignups)}</b></span>
+                                  <span>FTD: <b>{fmtNum(gFtd)}</b></span>
+                                  <span>Net Rev: <b>{fmtNum(gNet)}</b></span>
+                                  <span>Earnings: <b>{fmtNum(gEarn)}</b></span>
+                                </span>
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                          {g.rows.map((r, i) => (
+                            <TableRow key={`${g.trackerId}-${i}`}>
+                              {cols.map(c => {
+                                const v = r[c.k];
+                                let display: string;
+                                if (c.k === "date") display = fmtDate(String(v ?? ""));
+                                else if (c.numeric) display = fmtNum(v as number);
+                                else display = String(v ?? "");
+                                const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
+                                return (
+                                  <Fragment key={c.k}>
+                                    <TableCell className={c.numeric ? "text-right tabular-nums" : ""}>
+                                      {display}
+                                    </TableCell>
+                                    {c.k === "tracker" && (
+                                      <TableCell className="min-w-[220px]">
+                                        <Select
+                                          value={currentAffId}
+                                          onValueChange={(val) => linkTrackerToAffiliate(r.tracker, val)}
+                                          disabled={savingTracker === r.tracker || !r.tracker}
+                                        >
+                                          <SelectTrigger className="h-8 text-xs">
+                                            <SelectValue placeholder="Sin asignar" />
+                                          </SelectTrigger>
+                                          <SelectContent className="max-h-72">
+                                            <SelectItem value={NONE_AFF}>— Sin asignar —</SelectItem>
+                                            {affiliates.map(a => (
+                                              <SelectItem key={a.id} value={a.id}>{a.fixed_name}</SelectItem>
+                                            ))}
+                                          </SelectContent>
+                                        </Select>
+                                      </TableCell>
+                                    )}
+                                  </Fragment>
+                                );
+                              })}
+                            </TableRow>
+                          ))}
+                        </Fragment>
+                      );
+                    })}
                   </TableBody>
                 </table>
               </div>
               <div className="flex items-center justify-between mt-4 text-sm">
                 <div className="text-muted-foreground">
-                  {sorted.length} filas · página {page} / {totalPages}
+                  {groups.length} trackers · {sorted.length} filas · página {page} / {totalPages}
                 </div>
                 <div className="flex gap-2">
                   <Button size="sm" variant="outline" disabled={page <= 1} onClick={() => setPage(p => p - 1)}>Anterior</Button>

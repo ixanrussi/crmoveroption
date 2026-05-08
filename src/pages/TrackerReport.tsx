@@ -393,15 +393,17 @@ export default function TrackerReport() {
             <>
               <div className="overflow-auto max-h-[70vh] relative rounded-md border">
                 <Table>
-                  <TableHeader className="sticky top-0 z-20 bg-background shadow-sm">
+                  <TableHeader>
                     <TableRow className="hover:bg-background">
                       {cols.map(c => (
                         <Fragment key={c.k}>
-                          <TableHead className={`bg-background ${c.numeric ? "text-right" : ""}`}>
+                          <TableHead className={`sticky top-0 z-20 bg-background shadow-[inset_0_-1px_0_hsl(var(--border))] whitespace-nowrap ${c.numeric ? "text-right" : ""}`}>
                             <SortBtn k={c.k} label={c.label} />
                           </TableHead>
                           {c.k === "tracker" && (
-                            <TableHead className="min-w-[220px] bg-background">Afiliado</TableHead>
+                            <TableHead className="sticky top-0 z-20 bg-background shadow-[inset_0_-1px_0_hsl(var(--border))] whitespace-nowrap min-w-[220px]">
+                              Afiliado
+                            </TableHead>
                           )}
                         </Fragment>
                       ))}

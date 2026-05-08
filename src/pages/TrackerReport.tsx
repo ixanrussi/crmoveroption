@@ -439,13 +439,7 @@ export default function TrackerReport() {
                   </TableHeader>
                   <TableBody>
                     {pageGroups.map((g, gi) => {
-                      const totalCols = cols.length + 1; // +1 por columna Afiliado
                       const sumK = (k: keyof Row) => g.rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
-                      const gVisits = sumK("visits");
-                      const gSignups = sumK("signups");
-                      const gFtd = sumK("firstTimeDeposits");
-                      const gNet = sumK("netRevenue");
-                      const gEarn = sumK("earning");
                       const isOpen = expandedGroups.has(g.trackerId);
                       return (
                         <Fragment key={`g-${g.trackerId}-${gi}`}>
@@ -453,26 +447,37 @@ export default function TrackerReport() {
                             className="bg-muted/60 hover:bg-muted cursor-pointer"
                             onClick={() => toggleGroup(g.trackerId)}
                           >
-                            <TableCell colSpan={totalCols} className="font-medium text-xs">
-                              <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                {isOpen
-                                  ? <ChevronDown className="h-4 w-4 shrink-0" />
-                                  : <ChevronRight className="h-4 w-4 shrink-0" />}
-                                <span className="text-muted-foreground">Tracker ID:</span>
-                                <span className="font-semibold">{g.trackerId || "—"}</span>
-                                <span className="text-muted-foreground">·</span>
-                                <span>{g.tracker || "—"}</span>
-                                <span className="text-muted-foreground">·</span>
-                                <span>{g.rows.length} filas</span>
-                                <span className="ml-auto flex flex-wrap gap-x-4 tabular-nums">
-                                  <span>Visits: <b>{fmtNum(gVisits)}</b></span>
-                                  <span>Signups: <b>{fmtNum(gSignups)}</b></span>
-                                  <span>FTD: <b>{fmtNum(gFtd)}</b></span>
-                                  <span>Net Rev: <b>{fmtNum(gNet)}</b></span>
-                                  <span>Earnings: <b>{fmtNum(gEarn)}</b></span>
-                                </span>
-                              </div>
-                            </TableCell>
+                            {cols.map((c, ci) => {
+                              const isFirst = ci === 0;
+                              let content: React.ReactNode = null;
+                              if (isFirst) {
+                                content = (
+                                  <div className="flex items-center gap-2 font-medium text-xs whitespace-nowrap">
+                                    {isOpen
+                                      ? <ChevronDown className="h-4 w-4 shrink-0" />
+                                      : <ChevronRight className="h-4 w-4 shrink-0" />}
+                                    <span className="text-muted-foreground">Tracker ID:</span>
+                                    <span className="font-semibold">{g.trackerId || "—"}</span>
+                                    <span className="text-muted-foreground">·</span>
+                                    <span>{g.rows.length} filas</span>
+                                  </div>
+                                );
+                              } else if (c.k === "tracker") {
+                                content = <span className="text-xs font-medium">{g.tracker || "—"}</span>;
+                              } else if (c.numeric) {
+                                content = <span className="text-xs font-semibold tabular-nums">{fmtNum(sumK(c.k))}</span>;
+                              }
+                              return (
+                                <Fragment key={c.k}>
+                                  <TableCell className={`py-2 ${c.numeric ? "text-right" : ""}`}>
+                                    {content}
+                                  </TableCell>
+                                  {c.k === "tracker" && (
+                                    <TableCell className="py-2 min-w-[220px]" />
+                                  )}
+                                </Fragment>
+                              );
+                            })}
                           </TableRow>
                           {isOpen && g.rows.map((r, i) => (
                             <TableRow key={`${g.trackerId}-${i}`}>

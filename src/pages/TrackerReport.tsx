@@ -12,9 +12,8 @@ import {
 } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, ArrowUpDown, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
-const API_URL = "https://public-api.routy.app/accounts/stats/trackers/pivot";
-const ROUTY_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwOTM4NTM3MTMsImlhdCI6MTc3ODIzNDUxMywibmFtZWlkIjoiQUstNjFkMDA3MWQ0MDk0NDUzNiIsInVuaXF1ZV9uYW1lIjoiQ1JNIFRlc3QiLCJBZmZpbGlhdGVJZCI6IjEwNDkwIiwic2NvcGUiOlsiYWRtaW4iLCJzZXJ2aWNlIl0sIm5iZiI6MTc3ODIzNDUxMywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIn0._usq_2EH1TQbIvQT11FZPWQUpMJNeJ7vgEYUjGhCuLU";
 const ALL = "__all__";
 
 type Row = {
@@ -89,17 +88,11 @@ export default function TrackerReport() {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(API_URL, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${ROUTY_TOKEN}`,
-        },
-        body: JSON.stringify({}),
+      const { data, error: fnError } = await supabase.functions.invoke<ApiResponse>("routy-proxy", {
+        body: {},
       });
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json: ApiResponse = await res.json();
-      setRaw(json);
+      if (fnError) throw fnError;
+      setRaw(data ?? null);
     } catch (e: any) {
       setError(e?.message || "Error al obtener los datos");
       setRaw(null);

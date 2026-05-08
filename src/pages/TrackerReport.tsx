@@ -13,6 +13,10 @@ import {
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { ChevronDown, ChevronUp, ArrowUpDown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+
+type Affiliate = { id: string; fixed_name: string; aliases: string[] };
+const NONE_AFF = "__none__";
 
 const ALL = "__all__";
 

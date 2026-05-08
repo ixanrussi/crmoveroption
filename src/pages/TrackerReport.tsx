@@ -418,12 +418,12 @@ export default function TrackerReport() {
                           else display = String(v ?? "");
                           const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
                           return (
-                            <>
-                              <TableCell key={c.k} className={c.numeric ? "text-right tabular-nums" : ""}>
+                            <Fragment key={c.k}>
+                              <TableCell className={c.numeric ? "text-right tabular-nums" : ""}>
                                 {display}
                               </TableCell>
                               {c.k === "tracker" && (
-                                <TableCell key="__aff" className="min-w-[220px]">
+                                <TableCell className="min-w-[220px]">
                                   <Select
                                     value={currentAffId}
                                     onValueChange={(val) => linkTrackerToAffiliate(r.tracker, val)}
@@ -441,7 +441,7 @@ export default function TrackerReport() {
                                   </Select>
                                 </TableCell>
                               )}
-                            </>
+                            </Fragment>
                           );
                         })}
                       </TableRow>

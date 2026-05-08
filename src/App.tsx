@@ -42,6 +42,7 @@ const App = () => (
               <Route path="/cierres" element={<Cierres />} />
               <Route path="/comisiones-dashboard" element={<ComisionesDashboard />} />
               <Route path="/calculadora-fijos" element={<CalculadoraFijos />} />
+              <Route path="/tracker-report" element={<TrackerReport />} />
               <Route path="/conocimiento" element={<ConocimientoDashboard />} />
               <Route path="/conocimiento/operador" element={<Conocimiento />} />
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />

@@ -1,4 +1,4 @@
-const ROUTY_TOKEN = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjIwOTM4NTM3MTMsImlhdCI6MTc3ODIzNDUxMywibmFtZWlkIjoiQUstNjFkMDA3MWQ0MDk0NDUzNiIsInVuaXF1ZV9uYW1lIjoiQ1JNIFRlc3QiLCJBZmZpbGlhdGVJZCI6IjEwNDkwIiwic2NvcGUiOlsiYWRtaW4iLCJzZXJ2aWNlIl0sIm5iZiI6MTc3ODIzNDUxMywiaXNzIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIiwiYXVkIjoiaHR0cHM6Ly9sb2NhbGhvc3Q6NDQzMjQvIn0._usq_2EH1TQbIvQT11FZPWQUpMJNeJ7vgEYUjGhCuLU";
+const ROUTY_TOKEN = Deno.env.get("ROUTY_TOKEN") ?? "";
 const ROUTY_BASE_URL = "https://public-api.routy.app";
 
 const corsHeaders = {

@@ -84,12 +84,17 @@ export default function TrackerReport() {
   const [showDebug, setShowDebug] = useState(false);
   const pageSize = 25;
 
-  const fetchData = async () => {
+  const fetchData = async (range?: { from?: string; to?: string }) => {
     setLoading(true);
     setError(null);
     try {
+      const body: Record<string, unknown> = {};
+      const f = range?.from ?? dateFrom;
+      const t = range?.to ?? dateTo;
+      if (f) body.from = `${f}T00:00:00`;
+      if (t) body.to = `${t}T23:59:59`;
       const { data, error: fnError } = await supabase.functions.invoke<ApiResponse>("routy-proxy", {
-        body: {},
+        body,
       });
       if (fnError) throw fnError;
       setRaw(data ?? null);
@@ -164,7 +169,10 @@ export default function TrackerReport() {
     };
   }, [filtered]);
 
-  const apply = () => setAppliedFilters({ dateFrom, dateTo, tracker, account, brand, country, onlyActivity });
+  const apply = () => {
+    setAppliedFilters({ dateFrom, dateTo, tracker, account, brand, country, onlyActivity });
+    fetchData({ from: dateFrom, to: dateTo });
+  };
   const reset = () => {
     setDateFrom(""); setDateTo(""); setTracker(ALL); setAccount(ALL);
     setBrand(ALL); setCountry(ALL); setOnlyActivity(false); setSearch("");
@@ -209,7 +217,7 @@ export default function TrackerReport() {
           <h1 className="text-2xl font-semibold">Tracker Report</h1>
           <p className="text-sm text-muted-foreground">Reporte de trackers desde Routy</p>
         </div>
-        <Button variant="outline" size="sm" onClick={fetchData} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => fetchData()} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recargar"}
         </Button>
       </div>
@@ -319,7 +327,7 @@ export default function TrackerReport() {
             <div className="py-12 text-center text-destructive">
               <div className="font-medium">Error</div>
               <div className="text-sm mt-1">{error}</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={fetchData}>Reintentar</Button>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData()}>Reintentar</Button>
             </div>
           )}
           {!loading && !error && sorted.length === 0 && (

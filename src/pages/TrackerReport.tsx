@@ -396,14 +396,14 @@ export default function TrackerReport() {
                   <TableHeader>
                     <TableRow>
                       {cols.map(c => (
-                        <>
-                          <TableHead key={c.k} className={c.numeric ? "text-right" : ""}>
+                        <Fragment key={c.k}>
+                          <TableHead className={c.numeric ? "text-right" : ""}>
                             <SortBtn k={c.k} label={c.label} />
                           </TableHead>
                           {c.k === "tracker" && (
-                            <TableHead key="__aff" className="min-w-[220px]">Afiliado</TableHead>
+                            <TableHead className="min-w-[220px]">Afiliado</TableHead>
                           )}
-                        </>
+                        </Fragment>
                       ))}
                     </TableRow>
                   </TableHeader>

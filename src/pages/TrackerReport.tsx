@@ -90,6 +90,12 @@ export default function TrackerReport() {
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [savingTracker, setSavingTracker] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (id: string) => setExpandedGroups(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   const loadAffiliates = async () => {
     const { data, error } = await supabase

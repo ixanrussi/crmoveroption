@@ -506,27 +506,27 @@ export default function CalculadoraFijos() {
         -moz-appearance: textfield;
       }
       `}</style>
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <Calculator className="h-6 w-6" /> Calculadora de Fijos
+      <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="text-xl md:text-2xl font-bold flex items-center gap-2">
+            <Calculator className="h-5 w-5 md:h-6 md:w-6 shrink-0" /> Calculadora de Fijos
           </h1>
           <p className="text-muted-foreground text-sm">
             Simula el valor fijo a ofrecer a un afiliado en base a CPAs comprometidos por uno o varios operadores.
           </p>
         </div>
-        <div className="flex gap-2 no-print flex-wrap justify-end">
-          <Button onClick={() => { setHistoryOpen(true); loadHistory(); }} variant="outline">
+        <div className="grid grid-cols-2 md:flex md:flex-wrap gap-2 no-print md:justify-end">
+          <Button size="sm" onClick={() => { setHistoryOpen(true); loadHistory(); }} variant="outline">
             <History className="h-4 w-4 mr-2" /> Historial
           </Button>
-          <Button onClick={handleOpenSave} variant="secondary" disabled={!hasAny}>
+          <Button size="sm" onClick={handleOpenSave} variant="secondary" disabled={!hasAny}>
             <Save className="h-4 w-4 mr-2" /> Guardar
           </Button>
-          <Button onClick={handleShare} variant="default" disabled={!hasAny}>
+          <Button size="sm" onClick={handleShare} variant="default" disabled={!hasAny}>
             <Share2 className="h-4 w-4 mr-2" /> Compartir
           </Button>
-          <Button onClick={handlePrint} variant="outline" disabled={!hasAny}>
-            <Printer className="h-4 w-4 mr-2" /> Imprimir / Exportar PDF
+          <Button size="sm" onClick={handlePrint} variant="outline" disabled={!hasAny} className="col-span-2 md:col-span-1">
+            <Printer className="h-4 w-4 mr-2" /> <span className="md:inline">Imprimir / Exportar PDF</span>
           </Button>
         </div>
       </div>

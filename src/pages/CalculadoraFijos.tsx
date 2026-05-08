@@ -13,6 +13,7 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
+import overoptionLogo from "@/assets/overoption-logo.png";
 
 type Plan = {
   id: string;
@@ -96,20 +97,37 @@ export default function CalculadoraFijos() {
     const pageW = pdf.internal.pageSize.getWidth();
     const pageH = pdf.internal.pageSize.getHeight();
     const margin = 24;
+
+    // Logo en la parte superior
+    const logoH = 40;
+    const logoImg = new Image();
+    logoImg.src = overoptionLogo;
+    await new Promise((res) => { logoImg.onload = res; logoImg.onerror = res; });
+    const logoRatio = logoImg.width && logoImg.height ? logoImg.width / logoImg.height : 4;
+    const logoW = logoH * logoRatio;
+    pdf.addImage(overoptionLogo, "PNG", margin, margin, logoW, logoH);
+
+    const contentTop = margin + logoH + 12;
     const imgW = pageW - margin * 2;
     const imgH = (canvas.height * imgW) / canvas.width;
-    let heightLeft = imgH;
-    let position = margin;
-    pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
-    heightLeft -= pageH - margin * 2;
-    while (heightLeft > 0) {
-      position = margin - (imgH - heightLeft);
-      pdf.addPage();
-      pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
-      heightLeft -= pageH - margin * 2;
+
+    const firstPageAvail = pageH - contentTop - margin;
+    const otherPageAvail = pageH - margin * 2;
+
+    if (imgH <= firstPageAvail + 0.5) {
+      pdf.addImage(imgData, "PNG", margin, contentTop, imgW, imgH);
+    } else {
+      pdf.addImage(imgData, "PNG", margin, contentTop, imgW, imgH);
+      let consumed = firstPageAvail;
+      while (imgH - consumed > 0.5) {
+        pdf.addPage();
+        const position = margin - consumed;
+        pdf.addImage(imgData, "PNG", margin, position, imgW, imgH);
+        consumed += otherPageAvail;
+      }
     }
-    const safe = (prospectName || "afiliado").replace(/[^a-z0-9-_]+/gi, "_");
-    const fileName = `oferta-fijo-${safe}.pdf`;
+
+    const fileName = `Oferta Overoption.pdf`;
     return { blob: pdf.output("blob"), fileName };
   };
 

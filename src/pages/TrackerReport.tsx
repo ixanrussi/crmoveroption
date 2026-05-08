@@ -344,22 +344,30 @@ export default function TrackerReport() {
       </Card>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        {[
-          { l: "Visits", v: kpis.visits },
-          { l: "Signups", v: kpis.signups },
-          { l: "First Time Deposits", v: kpis.ftd },
-          { l: "Deposit Amount", v: kpis.depositAmount },
-          { l: "Net Revenue", v: kpis.netRevenue },
-          { l: "Earnings", v: kpis.earning },
-        ].map(k => (
-          <Card key={k.l}>
-            <CardContent className="p-4">
-              <div className="text-xs text-muted-foreground">{k.l}</div>
-              <div className="text-xl font-semibold mt-1">{fmtNum(k.v)}</div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-3">
+        {(() => {
+          const visitsToSignups = kpis.visits > 0 ? (kpis.signups / kpis.visits) * 100 : 0;
+          const signupsToFtd = kpis.signups > 0 ? (kpis.ftd / kpis.signups) * 100 : 0;
+          const fmtPct = (n: number) => `${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+          const items: { l: string; v: string }[] = [
+            { l: "Visits", v: fmtNum(kpis.visits) },
+            { l: "Signups", v: fmtNum(kpis.signups) },
+            { l: "First Time Deposits", v: fmtNum(kpis.ftd) },
+            { l: "Visits → Signups", v: fmtPct(visitsToSignups) },
+            { l: "Signups → FTD", v: fmtPct(signupsToFtd) },
+            { l: "Deposit Amount", v: fmtNum(kpis.depositAmount) },
+            { l: "Net Revenue", v: fmtNum(kpis.netRevenue) },
+            { l: "Earnings", v: fmtNum(kpis.earning) },
+          ];
+          return items.map(k => (
+            <Card key={k.l}>
+              <CardContent className="p-4">
+                <div className="text-xs text-muted-foreground">{k.l}</div>
+                <div className="text-xl font-semibold mt-1">{k.v}</div>
+              </CardContent>
+            </Card>
+          ));
+        })()}
       </div>
 
       {/* Table */}

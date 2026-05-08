@@ -169,7 +169,10 @@ export default function TrackerReport() {
     };
   }, [filtered]);
 
-  const apply = () => setAppliedFilters({ dateFrom, dateTo, tracker, account, brand, country, onlyActivity });
+  const apply = () => {
+    setAppliedFilters({ dateFrom, dateTo, tracker, account, brand, country, onlyActivity });
+    fetchData({ from: dateFrom, to: dateTo });
+  };
   const reset = () => {
     setDateFrom(""); setDateTo(""); setTracker(ALL); setAccount(ALL);
     setBrand(ALL); setCountry(ALL); setOnlyActivity(false); setSearch("");

@@ -84,12 +84,17 @@ export default function TrackerReport() {
   const [showDebug, setShowDebug] = useState(false);
   const pageSize = 25;
 
-  const fetchData = async () => {
+  const fetchData = async (range?: { from?: string; to?: string }) => {
     setLoading(true);
     setError(null);
     try {
+      const body: Record<string, unknown> = {};
+      const f = range?.from ?? dateFrom;
+      const t = range?.to ?? dateTo;
+      if (f) body.from = `${f}T00:00:00`;
+      if (t) body.to = `${t}T23:59:59`;
       const { data, error: fnError } = await supabase.functions.invoke<ApiResponse>("routy-proxy", {
-        body: {},
+        body,
       });
       if (fnError) throw fnError;
       setRaw(data ?? null);

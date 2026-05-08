@@ -86,7 +86,21 @@ export default function CalculadoraFijos() {
   const [prospectName, setProspectName] = useState<string>("");
   const [proposalPct, setProposalPct] = useState<number>(0); // 0 = recomendado, 100 = máximo
 
-  const handlePrint = () => window.print();
+  const handlePrint = async () => {
+    const result = await buildPdf();
+    if (!result) return;
+    const url = URL.createObjectURL(result.blob);
+    const w = window.open(url, "_blank");
+    if (w) {
+      w.addEventListener("load", () => {
+        try { w.focus(); w.print(); } catch { /* noop */ }
+      });
+    } else {
+      const a = document.createElement("a");
+      a.href = url; a.download = result.fileName; a.click();
+    }
+    setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  };
 
   const loadLogoDataUrl = async (): Promise<{ dataUrl: string; w: number; h: number } | null> => {
     try {

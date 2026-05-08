@@ -11,7 +11,7 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, ArrowUpDown, Loader2 } from "lucide-react";
+import { ChevronDown, ChevronUp, ChevronRight, ArrowUpDown, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 
@@ -90,6 +90,12 @@ export default function TrackerReport() {
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [savingTracker, setSavingTracker] = useState<string | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
+  const toggleGroup = (id: string) => setExpandedGroups(prev => {
+    const next = new Set(prev);
+    if (next.has(id)) next.delete(id); else next.add(id);
+    return next;
+  });
 
   const loadAffiliates = async () => {
     const { data, error } = await supabase
@@ -440,11 +446,18 @@ export default function TrackerReport() {
                       const gFtd = sumK("firstTimeDeposits");
                       const gNet = sumK("netRevenue");
                       const gEarn = sumK("earning");
+                      const isOpen = expandedGroups.has(g.trackerId);
                       return (
                         <Fragment key={`g-${g.trackerId}-${gi}`}>
-                          <TableRow className="bg-muted/60 hover:bg-muted/60">
+                          <TableRow
+                            className="bg-muted/60 hover:bg-muted cursor-pointer"
+                            onClick={() => toggleGroup(g.trackerId)}
+                          >
                             <TableCell colSpan={totalCols} className="font-medium text-xs">
                               <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                {isOpen
+                                  ? <ChevronDown className="h-4 w-4 shrink-0" />
+                                  : <ChevronRight className="h-4 w-4 shrink-0" />}
                                 <span className="text-muted-foreground">Tracker ID:</span>
                                 <span className="font-semibold">{g.trackerId || "—"}</span>
                                 <span className="text-muted-foreground">·</span>
@@ -461,7 +474,7 @@ export default function TrackerReport() {
                               </div>
                             </TableCell>
                           </TableRow>
-                          {g.rows.map((r, i) => (
+                          {isOpen && g.rows.map((r, i) => (
                             <TableRow key={`${g.trackerId}-${i}`}>
                               {cols.map(c => {
                                 const v = r[c.k];

@@ -190,9 +190,14 @@ export default function TrackerReport() {
   }, [allRows, appliedFilters, search]);
 
   const sorted = useMemo(() => {
-    if (!sortKey) return filtered;
     const arr = [...filtered];
     arr.sort((a, b) => {
+      // Primary: group by trackerId
+      const ta = String(a.trackerId ?? "");
+      const tb = String(b.trackerId ?? "");
+      if (ta !== tb) return ta.localeCompare(tb);
+      // Secondary: user sort
+      if (!sortKey) return 0;
       const av = a[sortKey] as any;
       const bv = b[sortKey] as any;
       if (av == null && bv == null) return 0;
@@ -208,8 +213,18 @@ export default function TrackerReport() {
     return arr;
   }, [filtered, sortKey, sortDir]);
 
-  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
-  const pageRows = sorted.slice((page - 1) * pageSize, page * pageSize);
+  const groups = useMemo(() => {
+    const map = new Map<string, { trackerId: string; tracker: string; rows: Row[] }>();
+    sorted.forEach(r => {
+      const key = String(r.trackerId ?? "");
+      if (!map.has(key)) map.set(key, { trackerId: key, tracker: r.tracker, rows: [] });
+      map.get(key)!.rows.push(r);
+    });
+    return Array.from(map.values());
+  }, [sorted]);
+
+  const totalPages = Math.max(1, Math.ceil(groups.length / pageSize));
+  const pageGroups = groups.slice((page - 1) * pageSize, page * pageSize);
 
   useEffect(() => { setPage(1); }, [appliedFilters, search, sortKey, sortDir]);
 

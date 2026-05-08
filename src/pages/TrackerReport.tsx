@@ -344,26 +344,25 @@ export default function TrackerReport() {
       </Card>
 
       {/* KPIs */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-8 gap-3">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
         {(() => {
           const visitsToSignups = kpis.visits > 0 ? (kpis.signups / kpis.visits) * 100 : 0;
           const signupsToFtd = kpis.signups > 0 ? (kpis.ftd / kpis.signups) * 100 : 0;
           const fmtPct = (n: number) => `${n.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
-          const items: { l: string; v: string }[] = [
-            { l: "Visits", v: fmtNum(kpis.visits) },
-            { l: "Signups", v: fmtNum(kpis.signups) },
-            { l: "First Time Deposits", v: fmtNum(kpis.ftd) },
-            { l: "Visits → Signups", v: fmtPct(visitsToSignups) },
-            { l: "Signups → FTD", v: fmtPct(signupsToFtd) },
-            { l: "Deposit Amount", v: fmtNum(kpis.depositAmount) },
-            { l: "Net Revenue", v: fmtNum(kpis.netRevenue) },
-            { l: "Earnings", v: fmtNum(kpis.earning) },
+          const items: { l: string; v: number; sub?: string }[] = [
+            { l: "Visits", v: kpis.visits },
+            { l: "Signups", v: kpis.signups, sub: `${fmtPct(visitsToSignups)} de Visits` },
+            { l: "First Time Deposits", v: kpis.ftd, sub: `${fmtPct(signupsToFtd)} de Signups` },
+            { l: "Deposit Amount", v: kpis.depositAmount },
+            { l: "Net Revenue", v: kpis.netRevenue },
+            { l: "Earnings", v: kpis.earning },
           ];
           return items.map(k => (
             <Card key={k.l}>
               <CardContent className="p-4">
                 <div className="text-xs text-muted-foreground">{k.l}</div>
-                <div className="text-xl font-semibold mt-1">{k.v}</div>
+                <div className="text-xl font-semibold mt-1">{fmtNum(k.v)}</div>
+                {k.sub && <div className="text-xs text-muted-foreground mt-1">{k.sub}</div>}
               </CardContent>
             </Card>
           ));

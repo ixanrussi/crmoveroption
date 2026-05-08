@@ -19,6 +19,7 @@ import SimpleListPage from "./pages/SimpleListPage";
 import Conocimiento from "./pages/Conocimiento";
 import ConocimientoDashboard from "./pages/ConocimientoDashboard";
 import CalculadoraFijos from "./pages/CalculadoraFijos";
+import TrackerReport from "./pages/TrackerReport";
 import ActivityLogs from "./pages/ActivityLogs";
 import NotFound from "./pages/NotFound";
 

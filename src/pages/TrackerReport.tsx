@@ -146,6 +146,40 @@ export default function TrackerReport() {
     }
   };
 
+  const linkTrackersBulk = async (trackerVals: string[], affiliateId: string) => {
+    const uniqueVals = Array.from(new Set(trackerVals.filter(Boolean)));
+    if (uniqueVals.length === 0) return;
+    setSavingTracker(`__bulk_${uniqueVals[0]}`);
+    try {
+      // Remove these trackers from any affiliate that currently has them (except target)
+      for (const a of affiliates) {
+        if (a.id === affiliateId) continue;
+        const current = a.aliases ?? [];
+        const filtered = current.filter(x => !uniqueVals.includes(x));
+        if (filtered.length !== current.length) {
+          const { error } = await supabase.from("affiliates").update({ aliases: filtered }).eq("id", a.id);
+          if (error) throw error;
+        }
+      }
+      if (affiliateId !== NONE_AFF) {
+        const target = affiliates.find(a => a.id === affiliateId);
+        if (target) {
+          const merged = Array.from(new Set([...(target.aliases ?? []), ...uniqueVals]));
+          if (merged.length !== (target.aliases ?? []).length) {
+            const { error } = await supabase.from("affiliates").update({ aliases: merged }).eq("id", affiliateId);
+            if (error) throw error;
+          }
+        }
+      }
+      toast.success(`Vínculo aplicado a ${uniqueVals.length} tracker(s)`);
+      await loadAffiliates();
+    } catch (e: any) {
+      toast.error(e?.message || "No se pudo aplicar el vínculo en masa");
+    } finally {
+      setSavingTracker(null);
+    }
+  };
+
   const fetchData = async (range?: { from?: string; to?: string }) => {
     setLoading(true);
     setError(null);
@@ -441,18 +475,23 @@ export default function TrackerReport() {
                     {pageGroups.map((g, gi) => {
                       const sumK = (k: keyof Row) => g.rows.reduce((a, r) => a + (Number(r[k]) || 0), 0);
                       const isOpen = expandedGroups.has(g.trackerId);
+                      const groupTrackers = Array.from(new Set(g.rows.map(r => r.tracker).filter(Boolean)));
+                      const affIdsInGroup = new Set(groupTrackers.map(t => trackerToAffiliateId.get(t) ?? NONE_AFF));
+                      const groupAffId = affIdsInGroup.size === 1 ? Array.from(affIdsInGroup)[0] : NONE_AFF;
+                      const groupMixed = affIdsInGroup.size > 1;
+                      const groupSaving = !!savingTracker && (savingTracker === `__bulk_${groupTrackers[0]}` || groupTrackers.includes(savingTracker));
                       return (
                         <Fragment key={`g-${g.trackerId}-${gi}`}>
-                          <TableRow
-                            className="bg-muted/60 hover:bg-muted cursor-pointer"
-                            onClick={() => toggleGroup(g.trackerId)}
-                          >
+                          <TableRow className="bg-muted/60 hover:bg-muted">
                             {cols.map((c, ci) => {
                               const isFirst = ci === 0;
                               let content: React.ReactNode = null;
                               if (isFirst) {
                                 content = (
-                                  <div className="flex items-center gap-2 font-medium text-xs whitespace-nowrap">
+                                  <div
+                                    className="flex items-center gap-2 font-medium text-xs whitespace-nowrap cursor-pointer"
+                                    onClick={() => toggleGroup(g.trackerId)}
+                                  >
                                     {isOpen
                                       ? <ChevronDown className="h-4 w-4 shrink-0" />
                                       : <ChevronRight className="h-4 w-4 shrink-0" />}
@@ -463,9 +502,23 @@ export default function TrackerReport() {
                                   </div>
                                 );
                               } else if (c.k === "tracker") {
-                                content = <span className="text-xs font-medium">{g.tracker || "—"}</span>;
+                                content = (
+                                  <span
+                                    className="text-xs font-medium cursor-pointer"
+                                    onClick={() => toggleGroup(g.trackerId)}
+                                  >
+                                    {g.tracker || "—"}
+                                  </span>
+                                );
                               } else if (c.numeric) {
-                                content = <span className="text-xs font-semibold tabular-nums">{fmtNum(sumK(c.k))}</span>;
+                                content = (
+                                  <span
+                                    className="text-xs font-semibold tabular-nums cursor-pointer block"
+                                    onClick={() => toggleGroup(g.trackerId)}
+                                  >
+                                    {fmtNum(sumK(c.k))}
+                                  </span>
+                                );
                               }
                               return (
                                 <Fragment key={c.k}>
@@ -473,7 +526,23 @@ export default function TrackerReport() {
                                     {content}
                                   </TableCell>
                                   {c.k === "tracker" && (
-                                    <TableCell className="py-2 min-w-[220px]" />
+                                    <TableCell className="py-2 min-w-[220px]" onClick={(e) => e.stopPropagation()}>
+                                      <Select
+                                        value={groupAffId}
+                                        onValueChange={(val) => linkTrackersBulk(groupTrackers, val)}
+                                        disabled={groupSaving || groupTrackers.length === 0}
+                                      >
+                                        <SelectTrigger className="h-8 text-xs">
+                                          <SelectValue placeholder={groupMixed ? "— Mixto —" : "Sin asignar"} />
+                                        </SelectTrigger>
+                                        <SelectContent className="max-h-72">
+                                          <SelectItem value={NONE_AFF}>— Sin asignar —</SelectItem>
+                                          {affiliates.map(a => (
+                                            <SelectItem key={a.id} value={a.id}>{a.fixed_name}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </TableCell>
                                   )}
                                 </Fragment>
                               );

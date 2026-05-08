@@ -390,7 +390,7 @@ export default function TrackerReport() {
             <div className="py-12 text-center text-muted-foreground">No hay datos para los filtros aplicados.</div>
           )}
           {!loading && !error && sorted.length > 0 && (
-            <>
+            <Fragment key={c.k}>
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>

@@ -746,11 +746,11 @@ export default function Clientes() {
                             </div>
                             {pl.proportional_enabled && (
                               <div className="space-y-1 max-w-xs">
-                                <Label className="text-xs">% mínimo a pagar (proporcional)</Label>
+                                <Label className="text-xs">% mínimo a pagar del CPA</Label>
                                 <Input type="number" step="0.01" min="0" max="100" value={pl.proportional_min_pct}
                                   onChange={(e) => updatePlan(i, { proportional_min_pct: e.target.value })}
                                   placeholder="Ej. 50 (= 50% del CPA)" />
-                                <p className="text-xs text-muted-foreground">Piso de pago aunque la entrega sea menor a este %.</p>
+                                <p className="text-xs text-muted-foreground">Piso garantizado: aunque el afiliado entregue menos, cada FTD se paga al menos a este % del CPA definido.</p>
                               </div>
                             )}
                           </div>

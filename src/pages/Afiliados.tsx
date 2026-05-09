@@ -832,7 +832,19 @@ export default function Afiliados() {
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
               <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
-              <TableHead>País</TableHead><TableHead>Comisión</TableHead>
+              <TableHead>País</TableHead><TableHead>
+                <span className="inline-flex items-center gap-1">
+                  % MB
+                  <HoverCard openDelay={100}>
+                    <HoverCardTrigger asChild>
+                      <span className="inline-flex items-center justify-center h-4 w-4 rounded-full border text-[10px] text-muted-foreground cursor-help">?</span>
+                    </HoverCardTrigger>
+                    <HoverCardContent className="w-64 text-xs" align="start">
+                      Impacto del afiliado en el Margen Bruto (MB) de la empresa.
+                    </HoverCardContent>
+                  </HoverCard>
+                </span>
+              </TableHead>
               <TableHead className="min-w-[160px]">Objetivo</TableHead>
               <TableHead>Estado</TableHead>
               {isAdmin && <TableHead className="w-24"></TableHead>}

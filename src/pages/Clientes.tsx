@@ -871,9 +871,21 @@ export default function Clientes() {
                         return (
                           <HoverCard openDelay={100}>
                             <HoverCardTrigger asChild>
-                              <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-help ${colorCls}`}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!isAdmin) return;
+                                  openEdit(r);
+                                  setTimeout(() => {
+                                    const el = document.querySelector('[data-overoption-section]') as HTMLElement | null;
+                                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }, 250);
+                                }}
+                                className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
+                                title={msg}
+                              >
                                 <ShieldCheck className="h-3 w-3" />
-                              </span>
+                              </button>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-auto p-2" align="start">
                               <p className="text-xs font-medium">{msg}</p>

@@ -787,6 +787,7 @@ export default function Clientes() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

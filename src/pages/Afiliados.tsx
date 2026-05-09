@@ -269,6 +269,7 @@ export default function Afiliados() {
         channel_ids: channelIds,
         channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
         commission_plans: plans.map((p) => ({
+          template_id: p.template_id || null,
           plan_start_date: p.plan_start_date || null,
           currency: p.currency || null,
           description: p.description || null,

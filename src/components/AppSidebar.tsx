@@ -12,7 +12,7 @@ const allMainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Operadores", url: "/clientes", icon: Users },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
-  { title: "Planes de Comisión", url: "/planes-comision", icon: Wallet },
+  { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
   { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },
   { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator },

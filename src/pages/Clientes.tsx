@@ -596,13 +596,31 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Baseline</Label>
-                          <Input type="number" step="0.01" value={pl.baseline}
-                            onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                          <div className="flex gap-1">
+                            <Input type="number" step="0.01" value={pl.baseline}
+                              onChange={(e) => updatePlan(i, { baseline: e.target.value })} />
+                            <Select value={pl.baseline_currency || "__none__"} onValueChange={(v) => updatePlan(i, { baseline_currency: v === "__none__" ? "" : v })}>
+                              <SelectTrigger className="w-[90px]"><SelectValue placeholder="—" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">—</SelectItem>
+                                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">CPA</Label>
-                          <Input type="number" step="0.01" value={pl.cpa}
-                            onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                          <div className="flex gap-1">
+                            <Input type="number" step="0.01" value={pl.cpa}
+                              onChange={(e) => updatePlan(i, { cpa: e.target.value })} />
+                            <Select value={pl.cpa_currency || "__none__"} onValueChange={(v) => updatePlan(i, { cpa_currency: v === "__none__" ? "" : v })}>
+                              <SelectTrigger className="w-[90px]"><SelectValue placeholder="—" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">—</SelectItem>
+                                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Rev Share %</Label>
@@ -611,13 +629,31 @@ export default function Clientes() {
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">CPL</Label>
-                          <Input type="number" step="0.01" value={pl.cpl}
-                            onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                          <div className="flex gap-1">
+                            <Input type="number" step="0.01" value={pl.cpl}
+                              onChange={(e) => updatePlan(i, { cpl: e.target.value })} />
+                            <Select value={pl.cpl_currency || "__none__"} onValueChange={(v) => updatePlan(i, { cpl_currency: v === "__none__" ? "" : v })}>
+                              <SelectTrigger className="w-[90px]"><SelectValue placeholder="—" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">—</SelectItem>
+                                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Wager</Label>
-                          <Input type="number" step="0.01" value={pl.wager}
-                            onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                          <div className="flex gap-1">
+                            <Input type="number" step="0.01" value={pl.wager}
+                              onChange={(e) => updatePlan(i, { wager: e.target.value })} />
+                            <Select value={pl.wager_currency || "__none__"} onValueChange={(v) => updatePlan(i, { wager_currency: v === "__none__" ? "" : v })}>
+                              <SelectTrigger className="w-[90px]"><SelectValue placeholder="—" /></SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__none__">—</SelectItem>
+                                {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                              </SelectContent>
+                            </Select>
+                          </div>
                         </div>
                         <div className="space-y-1">
                           <Label className="text-xs">Condición</Label>

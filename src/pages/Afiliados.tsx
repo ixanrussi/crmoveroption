@@ -83,7 +83,7 @@ export default function Afiliados() {
     const { data } = await supabase
       .from("affiliates")
       .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name))")
-      .order("created_at", { ascending: false });
+      .order("fixed_name", { ascending: true });
     setList(data ?? []);
 
     // Compute affiliate share of total billed (commission_total) by Overoption
@@ -788,7 +788,7 @@ export default function Afiliados() {
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {list.filter((r) => {
+              {[...list].sort((a, b) => (a.fixed_name || "").localeCompare(b.fixed_name || "")).filter((r) => {
                 const q = search.trim().toLowerCase();
                 if (!q) return true;
                 if (r.fixed_name?.toLowerCase().includes(q)) return true;

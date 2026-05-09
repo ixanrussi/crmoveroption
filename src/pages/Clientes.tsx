@@ -755,6 +755,7 @@ export default function Clientes() {
                             )}
                           </div>
                         </div>
+                        </div>
                       </div>
                       </CollapsibleContent>
                     </Collapsible>

@@ -404,6 +404,7 @@ export type Database = {
       client_commission_plans: {
         Row: {
           baseline: number | null
+          baseline_currency: string | null
           brand: string | null
           cap: number | null
           client_id: string
@@ -413,7 +414,9 @@ export type Database = {
           cpa: number | null
           cpa_at_80: number | null
           cpa_at_90: number | null
+          cpa_currency: string | null
           cpl: number | null
+          cpl_currency: string | null
           created_at: string
           created_by: string | null
           currency: string | null
@@ -429,9 +432,11 @@ export type Database = {
           rev_share_pct: number | null
           updated_at: string
           wager: number | null
+          wager_currency: string | null
         }
         Insert: {
           baseline?: number | null
+          baseline_currency?: string | null
           brand?: string | null
           cap?: number | null
           client_id: string
@@ -441,7 +446,9 @@ export type Database = {
           cpa?: number | null
           cpa_at_80?: number | null
           cpa_at_90?: number | null
+          cpa_currency?: string | null
           cpl?: number | null
+          cpl_currency?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -457,9 +464,11 @@ export type Database = {
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null
+          wager_currency?: string | null
         }
         Update: {
           baseline?: number | null
+          baseline_currency?: string | null
           brand?: string | null
           cap?: number | null
           client_id?: string
@@ -469,7 +478,9 @@ export type Database = {
           cpa?: number | null
           cpa_at_80?: number | null
           cpa_at_90?: number | null
+          cpa_currency?: string | null
           cpl?: number | null
+          cpl_currency?: string | null
           created_at?: string
           created_by?: string | null
           currency?: string | null
@@ -485,6 +496,7 @@ export type Database = {
           rev_share_pct?: number | null
           updated_at?: string
           wager?: number | null
+          wager_currency?: string | null
         }
         Relationships: [
           {

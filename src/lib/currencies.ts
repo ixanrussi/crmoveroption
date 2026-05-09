@@ -11,8 +11,16 @@ const subs = new Set<(v: string[]) => void>();
 
 async function fetchCurrencies() {
   const { data } = await supabase.from("currencies").select("code").order("code");
-  const codes = (data ?? []).map((r: any) => r.code).filter(Boolean);
-  cache = codes.length ? codes : FALLBACK;
+  let codes = (data ?? []).map((r: any) => r.code).filter(Boolean);
+  if (!codes.length) codes = FALLBACK;
+  // prioritize EUR and USD at the top
+  const priority = ["EUR", "USD"];
+  const prioritySet = new Set(priority);
+  const prioritized = [
+    ...priority.filter((c) => codes.includes(c)),
+    ...codes.filter((c) => !prioritySet.has(c)),
+  ];
+  cache = prioritized;
   subs.forEach((cb) => cb(cache!));
 }
 

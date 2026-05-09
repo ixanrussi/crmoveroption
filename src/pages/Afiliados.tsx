@@ -86,7 +86,7 @@ export default function Afiliados() {
   const load = async () => {
     const { data } = await supabase
       .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), client:clients(company_name), template:commission_plan_templates(name))")
+      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), template:commission_plan_templates(name))")
       .order("fixed_name", { ascending: true });
     setList(data ?? []);
 
@@ -868,7 +868,7 @@ export default function Afiliados() {
                             <ul className="space-y-1">
                               {r.affiliate_commission_plans.map((p: any) => (
                                 <li key={p.id} className="text-xs flex justify-between gap-2">
-                                  <span className="font-medium truncate">{p.client?.company_name || "—"}</span>
+                                  <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"}</span>
                                   <span className="text-muted-foreground truncate">{p.template?.name || p.description || "Sin nombre"}</span>
                                 </li>
                               ))}

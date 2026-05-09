@@ -963,6 +963,7 @@ export default function Afiliados() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

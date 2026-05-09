@@ -680,7 +680,7 @@ export default function Clientes() {
                           <Input type="number" step="1" value={pl.cap}
                             onChange={(e) => updatePlan(i, { cap: e.target.value })} />
                         </div>
-                        <div className="col-span-2 mt-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/30 p-3">
+                        <div data-overoption-section className="col-span-2 mt-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/30 p-3">
                           <p className="text-sm font-semibold text-center mb-3">Configuración margen Overoption</p>
                           <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
@@ -871,9 +871,21 @@ export default function Clientes() {
                         return (
                           <HoverCard openDelay={100}>
                             <HoverCardTrigger asChild>
-                              <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-help ${colorCls}`}>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!isAdmin) return;
+                                  openEdit(r);
+                                  setTimeout(() => {
+                                    const el = document.querySelector('[data-overoption-section]') as HTMLElement | null;
+                                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  }, 250);
+                                }}
+                                className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
+                                title={msg}
+                              >
                                 <ShieldCheck className="h-3 w-3" />
-                              </span>
+                              </button>
                             </HoverCardTrigger>
                             <HoverCardContent className="w-auto p-2" align="start">
                               <p className="text-xs font-medium">{msg}</p>

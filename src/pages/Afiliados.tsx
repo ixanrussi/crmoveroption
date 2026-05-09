@@ -868,7 +868,7 @@ export default function Afiliados() {
                             <ul className="space-y-1">
                               {r.affiliate_commission_plans.map((p: any) => (
                                 <li key={p.id} className="text-xs flex justify-between gap-2">
-                                  <span className="font-medium truncate">{p.client?.company_name || "—"}</span>
+                                  <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"}</span>
                                   <span className="text-muted-foreground truncate">{p.template?.name || p.description || "Sin nombre"}</span>
                                 </li>
                               ))}

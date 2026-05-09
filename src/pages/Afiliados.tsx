@@ -866,9 +866,9 @@ export default function Afiliados() {
                           </HoverCardTrigger>
                           <HoverCardContent className="w-72 p-2" align="start">
                             <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
-                            <ul className="space-y-1">
-                              {r.affiliate_commission_plans.map((p: any) => (
-                                <li key={p.id} className="text-xs flex justify-between gap-2">
+                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                              {r.affiliate_commission_plans.map((p: any, idx: number) => (
+                                <li key={p.id} className={`text-xs flex justify-between gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
                                   <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"}</span>
                                   <span className="text-muted-foreground truncate">{p.template?.name || p.description || "Sin nombre"}</span>
                                 </li>

@@ -43,10 +43,14 @@ type CommissionPlan = {
   country_ids: string[];
   brand: string;
   baseline: string;
+  baseline_currency: string;
   cpa: string;
+  cpa_currency: string;
   rev_share_pct: string;
   cpl: string;
+  cpl_currency: string;
   wager: string;
+  wager_currency: string;
   conversion_type: string;
   cap: string;
   overoption_retention: string;
@@ -60,7 +64,8 @@ type CommissionPlan = {
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
-  baseline: "", cpa: "", rev_share_pct: "", cpl: "", wager: "", conversion_type: "", cap: "",
+  baseline: "", baseline_currency: "", cpa: "", cpa_currency: "", rev_share_pct: "",
+  cpl: "", cpl_currency: "", wager: "", wager_currency: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
   proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "", recommended_margin_pct: "",
 };

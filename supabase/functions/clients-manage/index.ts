@@ -42,10 +42,14 @@ type CommissionPlanPayload = {
   country_ids?: string[] | null;
   brand?: string | null;
   baseline?: number | string | null;
+  baseline_currency?: string | null;
   cpa?: number | string | null;
+  cpa_currency?: string | null;
   rev_share_pct?: number | string | null;
   cpl?: number | string | null;
+  cpl_currency?: string | null;
   wager?: number | string | null;
+  wager_currency?: string | null;
   conversion_type?: string | null;
   cap?: number | string | null;
   overoption_retention?: number | string | null;
@@ -266,10 +270,14 @@ Deno.serve(async (req) => {
             country_ids: cids,
             brand: (p?.brand ?? "").toString().trim() || null,
             baseline: num(p?.baseline),
+            baseline_currency: (p?.baseline_currency ?? "").toString().trim() || null,
             cpa: num(p?.cpa),
+            cpa_currency: (p?.cpa_currency ?? "").toString().trim() || null,
             rev_share_pct: num(p?.rev_share_pct),
             cpl: num(p?.cpl),
+            cpl_currency: (p?.cpl_currency ?? "").toString().trim() || null,
             wager: num(p?.wager),
+            wager_currency: (p?.wager_currency ?? "").toString().trim() || null,
             conversion_type: p?.conversion_type && ALLOWED_CONV.includes(p.conversion_type) ? p.conversion_type : null,
             cap: intOrNull(p?.cap),
             overoption_retention: num(p?.overoption_retention),
@@ -290,7 +298,7 @@ Deno.serve(async (req) => {
       await sql`insert into public.client_commission_plans ${sql(
         values,
         "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "cpa", "rev_share_pct", "cpl", "wager", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct", "fixed_margin_pct", "recommended_margin_pct"
+        "country_id", "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency", "rev_share_pct", "cpl", "cpl_currency", "wager", "wager_currency", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct", "fixed_margin_pct", "recommended_margin_pct"
       )}`;
     }
 

@@ -42,10 +42,14 @@ type CommissionPlanPayload = {
   country_ids?: string[] | null;
   brand?: string | null;
   baseline?: number | string | null;
+  baseline_currency?: string | null;
   cpa?: number | string | null;
+  cpa_currency?: string | null;
   rev_share_pct?: number | string | null;
   cpl?: number | string | null;
+  cpl_currency?: string | null;
   wager?: number | string | null;
+  wager_currency?: string | null;
   conversion_type?: string | null;
   cap?: number | string | null;
   overoption_retention?: number | string | null;

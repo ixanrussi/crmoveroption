@@ -361,13 +361,11 @@ export default function CommissionPlans() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
                 <TableHead>Operador</TableHead>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead className="text-right">CPA</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
-                <TableHead>Moneda</TableHead>
-                <TableHead>Inicio</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
             </TableHeader>

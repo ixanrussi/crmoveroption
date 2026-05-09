@@ -871,8 +871,8 @@ export default function Clientes() {
                           </HoverCard>
                         );
                       })()}
-                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (() => {
-                        const plans = r.client_commission_plans;
+                      {(() => {
+                        const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
                         const isConfigured = (p: any) => {
                           const v = p?.overoption_retention;
                           if (v === null || v === undefined || v === "") return false;

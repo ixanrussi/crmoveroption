@@ -681,7 +681,7 @@ export default function Clientes() {
                             onChange={(e) => updatePlan(i, { cap: e.target.value })} />
                         </div>
                         <div className="col-span-2 mt-2 rounded-md border border-blue-200 bg-blue-50 dark:border-blue-900/50 dark:bg-blue-950/30 p-3">
-                          <p className="text-sm font-semibold text-center mb-3">Configuración margen overoption</p>
+                          <p className="text-sm font-semibold text-center mb-3">Configuración margen Overoption</p>
                           <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
                             <Label className="text-xs">Retención Overoption (valor por CPA)</Label>

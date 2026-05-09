@@ -311,7 +311,14 @@ export default function Clientes() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label>Empresa *</Label>
-                  <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} disabled={!!editing} /></div>
+                  <div className="flex gap-1">
+                    <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} disabled={!!editing && !nameUnlocked} />
+                    {editing && isSuperAdmin && (
+                      <Button type="button" variant="outline" size="icon" title={nameUnlocked ? "Bloquear edición" : "Editar nombre (super admin)"} onClick={() => setNameUnlocked((v) => !v)}>
+                        {nameUnlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </div></div>
                 <div className="space-y-1"><Label>Sitio web</Label>
                   <Input value={form.website ?? ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Login</Label>

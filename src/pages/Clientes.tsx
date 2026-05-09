@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
 
@@ -85,6 +85,7 @@ export default function Clientes() {
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
   const [search, setSearch] = useState("");
+  const [nameUnlocked, setNameUnlocked] = useState(false);
 
 
   const empty = {
@@ -139,10 +140,12 @@ export default function Clientes() {
     setContacts([]);
     setPlans([]);
     setBrandInput("");
+    setNameUnlocked(false);
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
+    setNameUnlocked(false);
     const ids: string[] = Array.isArray(row.country_ids) && row.country_ids.length > 0
       ? row.country_ids
       : (row.country_id ? [row.country_id] : []);
@@ -310,7 +313,14 @@ export default function Clientes() {
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">
                   <Label>Empresa *</Label>
-                  <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} disabled={!!editing} /></div>
+                  <div className="flex gap-1">
+                    <Input value={form.company_name} onChange={(e) => setForm({ ...form, company_name: e.target.value })} disabled={!!editing && !nameUnlocked} />
+                    {editing && isSuperAdmin && (
+                      <Button type="button" variant="outline" size="icon" title={nameUnlocked ? "Bloquear edición" : "Editar nombre (super admin)"} onClick={() => setNameUnlocked((v) => !v)}>
+                        {nameUnlocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                      </Button>
+                    )}
+                  </div></div>
                 <div className="space-y-1"><Label>Sitio web</Label>
                   <Input value={form.website ?? ""} onChange={(e) => setForm({ ...form, website: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Login</Label>

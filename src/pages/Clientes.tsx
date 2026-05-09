@@ -856,21 +856,8 @@ export default function Clientes() {
                               <ShieldCheck className="h-3 w-3" />
                             </span>
                           </HoverCardTrigger>
-                          <HoverCardContent className="w-72 p-2" align="start">
-                            <p className="text-xs font-semibold mb-1.5">Retenciones Overoption</p>
-                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
-                              {r.client_commission_plans
-                                .filter((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0)
-                                .map((p: any, idx: number) => {
-                                  const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Plan";
-                                  return (
-                                    <li key={p.id} className={`text-xs flex justify-between gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
-                                      <span className="font-medium truncate">{label}</span>
-                                      <span className="text-muted-foreground">{Number(p.overoption_retention)}%</span>
-                                    </li>
-                                  );
-                                })}
-                            </ul>
+                          <HoverCardContent className="w-auto p-2" align="start">
+                            <p className="text-xs font-medium">Margen Overoption configurada</p>
                           </HoverCardContent>
                         </HoverCard>
                       )}

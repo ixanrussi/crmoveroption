@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 
 const FALLBACK = [
-  "USD","EUR","GBP","ARS","BOB","BRL","CLP","COP","CRC","CUP","DOP",
+  "EUR","USD","GBP","ARS","BOB","BRL","CLP","COP","CRC","CUP","DOP",
   "GTQ","HNL","HTG","MXN","NIO","PAB","PEN","PYG","SVC","UYU","VES",
 ];
 

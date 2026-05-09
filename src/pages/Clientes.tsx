@@ -14,7 +14,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock, DollarSign, ShieldCheck } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
 
@@ -822,6 +823,53 @@ export default function Clientes() {
                         >
                           <ExternalLink className="h-4 w-4" />
                         </a>
+                      )}
+                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 cursor-help">
+                              <DollarSign className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-72 p-2" align="start">
+                            <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
+                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                              {r.client_commission_plans.map((p: any, idx: number) => {
+                                const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Sin nombre";
+                                return (
+                                  <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                    <span className="font-medium truncate">{label}</span>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
+                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.some((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0) && (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/15 text-blue-600 cursor-help">
+                              <ShieldCheck className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-72 p-2" align="start">
+                            <p className="text-xs font-semibold mb-1.5">Retenciones Overoption</p>
+                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                              {r.client_commission_plans
+                                .filter((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0)
+                                .map((p: any, idx: number) => {
+                                  const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Plan";
+                                  return (
+                                    <li key={p.id} className={`text-xs flex justify-between gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                      <span className="font-medium truncate">{label}</span>
+                                      <span className="text-muted-foreground">{Number(p.overoption_retention)}%</span>
+                                    </li>
+                                  );
+                                })}
+                            </ul>
+                          </HoverCardContent>
+                        </HoverCard>
                       )}
                     </div>
                   </TableCell>

@@ -851,7 +851,13 @@ export default function Clientes() {
                       )}
                       {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (() => {
                         const plans = r.client_commission_plans;
-                        const configured = plans.filter((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0).length;
+                        const isConfigured = (p: any) => {
+                          const v = p?.overoption_retention;
+                          if (v === null || v === undefined || v === "") return false;
+                          const n = Number(v);
+                          return Number.isFinite(n) && n > 0;
+                        };
+                        const configured = plans.filter(isConfigured).length;
                         const total = plans.length;
                         let colorCls = "bg-red-500/15 text-red-600";
                         let msg = "Margen Overoption no configurada";

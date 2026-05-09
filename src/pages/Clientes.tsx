@@ -871,8 +871,8 @@ export default function Clientes() {
                           </HoverCard>
                         );
                       })()}
-                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (() => {
-                        const plans = r.client_commission_plans;
+                      {(() => {
+                        const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
                         const isConfigured = (p: any) => {
                           const v = p?.overoption_retention;
                           if (v === null || v === undefined || v === "") return false;
@@ -882,13 +882,17 @@ export default function Clientes() {
                         const configured = plans.filter(isConfigured).length;
                         const total = plans.length;
                         let colorCls = "bg-red-500/15 text-red-600";
-                        let msg = "Margen Overoption no configurada";
-                        if (configured === total) {
-                          colorCls = "bg-blue-500/15 text-blue-600";
-                          msg = "Margen Overoption configurada";
-                        } else if (configured > 0) {
-                          colorCls = "bg-orange-500/15 text-orange-600";
-                          msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
+                        let msg = "Sin Commission Plan configurado";
+                        if (total > 0) {
+                          if (configured === total) {
+                            colorCls = "bg-blue-500/15 text-blue-600";
+                            msg = "Margen Overoption configurada";
+                          } else if (configured > 0) {
+                            colorCls = "bg-orange-500/15 text-orange-600";
+                            msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
+                          } else {
+                            msg = "Margen Overoption no configurada";
+                          }
                         }
                         return (
                           <HoverCard openDelay={100}>

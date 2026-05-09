@@ -140,10 +140,12 @@ export default function Clientes() {
     setContacts([]);
     setPlans([]);
     setBrandInput("");
+    setNameUnlocked(false);
     setOpen(true);
   };
   const openEdit = (row: any) => {
     setEditing(row);
+    setNameUnlocked(false);
     const ids: string[] = Array.isArray(row.country_ids) && row.country_ids.length > 0
       ? row.country_ids
       : (row.country_id ? [row.country_id] : []);

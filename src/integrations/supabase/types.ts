@@ -129,6 +129,7 @@ export type Database = {
           id: string
           plan_start_date: string | null
           rev_share_pct: number | null
+          template_id: string | null
           updated_at: string
           wager: number | null
           wager_currency: string | null
@@ -154,6 +155,7 @@ export type Database = {
           id?: string
           plan_start_date?: string | null
           rev_share_pct?: number | null
+          template_id?: string | null
           updated_at?: string
           wager?: number | null
           wager_currency?: string | null
@@ -179,6 +181,7 @@ export type Database = {
           id?: string
           plan_start_date?: string | null
           rev_share_pct?: number | null
+          template_id?: string | null
           updated_at?: string
           wager?: number | null
           wager_currency?: string | null
@@ -196,6 +199,13 @@ export type Database = {
             columns: ["country_id"]
             isOneToOne: false
             referencedRelation: "countries"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "affiliate_commission_plans_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "commission_plan_templates"
             referencedColumns: ["id"]
           },
         ]
@@ -815,6 +825,81 @@ export type Database = {
           total_locked?: number | null
           total_qualified?: number | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      commission_plan_templates: {
+        Row: {
+          baseline: number | null
+          baseline_currency: string | null
+          brand: string | null
+          cap: number | null
+          client_id: string | null
+          conversion_type: string | null
+          country_ids: string[]
+          cpa: number | null
+          cpa_currency: string | null
+          cpl: number | null
+          cpl_currency: string | null
+          created_at: string
+          created_by: string | null
+          currency: string | null
+          description: string | null
+          id: string
+          name: string
+          plan_start_date: string | null
+          rev_share_pct: number | null
+          updated_at: string
+          wager: number | null
+          wager_currency: string | null
+        }
+        Insert: {
+          baseline?: number | null
+          baseline_currency?: string | null
+          brand?: string | null
+          cap?: number | null
+          client_id?: string | null
+          conversion_type?: string | null
+          country_ids?: string[]
+          cpa?: number | null
+          cpa_currency?: string | null
+          cpl?: number | null
+          cpl_currency?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          name: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager?: number | null
+          wager_currency?: string | null
+        }
+        Update: {
+          baseline?: number | null
+          baseline_currency?: string | null
+          brand?: string | null
+          cap?: number | null
+          client_id?: string | null
+          conversion_type?: string | null
+          country_ids?: string[]
+          cpa?: number | null
+          cpa_currency?: string | null
+          cpl?: number | null
+          cpl_currency?: string | null
+          created_at?: string
+          created_by?: string | null
+          currency?: string | null
+          description?: string | null
+          id?: string
+          name?: string
+          plan_start_date?: string | null
+          rev_share_pct?: number | null
+          updated_at?: string
+          wager?: number | null
+          wager_currency?: string | null
         }
         Relationships: []
       }

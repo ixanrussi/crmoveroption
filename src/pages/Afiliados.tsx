@@ -25,6 +25,7 @@ const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 import { useCurrencies } from "@/lib/currencies";
 
 type CommissionPlan = {
+  template_id?: string;
   plan_start_date: string;
   currency: string;
   description: string;
@@ -44,6 +45,7 @@ type CommissionPlan = {
   cap: string;
 };
 const emptyPlan: CommissionPlan = {
+  template_id: "",
   plan_start_date: "", currency: "", description: "", country_ids: [], client_id: "", brand: "",
   baseline: "", baseline_currency: "",
   cpa: "", cpa_currency: "",
@@ -61,6 +63,7 @@ export default function Afiliados() {
   const [countries, setCountries] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
+  const [templates, setTemplates] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
@@ -160,14 +163,16 @@ export default function Afiliados() {
     setGoalProgress(progress);
   };
   const loadLookups = async () => {
-    const [c, ch, cl] = await Promise.all([
+    const [c, ch, cl, tpl] = await Promise.all([
       supabase.from("countries").select("*").order("name"),
       supabase.from("affiliate_channels").select("*").order("name"),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
+      supabase.from("commission_plan_templates").select("*, client:clients(company_name)").order("name", { ascending: true }),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
     setClients(cl.data ?? []);
+    setTemplates(tpl.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
@@ -188,6 +193,7 @@ export default function Afiliados() {
     setChannelLinks(links);
     setPlans(
       (row.affiliate_commission_plans ?? []).map((p: any) => ({
+        template_id: p.template_id ?? "",
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
@@ -214,6 +220,31 @@ export default function Afiliados() {
   const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
     setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
   const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
+  const addPlanFromTemplate = (templateId: string) => {
+    const t = templates.find((x) => x.id === templateId);
+    if (!t) return;
+    setPlans((p) => [...p, {
+      template_id: t.id,
+      plan_start_date: t.plan_start_date ?? "",
+      currency: t.currency ?? "",
+      description: t.description ?? t.name ?? "",
+      country_ids: Array.isArray(t.country_ids) ? t.country_ids : [],
+      client_id: t.client_id ?? "",
+      brand: t.brand ?? "",
+      baseline: t.baseline?.toString() ?? "",
+      baseline_currency: t.baseline_currency ?? "",
+      cpa: t.cpa?.toString() ?? "",
+      cpa_currency: t.cpa_currency ?? "",
+      rev_share_pct: t.rev_share_pct?.toString() ?? "",
+      cpl: t.cpl?.toString() ?? "",
+      cpl_currency: t.cpl_currency ?? "",
+      wager: t.wager?.toString() ?? "",
+      wager_currency: t.wager_currency ?? "",
+      conversion_type: t.conversion_type ?? "",
+      cap: t.cap?.toString() ?? "",
+    }]);
+    toast.success(`Plan "${t.name}" añadido desde el catálogo`);
+  };
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
@@ -239,6 +270,7 @@ export default function Afiliados() {
         channel_ids: channelIds,
         channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
         commission_plans: plans.map((p) => ({
+          template_id: p.template_id || null,
           plan_start_date: p.plan_start_date || null,
           currency: p.currency || null,
           description: p.description || null,
@@ -532,11 +564,27 @@ export default function Afiliados() {
                 </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Label className="text-base">Comisiones</Label>
-                    <Button type="button" size="sm" variant="outline" onClick={addPlan}>
-                      <Plus className="h-4 w-4 mr-1" /> Agregar plan
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Select value="" onValueChange={(v) => { if (v) addPlanFromTemplate(v); }}>
+                        <SelectTrigger className="h-8 w-[220px]">
+                          <SelectValue placeholder="Asignar desde catálogo…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.length === 0 ? (
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>
+                          ) : templates.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.name}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" size="sm" variant="outline" onClick={addPlan}>
+                        <Plus className="h-4 w-4 mr-1" /> Agregar plan
+                      </Button>
+                    </div>
                   </div>
                   {plans.length === 0 && (
                     <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>

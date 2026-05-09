@@ -279,10 +279,11 @@ Deno.serve(async (req) => {
             wager_currency: p.wager_currency || null,
             conversion_type: p.conversion_type || null,
             cap: intOrNull(p.cap),
+            template_id: p.template_id || null,
             created_by: userData.user.id,
           };
         });
-        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "client_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency", "rev_share_pct", "cpl", "cpl_currency", "wager", "wager_currency", "conversion_type", "cap", "created_by")}`;
+        await tx`insert into public.affiliate_commission_plans ${tx(planValues, "affiliate_id", "client_id", "plan_start_date", "currency", "description", "country_id", "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency", "rev_share_pct", "cpl", "cpl_currency", "wager", "wager_currency", "conversion_type", "cap", "template_id", "created_by")}`;
       }
 
       return { response: json(200, { ok: true, id: affiliateId, unique_id: uniqueId }) };

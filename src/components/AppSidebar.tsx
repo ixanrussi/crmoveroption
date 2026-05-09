@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet } from "lucide-react";
 import logo from "@/assets/overoption-logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -12,6 +12,7 @@ const allMainItems = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard },
   { title: "Operadores", url: "/clientes", icon: Users },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus },
+  { title: "Planes de Comisión", url: "/planes-comision", icon: Wallet },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
   { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },
   { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator },

@@ -361,30 +361,26 @@ export default function CommissionPlans() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
                 <TableHead>Operador</TableHead>
+                <TableHead>Nombre</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead className="text-right">CPA</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
-                <TableHead>Moneda</TableHead>
-                <TableHead>Inicio</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
               {filtered.map((r) => (
                 <TableRow key={r.id}>
-                  <TableCell className="font-medium">
+                  <TableCell className="font-medium">{r.client?.company_name || "—"}</TableCell>
+                  <TableCell>
                     <button type="button" className="text-left hover:underline text-primary" onClick={() => openEdit(r)}>
                       {r.name}
                     </button>
                   </TableCell>
-                  <TableCell>{r.client?.company_name || "—"}</TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className="text-right">{r.cpa ?? "—"}</TableCell>
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
-                  <TableCell><Badge variant="outline">{r.currency || "—"}</Badge></TableCell>
-                  <TableCell className="text-xs">{r.plan_start_date || "—"}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
@@ -394,7 +390,7 @@ export default function CommissionPlans() {
                 </TableRow>
               ))}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

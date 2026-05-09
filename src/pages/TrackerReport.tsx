@@ -548,15 +548,17 @@ export default function TrackerReport() {
                               );
                             })}
                           </TableRow>
-                          {isOpen && g.rows.map((r, i) => (
-                            <TableRow key={`${g.trackerId}-${i}`}>
-                              {cols.map(c => {
-                                const v = r[c.k];
-                                let display: string;
-                                if (c.k === "date") display = fmtDate(String(v ?? ""));
-                                else if (c.numeric) display = fmtNum(v as number);
-                                else display = String(v ?? "");
-                                const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
+                           {isOpen && g.rows.map((r, i) => {
+                             const currentAffId = trackerToAffiliateId.get(r.tracker) ?? NONE_AFF;
+                             const unmatched = currentAffId === NONE_AFF;
+                             return (
+                             <TableRow key={`${g.trackerId}-${i}`} className={unmatched ? "bg-destructive/10 hover:bg-destructive/15" : ""}>
+                               {cols.map(c => {
+                                 const v = r[c.k];
+                                 let display: string;
+                                 if (c.k === "date") display = fmtDate(String(v ?? ""));
+                                 else if (c.numeric) display = fmtNum(v as number);
+                                 else display = String(v ?? "");
                                 return (
                                   <Fragment key={c.k}>
                                     <TableCell className={c.numeric ? "text-right tabular-nums" : ""}>

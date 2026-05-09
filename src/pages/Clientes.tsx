@@ -97,13 +97,13 @@ export default function Clientes() {
   const [form, setForm] = useState<any>(empty);
   const [brandInput, setBrandInput] = useState("");
 
-  const load = async () => {
-    const { data } = await supabase
-      .from("clients")
-      .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id, role), client_commission_plans(*, country:countries(name))")
-      .order("created_at", { ascending: false });
-    setList(data ?? []);
-  };
+   const load = async () => {
+     const { data } = await supabase
+       .from("clients")
+       .select("*, country:countries(name), affiliate:affiliates(unique_id, fixed_name), client_software_links(software_id, software:softwares(name)), client_contacts(id, name, channel, contact_id, role), client_commission_plans(*, country:countries(name))")
+       .order("company_name", { ascending: true });
+     setList(data ?? []);
+   };
   const loadLookups = async () => {
     const [c, s, a] = await Promise.all([
       supabase.from("countries").select("*").order("name"),

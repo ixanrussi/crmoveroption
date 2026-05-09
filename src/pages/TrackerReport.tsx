@@ -482,7 +482,7 @@ export default function TrackerReport() {
                       const groupSaving = !!savingTracker && (savingTracker === `__bulk_${groupTrackers[0]}` || groupTrackers.includes(savingTracker));
                       return (
                         <Fragment key={`g-${g.trackerId}-${gi}`}>
-                          <TableRow className="bg-muted/60 hover:bg-muted">
+                          <TableRow className={groupAffId === NONE_AFF && !groupMixed ? "bg-destructive/15 hover:bg-destructive/20" : "bg-muted/60 hover:bg-muted"}>
                             {cols.map((c, ci) => {
                               const isFirst = ci === 0;
                               let content: React.ReactNode = null;

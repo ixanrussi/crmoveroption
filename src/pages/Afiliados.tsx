@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Lock, X, ChevronDown } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign } from "lucide-react";
+import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
@@ -85,7 +86,7 @@ export default function Afiliados() {
   const load = async () => {
     const { data } = await supabase
       .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name))")
+      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), client:clients(company_name), template:commission_plan_templates(name))")
       .order("fixed_name", { ascending: true });
     setList(data ?? []);
 
@@ -847,13 +848,35 @@ export default function Afiliados() {
                 <TableRow key={r.id}>
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">
-                    <button
-                      type="button"
-                      className="text-left hover:underline text-primary"
-                      onClick={() => openEdit(r)}
-                    >
-                      {r.fixed_name}
-                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        type="button"
+                        className="text-left hover:underline text-primary"
+                        onClick={() => openEdit(r)}
+                      >
+                        {r.fixed_name}
+                      </button>
+                      {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 cursor-help">
+                              <DollarSign className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-72 p-2" align="start">
+                            <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
+                            <ul className="space-y-1">
+                              {r.affiliate_commission_plans.map((p: any) => (
+                                <li key={p.id} className="text-xs flex justify-between gap-2">
+                                  <span className="font-medium truncate">{p.client?.company_name || "—"}</span>
+                                  <span className="text-muted-foreground truncate">{p.template?.name || p.description || "Sin nombre"}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
+                    </div>
                     {(() => {
                       const g = goalProgress[r.id];
                       if (!g || g.target === 0) return null;

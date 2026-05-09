@@ -901,7 +901,15 @@ export type Database = {
           wager?: number | null
           wager_currency?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "commission_plan_templates_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       countries: {
         Row: {

@@ -193,6 +193,7 @@ export default function Afiliados() {
     setChannelLinks(links);
     setPlans(
       (row.affiliate_commission_plans ?? []).map((p: any) => ({
+        template_id: p.template_id ?? "",
         plan_start_date: p.plan_start_date ?? "",
         currency: p.currency ?? "",
         description: p.description ?? "",
@@ -563,11 +564,27 @@ export default function Afiliados() {
                 </div>
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
-                  <div className="flex items-center justify-between">
+                  <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Label className="text-base">Comisiones</Label>
-                    <Button type="button" size="sm" variant="outline" onClick={addPlan}>
-                      <Plus className="h-4 w-4 mr-1" /> Agregar plan
-                    </Button>
+                    <div className="flex items-center gap-2">
+                      <Select value="" onValueChange={(v) => { if (v) addPlanFromTemplate(v); }}>
+                        <SelectTrigger className="h-8 w-[220px]">
+                          <SelectValue placeholder="Asignar desde catálogo…" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {templates.length === 0 ? (
+                            <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>
+                          ) : templates.map((t) => (
+                            <SelectItem key={t.id} value={t.id}>
+                              {t.name}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button type="button" size="sm" variant="outline" onClick={addPlan}>
+                        <Plus className="h-4 w-4 mr-1" /> Agregar plan
+                      </Button>
+                    </div>
                   </div>
                   {plans.length === 0 && (
                     <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>

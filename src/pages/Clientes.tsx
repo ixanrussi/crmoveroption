@@ -14,7 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
 

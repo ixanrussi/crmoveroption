@@ -730,8 +730,9 @@ export default function Clientes() {
 
       <Card>
         <CardContent className="p-0">
+          <div className="max-h-[calc(100vh-260px)] overflow-auto">
           <Table className="w-full table-fixed">
-            <TableHeader><TableRow>
+            <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
               <TableHead className="w-[18%]">Empresa</TableHead>
               <TableHead className="w-[15%]">País</TableHead>
               <TableHead className="w-[15%]">Marcas</TableHead>
@@ -786,6 +787,7 @@ export default function Clientes() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
 

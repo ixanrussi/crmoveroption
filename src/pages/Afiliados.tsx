@@ -828,8 +828,9 @@ export default function Afiliados() {
               className="max-w-sm"
             />
           </div>
+          <div className="max-h-[calc(100vh-260px)] overflow-auto">
           <Table>
-            <TableHeader><TableRow>
+            <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
               <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
               <TableHead>País</TableHead><TableHead>Comisión</TableHead>
               <TableHead className="min-w-[160px]">Objetivo</TableHead>
@@ -962,6 +963,7 @@ export default function Afiliados() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

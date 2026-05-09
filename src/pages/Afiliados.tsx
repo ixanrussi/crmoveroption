@@ -788,7 +788,7 @@ export default function Afiliados() {
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {list.filter((r) => {
+              {[...list].sort((a, b) => (a.fixed_name || "").localeCompare(b.fixed_name || "")).filter((r) => {
                 const q = search.trim().toLowerCase();
                 if (!q) return true;
                 if (r.fixed_name?.toLowerCase().includes(q)) return true;

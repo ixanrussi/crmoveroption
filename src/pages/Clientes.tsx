@@ -805,132 +805,136 @@ export default function Clientes() {
             </TableRow></TableHeader>
             <TableBody>
               {filteredList.map((r) => (
-                <TableRow key={r.id}>
-                  <TableCell className="font-medium">
-                    <div className="flex items-center gap-2">
-                      <button
-                        type="button"
-                        className="text-left hover:underline text-primary"
-                        onClick={() => setViewing(r)}
-                      >
-                        {r.company_name}
-                      </button>
-                      {r.website && (
-                        <a
-                          href={/^https?:\/\//i.test(r.website) ? r.website : `https://${r.website}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-muted-foreground hover:text-primary"
-                          title="Abrir sitio web"
-                          onClick={(e) => e.stopPropagation()}
+                <TableRow key={r.id} className="align-top">
+                  <TableCell className="font-medium align-top">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <button
+                          type="button"
+                          className="text-left hover:underline text-primary truncate"
+                          onClick={() => setViewing(r)}
                         >
-                          <ExternalLink className="h-4 w-4" />
-                        </a>
-                      )}
-                      {(() => {
-                        const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
-                        const hasPlans = plans.length > 0;
-                        const colorCls = hasPlans ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600";
-                        const openPlans = () => {
-                          if (!isAdmin) return;
-                          openEdit(r);
-                          setTimeout(() => {
-                            const el = document.querySelector('[data-commission-plans-section]') as HTMLElement | null;
-                            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                          }, 250);
-                        };
-                        return (
-                          <HoverCard openDelay={100}>
-                            <HoverCardTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={openPlans}
-                                className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
-                                title={hasPlans ? "Planes de comisión" : "Sin planes de comisión"}
-                              >
-                                <DollarSign className="h-3 w-3" />
-                              </button>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-72 p-2" align="start">
-                              <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
-                              {hasPlans ? (
-                                <ul className="divide-y divide-border rounded-md overflow-hidden border">
-                                  {plans.map((p: any, idx: number) => {
-                                    const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Sin nombre";
-                                    return (
-                                      <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
-                                        <span className="font-medium truncate">{label}</span>
-                                      </li>
-                                    );
-                                  })}
-                                </ul>
-                              ) : (
-                                <p className="text-xs text-muted-foreground">Sin planes de comisión configurados</p>
-                              )}
-                            </HoverCardContent>
-                          </HoverCard>
-                        );
-                      })()}
-                      {(() => {
-                        const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
-                        const isConfigured = (p: any) => {
-                          const v = p?.overoption_retention;
-                          if (v === null || v === undefined || v === "") return false;
-                          const n = Number(v);
-                          return Number.isFinite(n) && n > 0;
-                        };
-                        const configured = plans.filter(isConfigured).length;
-                        const total = plans.length;
-                        let colorCls = "bg-red-500/15 text-red-600";
-                        let msg = "Sin Commission Plan configurado";
-                        if (total > 0) {
-                          if (configured === total) {
-                            colorCls = "bg-blue-500/15 text-blue-600";
-                            msg = "Margen Overoption configurada";
-                          } else if (configured > 0) {
-                            colorCls = "bg-orange-500/15 text-orange-600";
-                            msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
-                          } else {
-                            msg = "Margen Overoption no configurada";
+                          {r.company_name}
+                        </button>
+                        {r.website && (
+                          <a
+                            href={/^https?:\/\//i.test(r.website) ? r.website : `https://${r.website}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-muted-foreground hover:text-primary shrink-0"
+                            title="Abrir sitio web"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <ExternalLink className="h-4 w-4" />
+                          </a>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        {(() => {
+                          const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
+                          const hasPlans = plans.length > 0;
+                          const colorCls = hasPlans ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600";
+                          const openPlans = () => {
+                            if (!isAdmin) return;
+                            openEdit(r);
+                            setTimeout(() => {
+                              const el = document.querySelector('[data-commission-plans-section]') as HTMLElement | null;
+                              el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            }, 250);
+                          };
+                          return (
+                            <HoverCard openDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={openPlans}
+                                  className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
+                                  title={hasPlans ? "Planes de comisión" : "Sin planes de comisión"}
+                                >
+                                  <DollarSign className="h-3 w-3" />
+                                </button>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-72 p-2" align="start">
+                                <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
+                                {hasPlans ? (
+                                  <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                                    {plans.map((p: any, idx: number) => {
+                                      const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Sin nombre";
+                                      return (
+                                        <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                          <span className="font-medium truncate">{label}</span>
+                                        </li>
+                                      );
+                                    })}
+                                  </ul>
+                                ) : (
+                                  <p className="text-xs text-muted-foreground">Sin planes de comisión configurados</p>
+                                )}
+                              </HoverCardContent>
+                            </HoverCard>
+                          );
+                        })()}
+                        {(() => {
+                          const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
+                          const isConfigured = (p: any) => {
+                            const v = p?.overoption_retention;
+                            if (v === null || v === undefined || v === "") return false;
+                            const n = Number(v);
+                            return Number.isFinite(n) && n > 0;
+                          };
+                          const configured = plans.filter(isConfigured).length;
+                          const total = plans.length;
+                          let colorCls = "bg-red-500/15 text-red-600";
+                          let msg = "Sin Commission Plan configurado";
+                          if (total > 0) {
+                            if (configured === total) {
+                              colorCls = "bg-blue-500/15 text-blue-600";
+                              msg = "Margen Overoption configurada";
+                            } else if (configured > 0) {
+                              colorCls = "bg-orange-500/15 text-orange-600";
+                              msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
+                            } else {
+                              msg = "Margen Overoption no configurada";
+                            }
                           }
-                        }
-                        return (
-                          <HoverCard openDelay={100}>
-                            <HoverCardTrigger asChild>
-                              <button
-                                type="button"
-                                onClick={() => {
-                                  if (!isAdmin) return;
-                                  openEdit(r);
-                                  setTimeout(() => {
-                                    const el = document.querySelector('[data-overoption-section]') as HTMLElement | null;
-                                    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                  }, 250);
-                                }}
-                                className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
-                                title={msg}
-                              >
-                                <ShieldCheck className="h-3 w-3" />
-                              </button>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-auto p-2" align="start">
-                              <p className="text-xs font-medium">{msg}</p>
-                            </HoverCardContent>
-                          </HoverCard>
-                        );
-                      })()}
+                          return (
+                            <HoverCard openDelay={100}>
+                              <HoverCardTrigger asChild>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (!isAdmin) return;
+                                    openEdit(r);
+                                    setTimeout(() => {
+                                      const el = document.querySelector('[data-overoption-section]') as HTMLElement | null;
+                                      el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                    }, 250);
+                                  }}
+                                  className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
+                                  title={msg}
+                                >
+                                  <ShieldCheck className="h-3 w-3" />
+                                </button>
+                              </HoverCardTrigger>
+                              <HoverCardContent className="w-auto p-2" align="start">
+                                <p className="text-xs font-medium">{msg}</p>
+                              </HoverCardContent>
+                            </HoverCard>
+                          );
+                        })()}
+                      </div>
                     </div>
                   </TableCell>
-                  <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>
-                  <TableCell className="text-xs">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
-                  <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
-                  <TableCell className="text-xs">
+                  <TableCell className="text-xs align-top">{countryNames(r) || "—"}</TableCell>
+                  <TableCell className="text-xs align-top">{Array.isArray(r.brands) && r.brands.length ? r.brands.join(", ") : "—"}</TableCell>
+                  <TableCell className="align-top"><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
+                  <TableCell className="text-xs align-top">
                     {(r.client_contacts ?? []).map((c: any, idx: number) => (
                       <div key={idx}>{c.name} · {c.channel}: {c.contact_id}</div>
                     ))}
                   </TableCell>
                   {isAdmin && (
-                    <TableCell className="space-x-1">
+                    <TableCell className="space-x-1 align-top whitespace-nowrap text-right">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                       {isSuperAdmin && <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>}
                     </TableCell>

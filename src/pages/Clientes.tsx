@@ -738,7 +738,7 @@ export default function Clientes() {
                           <div className="col-span-2 border-t pt-3 mt-1 space-y-3">
                             <div className="flex items-center justify-between gap-3">
                               <div>
-                                <Label className="text-xs">Pago proporcional bajo objetivo</Label>
+                                <Label className="text-xs">Pago proporcional al % de entrega</Label>
                                 <p className="text-xs text-muted-foreground">Si está activo, paga el % de CPA igual al % del objetivo alcanzado (ignora CPA fallback).</p>
                               </div>
                               <Switch checked={pl.proportional_enabled}

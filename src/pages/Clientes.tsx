@@ -85,6 +85,7 @@ export default function Clientes() {
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
   const [search, setSearch] = useState("");
+  const [nameUnlocked, setNameUnlocked] = useState(false);
 
 
   const empty = {

@@ -849,18 +849,32 @@ export default function Clientes() {
                           </HoverCardContent>
                         </HoverCard>
                       )}
-                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.some((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0) && (
-                        <HoverCard openDelay={100}>
-                          <HoverCardTrigger asChild>
-                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/15 text-blue-600 cursor-help">
-                              <ShieldCheck className="h-3 w-3" />
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-auto p-2" align="start">
-                            <p className="text-xs font-medium">Margen Overoption configurada</p>
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
+                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (() => {
+                        const plans = r.client_commission_plans;
+                        const configured = plans.filter((p: any) => p.overoption_retention != null && Number(p.overoption_retention) > 0).length;
+                        const total = plans.length;
+                        let colorCls = "bg-red-500/15 text-red-600";
+                        let msg = "Margen Overoption no configurada";
+                        if (configured === total) {
+                          colorCls = "bg-blue-500/15 text-blue-600";
+                          msg = "Margen Overoption configurada";
+                        } else if (configured > 0) {
+                          colorCls = "bg-orange-500/15 text-orange-600";
+                          msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
+                        }
+                        return (
+                          <HoverCard openDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-help ${colorCls}`}>
+                                <ShieldCheck className="h-3 w-3" />
+                              </span>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-auto p-2" align="start">
+                              <p className="text-xs font-medium">{msg}</p>
+                            </HoverCardContent>
+                          </HoverCard>
+                        );
+                      })()}
                     </div>
                   </TableCell>
                   <TableCell className="text-xs">{countryNames(r) || "—"}</TableCell>

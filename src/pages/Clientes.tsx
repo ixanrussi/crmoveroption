@@ -827,28 +827,50 @@ export default function Clientes() {
                           <ExternalLink className="h-4 w-4" />
                         </a>
                       )}
-                      {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (
-                        <HoverCard openDelay={100}>
-                          <HoverCardTrigger asChild>
-                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 cursor-help">
-                              <DollarSign className="h-3 w-3" />
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-72 p-2" align="start">
-                            <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
-                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
-                              {r.client_commission_plans.map((p: any, idx: number) => {
-                                const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Sin nombre";
-                                return (
-                                  <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
-                                    <span className="font-medium truncate">{label}</span>
-                                  </li>
-                                );
-                              })}
-                            </ul>
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
+                      {(() => {
+                        const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
+                        const hasPlans = plans.length > 0;
+                        const colorCls = hasPlans ? "bg-emerald-500/15 text-emerald-600" : "bg-red-500/15 text-red-600";
+                        const openPlans = () => {
+                          if (!isAdmin) return;
+                          openEdit(r);
+                          setTimeout(() => {
+                            const el = document.querySelector('[data-commission-plans-section]') as HTMLElement | null;
+                            el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                          }, 250);
+                        };
+                        return (
+                          <HoverCard openDelay={100}>
+                            <HoverCardTrigger asChild>
+                              <button
+                                type="button"
+                                onClick={openPlans}
+                                className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-pointer hover:opacity-80 ${colorCls}`}
+                                title={hasPlans ? "Planes de comisión" : "Sin planes de comisión"}
+                              >
+                                <DollarSign className="h-3 w-3" />
+                              </button>
+                            </HoverCardTrigger>
+                            <HoverCardContent className="w-72 p-2" align="start">
+                              <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
+                              {hasPlans ? (
+                                <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                                  {plans.map((p: any, idx: number) => {
+                                    const label = p.description?.trim() || [p.brand, p.country?.name].filter(Boolean).join(" · ") || "Sin nombre";
+                                    return (
+                                      <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                        <span className="font-medium truncate">{label}</span>
+                                      </li>
+                                    );
+                                  })}
+                                </ul>
+                              ) : (
+                                <p className="text-xs text-muted-foreground">Sin planes de comisión configurados</p>
+                              )}
+                            </HoverCardContent>
+                          </HoverCard>
+                        );
+                      })()}
                       {Array.isArray(r.client_commission_plans) && r.client_commission_plans.length > 0 && (() => {
                         const plans = r.client_commission_plans;
                         const isConfigured = (p: any) => {

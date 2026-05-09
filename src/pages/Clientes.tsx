@@ -730,7 +730,7 @@ export default function Clientes() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="max-h-[calc(100vh-260px)] overflow-auto">
+          <div className="[&>div]:max-h-[calc(100vh-260px)]">
           <Table className="w-full table-fixed">
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
               <TableHead className="w-[18%]">Empresa</TableHead>

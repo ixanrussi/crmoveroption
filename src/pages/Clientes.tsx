@@ -496,7 +496,7 @@ export default function Clientes() {
                   )}
                 </div>
 
-                <div className="col-span-2 space-y-2 border rounded-md p-3">
+                <div data-commission-plans-section className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">
                     <Label className="text-base">Commission Plans</Label>
                     <Button type="button" size="sm" variant="outline" onClick={addPlan}>

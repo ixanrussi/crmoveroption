@@ -428,10 +428,7 @@ export default function TrackerReport() {
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead>Tracker</TableHead>
-                                      <TableHead>Tracker ID</TableHead>
-                                      <TableHead>Account Tracker ID</TableHead>
                                       <TableHead>Brand</TableHead>
-                                      <TableHead>Brand ID</TableHead>
                                       <TableHead>Account ID</TableHead>
                                       <TableHead className="text-right">Visits</TableHead>
                                       <TableHead className="text-right">Signups</TableHead>
@@ -448,10 +445,7 @@ export default function TrackerReport() {
                                     {trackers.map((t, i) => (
                                       <TableRow key={`${a.affiliateId}-${i}`}>
                                         <TableCell className="text-xs">{t.tracker || "—"}</TableCell>
-                                        <TableCell className="text-xs">{t.trackerId || "—"}</TableCell>
-                                        <TableCell className="text-xs">{t.accountTrackerId || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.brand || "—"}</TableCell>
-                                        <TableCell className="text-xs">{t.brandId || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.accountId || "—"}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.visits)}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.signups)}</TableCell>

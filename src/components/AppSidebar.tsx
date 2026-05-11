@@ -110,14 +110,6 @@ export function AppSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
-                  <SidebarMenuButton asChild isActive={isActive("/conocimiento")}>
-                    <NavLink to="/conocimiento">
-                      <BookOpen className="h-4 w-4" />
-                      <span>Base de Conocimiento</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/logs")}>
                     <NavLink to="/logs">
                       <ScrollText className="h-4 w-4" />

@@ -7,15 +7,12 @@ export type MenuKey =
   | "clientes"
   | "afiliados"
   | "planes-comision"
-  | "cierres"
-  | "comisiones-dashboard"
   | "calculadora-fijos"
   | "tracker-report"
   | "listas-paises"
   | "listas-software"
   | "listas-canales"
   | "listas-monedas"
-  | "conocimiento"
   | "usuarios"
   | "logs";
 

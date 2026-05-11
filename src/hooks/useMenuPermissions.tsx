@@ -24,10 +24,8 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
       { key: "clientes", label: "Operadores" },
       { key: "afiliados", label: "Afiliados" },
       { key: "planes-comision", label: "Planes Comisión Afiliado" },
-      { key: "cierres", label: "Cierre de Comisiones" },
-      { key: "comisiones-dashboard", label: "Dashboard Comisiones" },
       { key: "calculadora-fijos", label: "Calculadora de Fijos" },
-      { key: "tracker-report", label: "Tracker Report" },
+      { key: "tracker-report", label: "API Report" },
     ],
   },
   {

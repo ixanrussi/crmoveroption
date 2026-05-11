@@ -772,6 +772,16 @@ export default function Clientes() {
                     </SelectContent>
                   </Select>
                 </div>
+                {editing?.id && (
+                  <div className="col-span-2">
+                    <ClientContractsUploader clientId={editing.id} canEdit={isAdmin} />
+                  </div>
+                )}
+                {!editing?.id && (
+                  <div className="col-span-2 text-xs text-muted-foreground rounded-md border border-dashed p-3">
+                    Guarda el operador para poder adjuntar contratos o insertion orders.
+                  </div>
+                )}
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>
                   <Textarea value={form.notes ?? ""} onChange={(e) => setForm({ ...form, notes: e.target.value })} /></div>
               </div>

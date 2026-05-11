@@ -41,7 +41,6 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
     group: "Administración",
     items: [
       { key: "usuarios", label: "Usuarios y Roles" },
-      { key: "conocimiento", label: "Base de Conocimiento" },
       { key: "logs", label: "Log de actividad" },
     ],
   },

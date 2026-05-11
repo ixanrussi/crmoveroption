@@ -30,11 +30,11 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { isAdmin, isSuperAdmin, isComercial, signOut, user } = useAuth();
+  const { isSuperAdmin, signOut, user } = useAuth();
+  const { can } = useMenuPermissions();
   const isActive = (p: string) => pathname === p;
-  const mainItems = isComercial && !isAdmin
-    ? allMainItems.filter((i) => i.url === "/calculadora-fijos")
-    : allMainItems;
+  const mainItems = allMainItems.filter((i) => can(i.key));
+  const visibleListItems = listItems.filter((i) => can(i.key));
 
   return (
     <Sidebar collapsible="icon">
@@ -68,12 +68,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
+        {visibleListItems.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>Listas maestras</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {listItems.map((item) => (
+                {visibleListItems.map((item) => (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink to={item.url}>
@@ -98,6 +98,14 @@ export function AppSidebar() {
                     <NavLink to="/usuarios">
                       <Shield className="h-4 w-4" />
                       <span>Usuarios y Roles</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/configuracion-roles")}>
+                    <NavLink to="/configuracion-roles">
+                      <KeyRound className="h-4 w-4" />
+                      <span>Configuración de Roles</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

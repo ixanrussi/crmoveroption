@@ -17,7 +17,7 @@ const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = 
   
   
   { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
-  { title: "Tracker Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
+  { title: "API Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
 ];
 const listItems: { title: string; url: string; key: MenuKey }[] = [
   { title: "GEO´s", url: "/listas/paises", key: "listas-paises" },

@@ -1123,6 +1123,27 @@ export type Database = {
         }
         Relationships: []
       }
+      role_menu_permissions: {
+        Row: {
+          created_at: string
+          id: string
+          menu_key: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          menu_key: string
+          role: Database["public"]["Enums"]["app_role"]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          menu_key?: string
+          role?: Database["public"]["Enums"]["app_role"]
+        }
+        Relationships: []
+      }
       softwares: {
         Row: {
           created_at: string

@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet, KeyRound } from "lucide-react";
+import { useMenuPermissions, type MenuKey } from "@/hooks/useMenuPermissions";
 import logo from "@/assets/overoption-logo.png";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -8,32 +9,32 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./ui/button";
 
-const allMainItems = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard },
-  { title: "Operadores", url: "/clientes", icon: Users },
-  { title: "Afiliados", url: "/afiliados", icon: UserPlus },
-  { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet },
-  { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet },
-  { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3 },
-  { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator },
-  { title: "Tracker Report", url: "/tracker-report", icon: Activity },
+const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = [
+  { title: "Dashboard", url: "/", icon: LayoutDashboard, key: "dashboard" },
+  { title: "Operadores", url: "/clientes", icon: Users, key: "clientes" },
+  { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
+  { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
+  { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet, key: "cierres" },
+  { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3, key: "comisiones-dashboard" },
+  { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
+  { title: "Tracker Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
 ];
-const listItems = [
-  { title: "GEO´s", url: "/listas/paises" },
-  { title: "Software", url: "/listas/software" },
-  { title: "Canales", url: "/listas/canales" },
-  { title: "Monedas", url: "/listas/monedas" },
+const listItems: { title: string; url: string; key: MenuKey }[] = [
+  { title: "GEO´s", url: "/listas/paises", key: "listas-paises" },
+  { title: "Software", url: "/listas/software", key: "listas-software" },
+  { title: "Canales", url: "/listas/canales", key: "listas-canales" },
+  { title: "Monedas", url: "/listas/monedas", key: "listas-monedas" },
 ];
 
 export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { isAdmin, isSuperAdmin, isComercial, signOut, user } = useAuth();
+  const { isSuperAdmin, signOut, user } = useAuth();
+  const { can } = useMenuPermissions();
   const isActive = (p: string) => pathname === p;
-  const mainItems = isComercial && !isAdmin
-    ? allMainItems.filter((i) => i.url === "/calculadora-fijos")
-    : allMainItems;
+  const mainItems = allMainItems.filter((i) => can(i.key));
+  const visibleListItems = listItems.filter((i) => can(i.key));
 
   return (
     <Sidebar collapsible="icon">
@@ -67,12 +68,12 @@ export function AppSidebar() {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isAdmin && (
+        {visibleListItems.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel>Listas maestras</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {listItems.map((item) => (
+                {visibleListItems.map((item) => (
                   <SidebarMenuItem key={item.url}>
                     <SidebarMenuButton asChild isActive={isActive(item.url)}>
                       <NavLink to={item.url}>
@@ -97,6 +98,14 @@ export function AppSidebar() {
                     <NavLink to="/usuarios">
                       <Shield className="h-4 w-4" />
                       <span>Usuarios y Roles</span>
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton asChild isActive={isActive("/configuracion-roles")}>
+                    <NavLink to="/configuracion-roles">
+                      <KeyRound className="h-4 w-4" />
+                      <span>Configuración de Roles</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

@@ -577,7 +577,16 @@ export default function Afiliados() {
                             <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>
                           ) : templates.map((t) => (
                             <SelectItem key={t.id} value={t.id}>
-                              {t.name}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
+                              <span className="flex w-full min-w-0 items-center gap-2">
+                                <span className="truncate">
+                                  {t.name || "Sin nombre"}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
+                                </span>
+                                {t.brand && (
+                                  <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                    {t.brand}
+                                  </span>
+                                )}
+                              </span>
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -885,8 +894,9 @@ export default function Afiliados() {
                             <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
                             <ul className="divide-y divide-border rounded-md overflow-hidden border">
                               {r.affiliate_commission_plans.map((p: any, idx: number) => (
-                                <li key={p.id} className={`text-xs flex gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                <li key={p.id} className={`text-xs flex items-center gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
                                   <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"} — {p.template?.name || "Sin nombre"}</span>
+                                  {p.brand && <Badge variant="outline" className="shrink-0 text-[10px]">{p.brand}</Badge>}
                                 </li>
                               ))}
                             </ul>

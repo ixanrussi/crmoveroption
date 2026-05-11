@@ -39,13 +39,9 @@ const App = () => (
               <Route path="/clientes" element={<Clientes />} />
               <Route path="/mi-cuenta" element={<MiCuenta />} />
               <Route path="/afiliados" element={<Afiliados />} />
-              <Route path="/cierres" element={<Cierres />} />
-              <Route path="/comisiones-dashboard" element={<ComisionesDashboard />} />
               <Route path="/calculadora-fijos" element={<CalculadoraFijos />} />
               <Route path="/tracker-report" element={<TrackerReport />} />
               <Route path="/planes-comision" element={<CommissionPlans />} />
-              <Route path="/conocimiento" element={<ConocimientoDashboard />} />
-              <Route path="/conocimiento/operador" element={<Conocimiento />} />
               <Route path="/listas/paises" element={<SimpleListPage table="countries" title="Países" withCode />} />
               <Route path="/listas/software" element={<SimpleListPage table="softwares" title="Software" />} />
               <Route path="/listas/canales" element={<SimpleListPage table="affiliate_channels" title="Canales de afiliados" />} />

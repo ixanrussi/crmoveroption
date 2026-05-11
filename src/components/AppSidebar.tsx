@@ -15,7 +15,7 @@ const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = 
   { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
   { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
   { title: "Cierre de Comisiones", url: "/cierres", icon: FileSpreadsheet, key: "cierres" },
-  { title: "Dashboard Comisiones", url: "/comisiones-dashboard", icon: BarChart3, key: "comisiones-dashboard" },
+  
   { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
   { title: "Tracker Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
 ];

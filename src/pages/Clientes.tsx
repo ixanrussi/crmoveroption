@@ -18,6 +18,7 @@ import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock, Dolla
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
+import ClientContractsUploader from "@/components/ClientContractsUploader";
 
 const STATUSES = ["active", "inactive", "prospect"] as const;
 const CLIENT_TYPES = ["Directo", "Agencia", "Network"] as const;

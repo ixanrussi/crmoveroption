@@ -599,6 +599,11 @@ export default function Afiliados() {
                             <span className="text-base font-bold text-primary truncate">
                               {clients.find((c) => c.id === pl.client_id)?.company_name || "Sin cliente"}
                             </span>
+                            {pl.brand && (
+                              <Badge variant="default" className="text-[10px] truncate">
+                                {pl.brand}
+                              </Badge>
+                            )}
                             <span className="text-sm text-muted-foreground truncate">{templates.find((t) => t.id === pl.template_id)?.name || "Sin nombre"}</span>
                             <div className="flex gap-2 ml-2">
                               <Badge variant="secondary">CPA: {pl.cpa || "—"}</Badge>

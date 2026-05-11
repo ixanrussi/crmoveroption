@@ -13,6 +13,8 @@ import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
 import Afiliados from "./pages/Afiliados";
 import Usuarios from "./pages/Usuarios";
+import MiCuenta from "./pages/MiCuenta";
+import SimpleListPage from "./pages/SimpleListPage";
 import CalculadoraFijos from "./pages/CalculadoraFijos";
 import TrackerReport from "./pages/TrackerReport";
 import CommissionPlans from "./pages/CommissionPlans";

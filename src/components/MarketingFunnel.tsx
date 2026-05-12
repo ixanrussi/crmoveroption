@@ -288,16 +288,19 @@ export default function MarketingFunnel() {
                     {/* Open-bowl shading on the leftmost (entry) */}
                     <ellipse cx={xs[0] + 6} cy={cy} rx={Math.min(36, segW * 0.22)} ry={halves[0]} fill="url(#bowl-shade)" />
 
-                    {/* Conversion chips between stages */}
+                    {/* Conversion chips interleaved between stage values */}
                     {stages.slice(1).map((st, idx) => {
                       const i = idx + 1;
-                      const x = xs[i];
-                      const y = cy;
+                      const prevSeg = segments[i - 1];
+                      const curSeg = segments[i];
+                      const cxPrev = (prevSeg.xL + prevSeg.xR) / 2 - prevSeg.rxR / 2;
+                      const cxCur = (curSeg.xL + curSeg.xR) / 2 - curSeg.rxR / 2;
+                      const x = (cxPrev + cxCur) / 2;
                       return (
-                        <g key={`chip-${st.key}`} transform={`translate(${x}, ${y})`}>
-                          <rect x={-42} y={-14} width={84} height={28} rx={14}
+                        <g key={`chip-${st.key}`} transform={`translate(${x}, ${cy})`}>
+                          <rect x={-40} y={-13} width={80} height={26} rx={13}
                             className="fill-background stroke-border" strokeWidth={1} />
-                          <text x={0} y={5} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 700 }}>
+                          <text x={0} y={4} textAnchor="middle" className="fill-foreground" style={{ fontSize: 12, fontWeight: 700 }}>
                             {fmtPct(pct(st.value, stages[i - 1].value))}
                           </text>
                         </g>

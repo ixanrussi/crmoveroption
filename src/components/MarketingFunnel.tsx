@@ -304,12 +304,61 @@ export default function MarketingFunnel() {
                       );
                     })}
                   </svg>
-                  <div className="mt-3 flex items-center justify-center">
+                  </button>
+                  <div className="mt-3 flex items-center justify-center gap-3">
                     <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm">
                       <span className="text-muted-foreground">Conversión global Visit → CPA</span>
                       <span className="font-bold text-primary">{fmtPct(overall)}</span>
                     </div>
+                    <button
+                      type="button"
+                      onClick={() => setShowByBrand(v => !v)}
+                      className="inline-flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                    >
+                      <ChevronDown className={`h-3.5 w-3.5 transition-transform ${showByBrand ? "rotate-180" : ""}`} />
+                      {showByBrand ? "Ocultar funnel por marca" : "Ver funnel por marca"}
+                    </button>
                   </div>
+
+                  {showByBrand && (
+                    <div className="mt-4 rounded-lg border bg-card/50 overflow-hidden animate-in fade-in slide-in-from-top-1 duration-200">
+                      <div className="max-h-72 overflow-auto">
+                        <table className="w-full text-xs">
+                          <thead className="bg-muted/40 text-muted-foreground sticky top-0">
+                            <tr>
+                              <th className="text-left font-medium py-2 px-3">Marca</th>
+                              <th className="text-right font-medium px-2">Visitas</th>
+                              <th className="text-right font-medium px-2">Registros</th>
+                              <th className="text-right font-medium px-2">FTDs</th>
+                              <th className="text-right font-medium px-2">CPAs</th>
+                              <th className="text-right font-medium px-2">V→S</th>
+                              <th className="text-right font-medium px-2">S→F</th>
+                              <th className="text-right font-medium px-2">F→CPA</th>
+                              <th className="text-right font-medium px-3">V→CPA</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {byBrand
+                              .slice()
+                              .sort((a, b) => b.v - a.v)
+                              .map(b => (
+                                <tr key={b.name} className="border-t hover:bg-muted/30">
+                                  <td className="py-1.5 px-3 truncate max-w-[180px]">{b.name}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtInt(b.v)}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtInt(b.s)}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtInt(b.f)}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtInt(b.c)}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtPct(pct(b.s, b.v))}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtPct(b.signupToFtd)}</td>
+                                  <td className="text-right tabular-nums px-2">{fmtPct(b.ftdToCpa)}</td>
+                                  <td className="text-right tabular-nums px-3 font-semibold">{fmtPct(b.visitToCpa)}</td>
+                                </tr>
+                              ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
               );
             })()}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import BrandGoals from "@/components/BrandGoals";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
+  const navigate = useNavigate();
   const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0 });
   const [showMap, setShowMap] = useState(false);
   const [displayName, setDisplayName] = useState<string>("");
@@ -35,8 +37,8 @@ const Dashboard = () => {
   useEffect(() => { loadStats(); }, []);
 
   const cards = [
-    { label: "Operadores", value: stats.clients, icon: Users, color: "text-primary" },
-    { label: "Afiliados", value: stats.affiliates, icon: UserPlus, color: "text-success" },
+    { label: "Operadores", value: stats.clients, icon: Users, color: "text-primary", to: "/clientes" },
+    { label: "Afiliados", value: stats.affiliates, icon: UserPlus, color: "text-success", to: "/afiliados" },
     { label: "Países", value: stats.countries, icon: Globe, color: "text-warning" },
   ];
 
@@ -51,7 +53,11 @@ const Dashboard = () => {
 
       <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {cards.map((c) => (
-          <Card key={c.label}>
+          <Card
+            key={c.label}
+            onClick={c.to ? () => navigate(c.to!) : undefined}
+            className={c.to ? "cursor-pointer hover:bg-accent/40 transition-colors" : ""}
+          >
             <CardContent className="p-6 flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground">{c.label}</p>

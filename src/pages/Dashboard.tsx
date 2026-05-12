@@ -74,6 +74,8 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      <BrandGoals />
+
       {showMap && <WorldActivityMap />}
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">

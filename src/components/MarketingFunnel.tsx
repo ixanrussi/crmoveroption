@@ -188,58 +188,77 @@ export default function MarketingFunnel() {
             {(() => {
               const W = 1000, H = 240, cy = H / 2, maxH = 200, minH = 70;
               const segW = W / stages.length;
-              // sqrt scale so smaller stages stay visible; clamp to minH
               const scale = (v: number) => (maxStage ? Math.sqrt(Math.max(0, v) / maxStage) : 0);
               const heightFor = (v: number) => Math.max(minH, scale(v) * maxH);
               const colors = [
-                "hsl(210 90% 75%)",
-                "hsl(212 85% 65%)",
-                "hsl(215 80% 55%)",
-                "hsl(218 75% 45%)",
+                "hsl(210 90% 78%)",
+                "hsl(212 85% 68%)",
+                "hsl(215 80% 58%)",
+                "hsl(218 75% 48%)",
               ];
+              // Build smooth top & bottom paths through all stage edge points
+              const xs: number[] = [];
+              const hs: number[] = [];
+              for (let i = 0; i < stages.length; i++) {
+                xs.push(i * segW);
+                hs.push(heightFor(stages[i].value) / 2);
+              }
+              xs.push(stages.length * segW);
+              const lastH = heightFor(stages[stages.length - 1].value) / 2;
+              hs.push(lastH * 0.9);
+
+              const smoothPath = (sign: 1 | -1) => {
+                let d = `M ${xs[0]} ${cy + sign * hs[0]}`;
+                for (let i = 0; i < xs.length - 1; i++) {
+                  const x1 = xs[i], x2 = xs[i + 1];
+                  const y1 = cy + sign * hs[i], y2 = cy + sign * hs[i + 1];
+                  const cx1 = x1 + (x2 - x1) * 0.5;
+                  const cx2 = x1 + (x2 - x1) * 0.5;
+                  d += ` C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`;
+                }
+                return d;
+              };
+              const funnelPath =
+                smoothPath(-1) +
+                ` L ${xs[xs.length - 1]} ${cy + hs[hs.length - 1]}` +
+                smoothPath(1).replace(/^M /, " L ").split(" L ").reverse().join(" L ").replace(/^ L /, " ") +
+                " Z";
+
               return (
                 <div className="w-full">
                   <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
                     <defs>
-                      {colors.map((c, i) => (
-                        <linearGradient key={i} id={`grad-${i}`} x1="0" x2="1" y1="0" y2="0">
-                          <stop offset="0%" stopColor={c} stopOpacity="0.7" />
-                          <stop offset="100%" stopColor={colors[i + 1] ?? c} stopOpacity="0.7" />
-                        </linearGradient>
-                      ))}
+                      <linearGradient id="funnel-grad" x1="0" x2="1" y1="0" y2="0">
+                        {colors.map((c, i) => (
+                          <stop key={i} offset={`${(i / (colors.length - 1)) * 100}%`} stopColor={c} stopOpacity="0.75" />
+                        ))}
+                      </linearGradient>
                     </defs>
+                    <path d={funnelPath} fill="url(#funnel-grad)" />
                     {stages.map((st, i) => {
-                      const next = stages[i + 1];
-                      const h1 = heightFor(st.value) / 2;
-                      const h2 = heightFor(next ? next.value : st.value * 0.6) / 2;
-                      const x1 = i * segW, x2 = (i + 1) * segW;
-                      const points = [
-                        `${x1},${cy - h1}`,
-                        `${x2},${cy - h2}`,
-                        `${x2},${cy + h2}`,
-                        `${x1},${cy + h1}`,
-                      ].join(" ");
-                      const cx = (x1 + x2) / 2;
+                      const cx = i * segW + segW / 2;
                       return (
                         <g key={st.key}>
-                          <polygon points={points} fill={`url(#grad-${i})`} />
-                          {/* value */}
                           <text x={cx} y={cy - 6} textAnchor="middle" fill="hsl(220 60% 18%)" style={{ fontSize: 26, fontWeight: 700 }}>
                             {fmtInt(st.value)}
                           </text>
                           <text x={cx} y={cy + 18} textAnchor="middle" fill="hsl(220 40% 30%)" style={{ fontSize: 13, fontWeight: 500 }}>
                             {st.label}
                           </text>
-                          {/* conversion chip between stages */}
-                          {i > 0 && (
-                            <g transform={`translate(${x1}, ${cy - h1 - 30})`}>
-                              <rect x={-46} y={-16} width={92} height={28} rx={14}
-                                className="fill-background stroke-border" strokeWidth={1} />
-                              <text x={0} y={4} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 600 }}>
-                                {fmtPct(pct(st.value, stages[i - 1].value))}
-                              </text>
-                            </g>
-                          )}
+                        </g>
+                      );
+                    })}
+                    {/* Conversion chips centered between stages, on the funnel midline */}
+                    {stages.slice(1).map((st, idx) => {
+                      const i = idx + 1;
+                      const x = i * segW;
+                      return (
+                        <g key={`chip-${st.key}`} transform={`translate(${x}, ${cy})`}>
+                          <rect x={-44} y={-14} width={88} height={28} rx={14}
+                            className="fill-background stroke-border" strokeWidth={1} />
+                          <text x={0} y={5} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 600 }}>
+                            {fmtPct(pct(st.value, stages[i - 1].value))}
+                          </text>
                         </g>
                       );
                     })}

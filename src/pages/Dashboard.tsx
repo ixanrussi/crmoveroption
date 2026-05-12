@@ -9,6 +9,7 @@ import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
 import TopBrandsCommission from "@/components/TopBrandsCommission";
 import MonthlyCpaChart from "@/components/MonthlyCpaChart";
 import MarketingFunnel from "@/components/MarketingFunnel";
+import BrandGoals from "@/components/BrandGoals";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
@@ -72,6 +73,8 @@ const Dashboard = () => {
           </CardContent>
         </Card>
       </div>
+
+      <BrandGoals />
 
       {showMap && <WorldActivityMap />}
 

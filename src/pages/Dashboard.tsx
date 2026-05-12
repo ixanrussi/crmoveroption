@@ -80,6 +80,8 @@ const Dashboard = () => {
         <TopBrandsCommission />
       </div>
 
+      <MarketingFunnel />
+
       <MonthlyCpaChart />
     </div>
   );

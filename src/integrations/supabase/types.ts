@@ -279,6 +279,75 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_salary_deals: {
+        Row: {
+          affiliate_id: string
+          breakeven_ftd_monthly: number | null
+          cpa_bonus_amount: number | null
+          cpa_bonus_threshold: number | null
+          created_at: string
+          created_by: string | null
+          end_date: string | null
+          id: string
+          name: string
+          notes: string | null
+          salary_amount: number
+          salary_currency: string
+          selections: Json
+          start_date: string
+          status: Database["public"]["Enums"]["salary_deal_status"]
+          trial_months: number | null
+          trigger_breakeven_pct: number | null
+          trigger_min_ftd_monthly: number | null
+          trigger_min_ngr_per_ftd: number | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          breakeven_ftd_monthly?: number | null
+          cpa_bonus_amount?: number | null
+          cpa_bonus_threshold?: number | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          salary_amount?: number
+          salary_currency?: string
+          selections?: Json
+          start_date?: string
+          status?: Database["public"]["Enums"]["salary_deal_status"]
+          trial_months?: number | null
+          trigger_breakeven_pct?: number | null
+          trigger_min_ftd_monthly?: number | null
+          trigger_min_ngr_per_ftd?: number | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          breakeven_ftd_monthly?: number | null
+          cpa_bonus_amount?: number | null
+          cpa_bonus_threshold?: number | null
+          created_at?: string
+          created_by?: string | null
+          end_date?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          salary_amount?: number
+          salary_currency?: string
+          selections?: Json
+          start_date?: string
+          status?: Database["public"]["Enums"]["salary_deal_status"]
+          trial_months?: number | null
+          trigger_breakeven_pct?: number | null
+          trigger_min_ftd_monthly?: number | null
+          trigger_min_ngr_per_ftd?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           alias: string | null
@@ -1238,6 +1307,7 @@ export type Database = {
       app_role: "super_admin" | "admin" | "user" | "comercial"
       client_status: "active" | "inactive" | "prospect"
       closure_status: "draft" | "confirmed" | "paid"
+      salary_deal_status: "active" | "paused" | "ended"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1369,6 +1439,7 @@ export const Constants = {
       app_role: ["super_admin", "admin", "user", "comercial"],
       client_status: ["active", "inactive", "prospect"],
       closure_status: ["draft", "confirmed", "paid"],
+      salary_deal_status: ["active", "paused", "ended"],
     },
   },
 } as const

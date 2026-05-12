@@ -91,6 +91,7 @@ export default function TrackerReport() {
 
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [datePreset, setDatePreset] = useState<string>("last7");
   const [affiliateFilter, setAffiliateFilter] = useState(ALL);
   const [brandFilter, setBrandFilter] = useState(ALL);
   const [onlyActive, setOnlyActive] = useState(false);

@@ -168,8 +168,24 @@ export default function BrandGoals() {
               dailyTarget={totalTarget / daysInMonth}
             />
 
+            {/* Toggle to expand per-brand analysis */}
+            <button
+              type="button"
+              onClick={() => setExpanded(v => !v)}
+              className="w-full flex items-center justify-between gap-2 rounded-lg border bg-muted/30 hover:bg-muted/50 transition px-3 py-2 text-sm"
+              aria-expanded={expanded}
+            >
+              <span className="inline-flex items-center gap-2 font-medium">
+                <BarChart3 className="h-4 w-4 text-primary" />
+                Análisis por marca
+                <span className="text-xs text-muted-foreground">({brands.length})</span>
+              </span>
+              <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+            </button>
+
             {/* Per brand list */}
-            <div className="space-y-3">
+            {expanded && (
+            <div className="space-y-3 animate-in fade-in slide-in-from-top-1 duration-200">
               {brands.length === 0 ? (
                 <div className="text-sm text-muted-foreground">No hay marcas con datos en este mes.</div>
               ) : brands.map(brand => {

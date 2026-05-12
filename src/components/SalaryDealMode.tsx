@@ -32,7 +32,7 @@ type SalarySelection = {
   uid: string;
   opId: string;
   planId: string;
-  weight: number; // % de mix esperado
+  weight: number;
 };
 
 type Deal = {
@@ -50,7 +50,9 @@ type Deal = {
   breakeven_ftd_monthly: number | null;
   trigger_min_ftd_monthly: number | null;
   trigger_breakeven_pct: number | null;
-  trigger_min_ngr_per_ftd: number | null;
+  trigger_min_activity_ratio: number | null;
+  trigger_min_conversion_pct: number | null;
+  trigger_min_net_margin: number | null;
   trial_months: number | null;
   notes: string | null;
   created_at: string;
@@ -62,9 +64,8 @@ const fmt = (n: number, cur?: string) =>
   new Intl.NumberFormat("es-ES", { style: cur ? "currency" : "decimal", currency: cur, maximumFractionDigits: 0 }).format(Math.round(n));
 
 export default function SalaryDealMode({ operators }: { operators: OperatorLite[] }) {
-  const { user, isSuperAdmin } = useAuth();
+  const { user } = useAuth();
   const currencies = useCurrencies();
-  const isAdmin = isSuperAdmin; // also admins can write per RLS; this just gates UI
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
   const [affiliateId, setAffiliateId] = useState<string>("");
@@ -76,13 +77,24 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   const [trialMonths, setTrialMonths] = useState<string>("0");
   const [trgMinFtd, setTrgMinFtd] = useState<string>("");
   const [trgBreakevenPct, setTrgBreakevenPct] = useState<string>("80");
-  const [trgMinNgr, setTrgMinNgr] = useState<string>("");
+  const [trgActivityRatio, setTrgActivityRatio] = useState<string>("50");
+  const [trgConversionPct, setTrgConversionPct] = useState<string>("");
+  const [trgNetMargin, setTrgNetMargin] = useState<string>("0");
   const [notes, setNotes] = useState("");
   const [selections, setSelections] = useState<SalarySelection[]>([newSel()]);
   const [saving, setSaving] = useState(false);
 
   const [deals, setDeals] = useState<Deal[]>([]);
-  const [analysis, setAnalysis] = useState<{ months: { period: string; ftd: number; ngrPerFtd: number }[] } | null>(null);
+  const [analysis, setAnalysis] = useState<{
+    months: {
+      period: string;
+      ftd: number;
+      activeAccounts: number;
+      newAccounts: number;
+      cpaIncome: number;
+      revshareIncome: number;
+    }[];
+  } | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -104,10 +116,9 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   };
 
   const loadAnalysis = async (affId: string) => {
-    // FTDs y NGR mensual desde los cierres de comisión
     const { data: items } = await supabase
       .from("commission_closure_items")
-      .select("closure_id, qualified_players, sports_ngr, casino_ngr")
+      .select("closure_id, qualified_players, active_accounts, new_accounts, cpa_amount, revshare_amount")
       .eq("affiliate_id", affId);
     if (!items?.length) { setAnalysis({ months: [] }); return; }
     const closureIds = Array.from(new Set(items.map((i: any) => i.closure_id)));
@@ -118,16 +129,19 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     const periodMap = new Map<string, string>();
     (closures ?? []).forEach((c: any) => periodMap.set(c.id, c.period));
 
-    const acc = new Map<string, { ftd: number; ngr: number }>();
+    const acc = new Map<string, { ftd: number; activeAccounts: number; newAccounts: number; cpaIncome: number; revshareIncome: number }>();
     items.forEach((i: any) => {
       const p = periodMap.get(i.closure_id) || "?";
-      const cur = acc.get(p) || { ftd: 0, ngr: 0 };
+      const cur = acc.get(p) || { ftd: 0, activeAccounts: 0, newAccounts: 0, cpaIncome: 0, revshareIncome: 0 };
       cur.ftd += i.qualified_players || 0;
-      cur.ngr += (Number(i.sports_ngr) || 0) + (Number(i.casino_ngr) || 0);
+      cur.activeAccounts += i.active_accounts || 0;
+      cur.newAccounts += i.new_accounts || 0;
+      cur.cpaIncome += Number(i.cpa_amount) || 0;
+      cur.revshareIncome += Number(i.revshare_amount) || 0;
       acc.set(p, cur);
     });
     const months = Array.from(acc.entries())
-      .map(([period, v]) => ({ period, ftd: v.ftd, ngrPerFtd: v.ftd > 0 ? v.ngr / v.ftd : 0 }))
+      .map(([period, v]) => ({ period, ...v }))
       .sort((a, b) => a.period.localeCompare(b.period));
     setAnalysis({ months });
   };
@@ -137,7 +151,6 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     else { setDeals([]); setAnalysis(null); }
   }, [affiliateId]);
 
-  // Cálculo de breakeven: salary / weighted CPA neto
   const breakeven = useMemo(() => {
     const sal = parseFloat(salary) || 0;
     if (!sal) return { weightedCpa: 0, ftdNeeded: 0 };
@@ -175,34 +188,46 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       breakeven_ftd_monthly: breakeven.ftdNeeded,
       trigger_min_ftd_monthly: trgMinFtd ? parseInt(trgMinFtd) : null,
       trigger_breakeven_pct: trgBreakevenPct ? parseFloat(trgBreakevenPct) : null,
-      trigger_min_ngr_per_ftd: trgMinNgr ? parseFloat(trgMinNgr) : null,
+      trigger_min_activity_ratio: trgActivityRatio ? parseFloat(trgActivityRatio) : null,
+      trigger_min_conversion_pct: trgConversionPct ? parseFloat(trgConversionPct) : null,
+      trigger_min_net_margin: trgNetMargin !== "" ? parseFloat(trgNetMargin) : null,
       trial_months: parseInt(trialMonths) || 0,
       notes: notes || null,
       created_by: user.id,
-    });
+    } as any);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar el deal");
     toast.success("Deal de salario guardado y atribuido al afiliado");
     loadDeals(affiliateId);
   };
 
-  // Evaluación de salud para cada deal activo
   const evaluateDeal = (d: Deal) => {
     if (!analysis) return null;
     const months = analysis.months;
-    const lastMonths = months.slice(-6); // últimos 6 cierres
-    const avgFtd = lastMonths.length ? lastMonths.reduce((s, m) => s + m.ftd, 0) / lastMonths.length : 0;
-    const avgNgrPerFtd = lastMonths.length ? lastMonths.reduce((s, m) => s + m.ngrPerFtd, 0) / lastMonths.length : 0;
+    const lastMonths = months.slice(-6);
+    const n = lastMonths.length;
+    const sum = lastMonths.reduce(
+      (s, m) => ({
+        ftd: s.ftd + m.ftd,
+        activeAccounts: s.activeAccounts + m.activeAccounts,
+        newAccounts: s.newAccounts + m.newAccounts,
+        cpaIncome: s.cpaIncome + m.cpaIncome,
+        revshareIncome: s.revshareIncome + m.revshareIncome,
+      }),
+      { ftd: 0, activeAccounts: 0, newAccounts: 0, cpaIncome: 0, revshareIncome: 0 }
+    );
+    const avgFtd = n ? sum.ftd / n : 0;
+    const avgIncome = n ? (sum.cpaIncome + sum.revshareIncome) / n : 0;
+    const avgNetMargin = avgIncome - (d.salary_amount || 0);
+    const activityRatio = sum.ftd > 0 ? (sum.activeAccounts / sum.ftd) * 100 : 0;
+    const conversionPct = sum.newAccounts > 0 ? (sum.ftd / sum.newAccounts) * 100 : 0;
     const breakevenFtd = d.breakeven_ftd_monthly || 0;
     const pctBreakeven = breakevenFtd > 0 ? (avgFtd / breakevenFtd) * 100 : 0;
 
     const alerts: { level: "ok" | "warn" | "danger"; label: string }[] = [];
     if (d.trigger_min_ftd_monthly != null) {
       const ok = avgFtd >= d.trigger_min_ftd_monthly;
-      alerts.push({
-        level: ok ? "ok" : "danger",
-        label: `FTD mín mensual: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}`,
-      });
+      alerts.push({ level: ok ? "ok" : "danger", label: `FTD mín mensual: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}` });
     }
     if (d.trigger_breakeven_pct != null && breakevenFtd > 0) {
       const ok = pctBreakeven >= d.trigger_breakeven_pct;
@@ -211,14 +236,28 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
         label: `Breakeven: ${pctBreakeven.toFixed(0)}% / ${d.trigger_breakeven_pct}%`,
       });
     }
-    if (d.trigger_min_ngr_per_ftd != null) {
-      const ok = avgNgrPerFtd >= d.trigger_min_ngr_per_ftd;
+    if (d.trigger_min_activity_ratio != null) {
+      const ok = activityRatio >= d.trigger_min_activity_ratio;
       alerts.push({
-        level: ok ? "ok" : "warn",
-        label: `Calidad NGR/FTD: ${fmt(avgNgrPerFtd)} / ${fmt(d.trigger_min_ngr_per_ftd)}`,
+        level: ok ? "ok" : activityRatio >= d.trigger_min_activity_ratio * 0.8 ? "warn" : "danger",
+        label: `Ratio actividad: ${activityRatio.toFixed(0)}% / ${d.trigger_min_activity_ratio}%`,
       });
     }
-    return { avgFtd, avgNgrPerFtd, pctBreakeven, alerts, monthsAnalyzed: lastMonths.length };
+    if (d.trigger_min_conversion_pct != null) {
+      const ok = conversionPct >= d.trigger_min_conversion_pct;
+      alerts.push({
+        level: ok ? "ok" : "warn",
+        label: `Conversión visitas→FTD: ${conversionPct.toFixed(1)}% / ${d.trigger_min_conversion_pct}%`,
+      });
+    }
+    if (d.trigger_min_net_margin != null) {
+      const ok = avgNetMargin >= d.trigger_min_net_margin;
+      alerts.push({
+        level: ok ? "ok" : avgNetMargin >= 0 ? "warn" : "danger",
+        label: `Margen neto/mes: ${fmt(avgNetMargin, d.salary_currency)} / ${fmt(d.trigger_min_net_margin, d.salary_currency)}`,
+      });
+    }
+    return { avgFtd, avgIncome, avgNetMargin, activityRatio, conversionPct, pctBreakeven, alerts, monthsAnalyzed: n };
   };
 
   return (
@@ -229,8 +268,8 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             <TrendingUp className="h-5 w-5" /> Oferta Salario + CPA
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            El afiliado siente seguridad de un salario fijo mensual. Define triggers para vigilar que la entrega real
-            mantenga la negociación saludable.
+            El afiliado siente seguridad de un salario fijo mensual. Vigilamos la salud con métricas reales que llegan
+            por API (FTDs cualificados, cuentas activas, conversión y comisión cobrada al operador).
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -285,7 +324,6 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             </div>
           </div>
 
-          {/* Mix de operadores para calcular breakeven */}
           <div className="space-y-2">
             <Label>Mix esperado de operadores (para calcular breakeven)</Label>
             {selections.map((s) => {
@@ -322,7 +360,6 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             </Button>
           </div>
 
-          {/* Breakeven snapshot */}
           {breakeven.ftdNeeded > 0 && (
             <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-3 grid grid-cols-2 gap-3 text-sm">
               <div>
@@ -336,13 +373,12 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             </div>
           )}
 
-          {/* Triggers de seguridad */}
           <div className="space-y-2 border-t pt-3">
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-amber-600" />
-              <span className="font-semibold text-sm">Triggers de seguridad</span>
+              <span className="font-semibold text-sm">Triggers de seguridad (datos reales de API Reports)</span>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">FTDs mínimos / mes</Label>
                 <Input type="number" min="0" value={trgMinFtd} onChange={(e) => setTrgMinFtd(e.target.value)} />
@@ -352,8 +388,17 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                 <Input type="number" min="0" max="200" value={trgBreakevenPct} onChange={(e) => setTrgBreakevenPct(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">NGR mín. por FTD</Label>
-                <Input type="number" min="0" value={trgMinNgr} onChange={(e) => setTrgMinNgr(e.target.value)} />
+                <Label className="text-xs">Ratio actividad mín. (% activos / FTD)</Label>
+                <Input type="number" min="0" max="200" value={trgActivityRatio} onChange={(e) => setTrgActivityRatio(e.target.value)} />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Conversión mín. (% FTD / cuentas)</Label>
+                <Input type="number" min="0" max="100" value={trgConversionPct} onChange={(e) => setTrgConversionPct(e.target.value)} placeholder="opcional" />
+              </div>
+              <div className="space-y-1">
+                <Label className="text-xs">Margen neto mín. / mes</Label>
+                <Input type="number" value={trgNetMargin} onChange={(e) => setTrgNetMargin(e.target.value)}
+                  placeholder="(CPA + RS cobrados) − salario" />
               </div>
             </div>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas / cláusulas extra de la negociación" />
@@ -365,7 +410,6 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
         </CardContent>
       </Card>
 
-      {/* Análisis de salud */}
       {affiliateId && deals.length > 0 && (
         <Card>
           <CardHeader>
@@ -373,7 +417,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               <Activity className="h-5 w-5" /> Análisis de salud de los deals
             </CardTitle>
             <p className="text-xs text-muted-foreground">
-              Cruzamos los FTDs reales del afiliado (cierres de comisión) con los triggers definidos.
+              Cruzamos los cierres reales (FTDs cualificados, cuentas activas/nuevas y comisión cobrada al operador) con los triggers definidos.
             </p>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -404,9 +448,9 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
 
                   {ev && ev.monthsAnalyzed > 0 && (
                     <>
-                      <div className="grid grid-cols-3 gap-2 text-center text-sm">
+                      <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
                         <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">FTD/mes (avg)</div>
+                          <div className="text-[10px] uppercase text-muted-foreground">FTD/mes</div>
                           <div className="font-bold">{ev.avgFtd.toFixed(0)}</div>
                         </div>
                         <div className="rounded border p-2 bg-muted/40">
@@ -414,8 +458,18 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                           <div className="font-bold">{ev.pctBreakeven.toFixed(0)}%</div>
                         </div>
                         <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">NGR / FTD</div>
-                          <div className="font-bold">{fmt(ev.avgNgrPerFtd)}</div>
+                          <div className="text-[10px] uppercase text-muted-foreground">Actividad</div>
+                          <div className="font-bold">{ev.activityRatio.toFixed(0)}%</div>
+                        </div>
+                        <div className="rounded border p-2 bg-muted/40">
+                          <div className="text-[10px] uppercase text-muted-foreground">Conversión</div>
+                          <div className="font-bold">{ev.conversionPct.toFixed(1)}%</div>
+                        </div>
+                        <div className="rounded border p-2 bg-muted/40">
+                          <div className="text-[10px] uppercase text-muted-foreground">Margen/mes</div>
+                          <div className={`font-bold ${ev.avgNetMargin < 0 ? "text-destructive" : ""}`}>
+                            {fmt(ev.avgNetMargin, d.salary_currency)}
+                          </div>
                         </div>
                       </div>
                       <div className="space-y-1">

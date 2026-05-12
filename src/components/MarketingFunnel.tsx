@@ -184,79 +184,112 @@ export default function MarketingFunnel() {
           <div className="text-sm text-destructive">{error}</div>
         ) : (
           <>
-            {/* Funnel visual SVG */}
+            {/* Funnel horizontal 3D inspirado en cono apilado */}
             {(() => {
-              const W = 1000, H = 240, cy = H / 2, maxH = 200, minH = 70;
+              const W = 1000, H = 280, cy = H / 2, maxH = 230, minH = 90;
               const segW = W / stages.length;
               const scale = (v: number) => (maxStage ? Math.sqrt(Math.max(0, v) / maxStage) : 0);
               const heightFor = (v: number) => Math.max(minH, scale(v) * maxH);
-              const colors = [
-                "hsl(210 90% 78%)",
-                "hsl(212 85% 68%)",
-                "hsl(215 80% 58%)",
-                "hsl(218 75% 48%)",
-              ];
-              // Build smooth top & bottom paths through all stage edge points
-              const xs: number[] = [];
-              const hs: number[] = [];
-              for (let i = 0; i < stages.length; i++) {
-                xs.push(i * segW);
-                hs.push(heightFor(stages[i].value) / 2);
-              }
-              xs.push(stages.length * segW);
-              const lastH = heightFor(stages[stages.length - 1].value) / 2;
-              hs.push(lastH * 0.9);
 
-              const smoothPath = (sign: 1 | -1) => {
-                let d = `M ${xs[0]} ${cy + sign * hs[0]}`;
-                for (let i = 0; i < xs.length - 1; i++) {
-                  const x1 = xs[i], x2 = xs[i + 1];
-                  const y1 = cy + sign * hs[i], y2 = cy + sign * hs[i + 1];
-                  const cx1 = x1 + (x2 - x1) * 0.5;
-                  const cx2 = x1 + (x2 - x1) * 0.5;
-                  d += ` C ${cx1} ${y1}, ${cx2} ${y2}, ${x2} ${y2}`;
+              // Multicolor palette inspired by the reference (warm → cool)
+              const palette = [
+                { face: "hsl(210 90% 72%)", ring: "hsl(210 80% 58%)" },
+                { face: "hsl(220 85% 64%)", ring: "hsl(220 78% 50%)" },
+                { face: "hsl(232 75% 58%)", ring: "hsl(232 70% 44%)" },
+                { face: "hsl(248 70% 52%)", ring: "hsl(248 65% 40%)" },
+              ];
+
+              const halves = stages.map(s => heightFor(s.value) / 2);
+              const xs = stages.map((_, i) => i * segW);
+              xs.push(W);
+              halves.push(halves[halves.length - 1] * 0.55);
+
+              // Build each slice as a 3D-looking band with bulged right ellipse
+              const segments = stages.map((st, i) => {
+                const xL = xs[i], xR = xs[i + 1];
+                const hL = halves[i], hR = halves[i + 1];
+                const rxR = Math.min(28, (xR - xL) * 0.18);
+                const rxL = i === 0 ? Math.min(36, (xR - xL) * 0.22) : 0;
+                // Body: top edge L→R, right ellipse front (bulge right), bottom edge R→L, left ellipse back (concave) for 1st only
+                let d = `M ${xL} ${cy - hL}`;
+                d += ` L ${xR} ${cy - hR}`;
+                d += ` A ${rxR} ${hR} 0 0 1 ${xR} ${cy + hR}`;
+                d += ` L ${xL} ${cy + hL}`;
+                if (i === 0) {
+                  // open bowl on the left (concave back)
+                  d += ` A ${rxL} ${hL} 0 0 1 ${xL} ${cy - hL}`;
+                } else {
+                  d += ` Z`;
                 }
-                return d;
-              };
-              const funnelPath =
-                smoothPath(-1) +
-                ` L ${xs[xs.length - 1]} ${cy + hs[hs.length - 1]}` +
-                smoothPath(1).replace(/^M /, " L ").split(" L ").reverse().join(" L ").replace(/^ L /, " ") +
-                " Z";
+                return { st, i, xL, xR, hL, hR, rxR, d };
+              });
 
               return (
                 <div className="w-full">
                   <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
                     <defs>
-                      <linearGradient id="funnel-grad" x1="0" x2="1" y1="0" y2="0">
-                        {colors.map((c, i) => (
-                          <stop key={i} offset={`${(i / (colors.length - 1)) * 100}%`} stopColor={c} stopOpacity="0.75" />
-                        ))}
-                      </linearGradient>
+                      {palette.map((p, i) => (
+                        <linearGradient key={i} id={`fseg-${i}`} x1="0" x2="0" y1="0" y2="1">
+                          <stop offset="0%" stopColor={p.face} stopOpacity="0.95" />
+                          <stop offset="55%" stopColor={p.face} stopOpacity="0.85" />
+                          <stop offset="100%" stopColor={p.ring} stopOpacity="0.95" />
+                        </linearGradient>
+                      ))}
+                      <radialGradient id="bowl-shade" cx="0.5" cy="0.5" r="0.6">
+                        <stop offset="0%" stopColor="hsl(210 60% 35%)" stopOpacity="0.35" />
+                        <stop offset="100%" stopColor="hsl(210 60% 35%)" stopOpacity="0" />
+                      </radialGradient>
                     </defs>
-                    <path d={funnelPath} fill="url(#funnel-grad)" />
-                    {stages.map((st, i) => {
-                      const cx = i * segW + segW / 2;
+
+                    {/* Soft drop shadow under the funnel */}
+                    <ellipse cx={W / 2} cy={H - 14} rx={W * 0.42} ry={8} fill="hsl(220 40% 30%)" opacity={0.08} />
+
+                    {segments.map(({ st, i, d, xL, xR, hR, rxR }) => {
+                      const cx = (xL + xR) / 2;
                       return (
                         <g key={st.key}>
-                          <text x={cx} y={cy - 6} textAnchor="middle" fill="hsl(220 60% 18%)" style={{ fontSize: 26, fontWeight: 700 }}>
+                          <path d={d} fill={`url(#fseg-${i})`} />
+                          {/* darker ring on the right edge to simulate 3D depth */}
+                          <ellipse
+                            cx={xR}
+                            cy={cy}
+                            rx={rxR}
+                            ry={hR}
+                            fill={palette[i].ring}
+                            opacity={0.55}
+                          />
+                          {/* top highlight stripe */}
+                          <path
+                            d={`M ${xL} ${cy - halves[i] + 4} Q ${cx} ${cy - (halves[i] + halves[i + 1]) / 2 + 1} ${xR} ${cy - hR + 4}`}
+                            stroke="white"
+                            strokeOpacity={0.35}
+                            strokeWidth={2}
+                            fill="none"
+                          />
+                          {/* labels */}
+                          <text x={cx - rxR / 2} y={cy - 6} textAnchor="middle" fill="white" style={{ fontSize: 26, fontWeight: 800, letterSpacing: 0.3 }}>
                             {fmtInt(st.value)}
                           </text>
-                          <text x={cx} y={cy + 18} textAnchor="middle" fill="hsl(220 40% 30%)" style={{ fontSize: 13, fontWeight: 500 }}>
+                          <text x={cx - rxR / 2} y={cy + 18} textAnchor="middle" fill="white" fillOpacity={0.92} style={{ fontSize: 12, fontWeight: 600 }}>
                             {st.label}
                           </text>
                         </g>
                       );
                     })}
-                    {/* Conversion chips centered between stages, on the funnel midline */}
+
+                    {/* Open-bowl shading on the leftmost (entry) */}
+                    <ellipse cx={xs[0] + 6} cy={cy} rx={Math.min(36, segW * 0.22)} ry={halves[0]} fill="url(#bowl-shade)" />
+
+                    {/* Conversion chips between stages */}
                     {stages.slice(1).map((st, idx) => {
                       const i = idx + 1;
-                      const x = i * segW;
+                      const x = xs[i];
+                      const y = cy - halves[i] - 22;
                       return (
-                        <g key={`chip-${st.key}`} transform={`translate(${x}, ${cy})`}>
-                          <rect x={-44} y={-14} width={88} height={28} rx={14}
+                        <g key={`chip-${st.key}`} transform={`translate(${x}, ${y})`}>
+                          <rect x={-42} y={-14} width={84} height={28} rx={14}
                             className="fill-background stroke-border" strokeWidth={1} />
-                          <text x={0} y={5} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 600 }}>
+                          <text x={0} y={5} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 700 }}>
                             {fmtPct(pct(st.value, stages[i - 1].value))}
                           </text>
                         </g>

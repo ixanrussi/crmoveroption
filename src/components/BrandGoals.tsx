@@ -47,6 +47,7 @@ export default function BrandGoals() {
   const [perDay, setPerDay] = useState<Map<string, Map<string, number>>>(new Map()); // brand -> day(1..N) -> cpas
   const [drafts, setDrafts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState<string | null>(null);
+  const [expanded, setExpanded] = useState(false);
 
   useEffect(() => {
     let cancelled = false;

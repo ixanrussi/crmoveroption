@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Users, UserPlus, Globe, Layers, Map as MapIcon } from "lucide-react";
 import WorldActivityMap from "@/components/WorldActivityMap";
 import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
+import TopBrandsCommission from "@/components/TopBrandsCommission";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();

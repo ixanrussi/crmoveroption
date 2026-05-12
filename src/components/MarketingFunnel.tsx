@@ -184,73 +184,11 @@ export default function MarketingFunnel() {
           <div className="text-sm text-destructive">{error}</div>
         ) : (
           <>
-            {/* Funnel visual SVG */}
-            {(() => {
-              const W = 1000, H = 220, cy = H / 2, maxH = 170;
-              const segW = W / stages.length;
-              const heightFor = (v: number) => (maxStage ? Math.max(8, (v / maxStage) * maxH) : 8);
-              const colors = [
-                "hsl(217 91% 60%)",
-                "hsl(217 91% 55%)",
-                "hsl(142 71% 45%)",
-                "hsl(38 92% 50%)",
-              ];
-              return (
-                <div className="w-full">
-                  <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
-                    <defs>
-                      {colors.map((c, i) => (
-                        <linearGradient key={i} id={`grad-${i}`} x1="0" x2="1" y1="0" y2="0">
-                          <stop offset="0%" stopColor={c} stopOpacity="0.95" />
-                          <stop offset="100%" stopColor={c} stopOpacity="0.75" />
-                        </linearGradient>
-                      ))}
-                    </defs>
-                    {stages.map((st, i) => {
-                      const next = stages[i + 1];
-                      const h1 = heightFor(st.value) / 2;
-                      const h2 = heightFor(next ? next.value : st.value * 0.6) / 2;
-                      const x1 = i * segW, x2 = (i + 1) * segW;
-                      const points = [
-                        `${x1},${cy - h1}`,
-                        `${x2},${cy - h2}`,
-                        `${x2},${cy + h2}`,
-                        `${x1},${cy + h1}`,
-                      ].join(" ");
-                      const cx = (x1 + x2) / 2;
-                      return (
-                        <g key={st.key}>
-                          <polygon points={points} fill={`url(#grad-${i})`} />
-                          {/* value */}
-                          <text x={cx} y={cy - 6} textAnchor="middle" className="fill-white" style={{ fontSize: 26, fontWeight: 700 }}>
-                            {fmtInt(st.value)}
-                          </text>
-                          <text x={cx} y={cy + 18} textAnchor="middle" className="fill-white/90" style={{ fontSize: 13, fontWeight: 500 }}>
-                            {st.label}
-                          </text>
-                          {/* conversion chip between stages */}
-                          {i > 0 && (
-                            <g transform={`translate(${x1}, ${cy - h1 - 30})`}>
-                              <rect x={-46} y={-16} width={92} height={28} rx={14}
-                                className="fill-background stroke-border" strokeWidth={1} />
-                              <text x={0} y={4} textAnchor="middle" className="fill-foreground" style={{ fontSize: 13, fontWeight: 600 }}>
-                                {fmtPct(pct(st.value, stages[i - 1].value))}
-                              </text>
-                            </g>
-                          )}
-                        </g>
-                      );
-                    })}
-                  </svg>
-                  <div className="mt-3 flex items-center justify-center">
-                    <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-4 py-1.5 text-sm">
-                      <span className="text-muted-foreground">Conversión global Visit → CPA</span>
-                      <span className="font-bold text-primary">{fmtPct(overall)}</span>
-                    </div>
-                  </div>
-                </div>
-              );
-            })()}
+            {/* Funnel 3D */}
+            <Funnel3D
+              stages={stages.map(s => ({ key: s.key, label: s.label, value: s.value }))}
+              overall={overall}
+            />
 
             <div className="grid gap-4 md:grid-cols-2">
               {/* Top operadores */}

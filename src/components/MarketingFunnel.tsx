@@ -186,9 +186,11 @@ export default function MarketingFunnel() {
           <>
             {/* Funnel visual SVG */}
             {(() => {
-              const W = 1000, H = 220, cy = H / 2, maxH = 170;
+              const W = 1000, H = 240, cy = H / 2, maxH = 200, minH = 70;
               const segW = W / stages.length;
-              const heightFor = (v: number) => (maxStage ? Math.max(8, (v / maxStage) * maxH) : 8);
+              // sqrt scale so smaller stages stay visible; clamp to minH
+              const scale = (v: number) => (maxStage ? Math.sqrt(Math.max(0, v) / maxStage) : 0);
+              const heightFor = (v: number) => Math.max(minH, scale(v) * maxH);
               const colors = [
                 "hsl(210 90% 75%)",
                 "hsl(212 85% 65%)",

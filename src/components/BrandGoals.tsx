@@ -107,10 +107,18 @@ export default function BrandGoals() {
     const set = new Set<string>();
     for (const b of brandTotals.keys()) set.add(b);
     for (const g of goals) set.add(g.brand);
+    const ratioOf = (b: string) => {
+      const t = goalByBrand.get(b)?.cpa_target ?? 0;
+      const a = brandTotals.get(b) ?? 0;
+      const expected = t * (dayOfMonth / daysInMonth);
+      // Brands without target go to the bottom
+      if (t <= 0) return -Infinity;
+      return expected > 0 ? a / expected : 0;
+    };
     return Array.from(set)
       .filter(b => b && b !== "—")
-      .sort((a, b) => (goalByBrand.get(b)?.cpa_target ?? 0) - (goalByBrand.get(a)?.cpa_target ?? 0) || a.localeCompare(b));
-  }, [brandTotals, goals, goalByBrand]);
+      .sort((a, b) => ratioOf(b) - ratioOf(a) || a.localeCompare(b));
+  }, [brandTotals, goals, goalByBrand, dayOfMonth, daysInMonth]);
 
   const totalTarget = useMemo(() => goals.reduce((s, g) => s + (g.cpa_target || 0), 0), [goals]);
   const totalActual = useMemo(() => Array.from(brandTotals.values()).reduce((s, n) => s + n, 0), [brandTotals]);

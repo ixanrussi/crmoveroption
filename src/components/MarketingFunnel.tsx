@@ -46,6 +46,7 @@ export default function MarketingFunnel() {
   const [error, setError] = useState<string | null>(null);
   const [rows, setRows] = useState<Row[]>([]);
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [showByBrand, setShowByBrand] = useState(false);
 
   useEffect(() => {
     supabase.from("affiliates").select("id, fixed_name, aliases")

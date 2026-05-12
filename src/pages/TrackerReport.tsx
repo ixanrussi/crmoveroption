@@ -333,13 +333,41 @@ export default function TrackerReport() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1.5">
-              <Label>From</Label>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Label>Período</Label>
+              <Select value={datePreset} onValueChange={handlePresetChange}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Hoy</SelectItem>
+                  <SelectItem value="yesterday">Ayer</SelectItem>
+                  <SelectItem value="last7">Últimos 7 días</SelectItem>
+                  <SelectItem value="thisWeek">Esta semana</SelectItem>
+                  <SelectItem value="thisMonth">Este mes</SelectItem>
+                  <SelectItem value="lastMonth">Mes pasado</SelectItem>
+                  <SelectItem value="thisQuarter">Este trimestre</SelectItem>
+                  <SelectItem value="thisYear">Este año</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>To</Label>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
+            {datePreset === "custom" ? (
+              <>
+                <div className="space-y-1.5">
+                  <Label>From</Label>
+                  <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>To</Label>
+                  <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Rango</Label>
+                <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 text-sm text-muted-foreground">
+                  {dateFrom || "—"} → {dateTo || "—"}
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Affiliate</Label>
               <Select value={affiliateFilter} onValueChange={setAffiliateFilter}>

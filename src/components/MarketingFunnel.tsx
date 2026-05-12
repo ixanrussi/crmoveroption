@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Filter, Loader2, ArrowRight } from "lucide-react";
+import { Filter, Loader2 } from "lucide-react";
 
 type Row = {
   tracker: string;

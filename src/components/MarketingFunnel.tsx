@@ -227,6 +227,13 @@ export default function MarketingFunnel() {
 
               return (
                 <div className="w-full">
+                  <button
+                    type="button"
+                    onClick={() => setShowByBrand(v => !v)}
+                    className="w-full text-left rounded-lg transition hover:bg-muted/40 focus:outline-none focus:ring-2 focus:ring-primary/30"
+                    aria-expanded={showByBrand}
+                    title="Click para ver el funnel por marca"
+                  >
                   <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
                     <defs>
                       {palette.map((p, i) => (

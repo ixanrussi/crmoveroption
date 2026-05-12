@@ -331,9 +331,9 @@ export default function MarketingFunnel() {
                             <tr>
                               <th className="text-left font-medium py-2 px-3">Marca</th>
                               <th className="text-right font-medium px-2">Visitas</th>
-                              <th className="text-right font-medium px-2 text-muted-foreground/80">V→S</th>
+                              <th className="text-right font-medium px-2 text-muted-foreground/80">V→R</th>
                               <th className="text-right font-medium px-2">Registros</th>
-                              <th className="text-right font-medium px-2 text-muted-foreground/80">S→F</th>
+                              <th className="text-right font-medium px-2 text-muted-foreground/80">R→F</th>
                               <th className="text-right font-medium px-2">FTDs</th>
                               <th className="text-right font-medium px-2 text-muted-foreground/80">F→CPA</th>
                               <th className="text-right font-medium px-2">CPAs</th>

@@ -298,8 +298,10 @@ export type Database = {
           status: Database["public"]["Enums"]["salary_deal_status"]
           trial_months: number | null
           trigger_breakeven_pct: number | null
+          trigger_min_activity_ratio: number | null
+          trigger_min_conversion_pct: number | null
           trigger_min_ftd_monthly: number | null
-          trigger_min_ngr_per_ftd: number | null
+          trigger_min_net_margin: number | null
           updated_at: string
         }
         Insert: {
@@ -320,8 +322,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["salary_deal_status"]
           trial_months?: number | null
           trigger_breakeven_pct?: number | null
+          trigger_min_activity_ratio?: number | null
+          trigger_min_conversion_pct?: number | null
           trigger_min_ftd_monthly?: number | null
-          trigger_min_ngr_per_ftd?: number | null
+          trigger_min_net_margin?: number | null
           updated_at?: string
         }
         Update: {
@@ -342,8 +346,10 @@ export type Database = {
           status?: Database["public"]["Enums"]["salary_deal_status"]
           trial_months?: number | null
           trigger_breakeven_pct?: number | null
+          trigger_min_activity_ratio?: number | null
+          trigger_min_conversion_pct?: number | null
           trigger_min_ftd_monthly?: number | null
-          trigger_min_ngr_per_ftd?: number | null
+          trigger_min_net_margin?: number | null
           updated_at?: string
         }
         Relationships: []

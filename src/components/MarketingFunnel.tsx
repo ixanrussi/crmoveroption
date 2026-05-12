@@ -284,7 +284,7 @@ export default function MarketingFunnel() {
                     {stages.slice(1).map((st, idx) => {
                       const i = idx + 1;
                       const x = xs[i];
-                      const y = cy - halves[i] - 22;
+                      const y = cy;
                       return (
                         <g key={`chip-${st.key}`} transform={`translate(${x}, ${y})`}>
                           <rect x={-42} y={-14} width={84} height={28} rx={14}

@@ -190,10 +190,10 @@ export default function MarketingFunnel() {
               const segW = W / stages.length;
               const heightFor = (v: number) => (maxStage ? Math.max(8, (v / maxStage) * maxH) : 8);
               const colors = [
-                "hsl(217 91% 60%)",
-                "hsl(217 91% 55%)",
-                "hsl(142 71% 45%)",
-                "hsl(38 92% 50%)",
+                "hsl(210 90% 75%)",
+                "hsl(212 85% 65%)",
+                "hsl(215 80% 55%)",
+                "hsl(218 75% 45%)",
               ];
               return (
                 <div className="w-full">
@@ -201,8 +201,8 @@ export default function MarketingFunnel() {
                     <defs>
                       {colors.map((c, i) => (
                         <linearGradient key={i} id={`grad-${i}`} x1="0" x2="1" y1="0" y2="0">
-                          <stop offset="0%" stopColor={c} stopOpacity="0.95" />
-                          <stop offset="100%" stopColor={c} stopOpacity="0.75" />
+                          <stop offset="0%" stopColor={c} stopOpacity="0.7" />
+                          <stop offset="100%" stopColor={colors[i + 1] ?? c} stopOpacity="0.7" />
                         </linearGradient>
                       ))}
                     </defs>
@@ -222,10 +222,10 @@ export default function MarketingFunnel() {
                         <g key={st.key}>
                           <polygon points={points} fill={`url(#grad-${i})`} />
                           {/* value */}
-                          <text x={cx} y={cy - 6} textAnchor="middle" className="fill-white" style={{ fontSize: 26, fontWeight: 700 }}>
+                          <text x={cx} y={cy - 6} textAnchor="middle" fill="hsl(220 60% 18%)" style={{ fontSize: 26, fontWeight: 700 }}>
                             {fmtInt(st.value)}
                           </text>
-                          <text x={cx} y={cy + 18} textAnchor="middle" className="fill-white/90" style={{ fontSize: 13, fontWeight: 500 }}>
+                          <text x={cx} y={cy + 18} textAnchor="middle" fill="hsl(220 40% 30%)" style={{ fontSize: 13, fontWeight: 500 }}>
                             {st.label}
                           </text>
                           {/* conversion chip between stages */}

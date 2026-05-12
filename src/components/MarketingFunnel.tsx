@@ -331,12 +331,12 @@ export default function MarketingFunnel() {
                             <tr>
                               <th className="text-left font-medium py-2 px-3">Marca</th>
                               <th className="text-right font-medium px-2">Visitas</th>
+                              <th className="text-right font-medium px-2 text-muted-foreground/80">V→S</th>
                               <th className="text-right font-medium px-2">Registros</th>
+                              <th className="text-right font-medium px-2 text-muted-foreground/80">S→F</th>
                               <th className="text-right font-medium px-2">FTDs</th>
+                              <th className="text-right font-medium px-2 text-muted-foreground/80">F→CPA</th>
                               <th className="text-right font-medium px-2">CPAs</th>
-                              <th className="text-right font-medium px-2">V→S</th>
-                              <th className="text-right font-medium px-2">S→F</th>
-                              <th className="text-right font-medium px-2">F→CPA</th>
                               <th className="text-right font-medium px-3">V→CPA</th>
                             </tr>
                           </thead>
@@ -348,12 +348,12 @@ export default function MarketingFunnel() {
                                 <tr key={b.name} className="border-t hover:bg-muted/30">
                                   <td className="py-1.5 px-3 truncate max-w-[180px]">{b.name}</td>
                                   <td className="text-right tabular-nums px-2">{fmtInt(b.v)}</td>
+                                  <td className="text-right tabular-nums px-2 text-muted-foreground">{fmtPct(pct(b.s, b.v))}</td>
                                   <td className="text-right tabular-nums px-2">{fmtInt(b.s)}</td>
+                                  <td className="text-right tabular-nums px-2 text-muted-foreground">{fmtPct(b.signupToFtd)}</td>
                                   <td className="text-right tabular-nums px-2">{fmtInt(b.f)}</td>
+                                  <td className="text-right tabular-nums px-2 text-muted-foreground">{fmtPct(b.ftdToCpa)}</td>
                                   <td className="text-right tabular-nums px-2">{fmtInt(b.c)}</td>
-                                  <td className="text-right tabular-nums px-2">{fmtPct(pct(b.s, b.v))}</td>
-                                  <td className="text-right tabular-nums px-2">{fmtPct(b.signupToFtd)}</td>
-                                  <td className="text-right tabular-nums px-2">{fmtPct(b.ftdToCpa)}</td>
                                   <td className="text-right tabular-nums px-3 font-semibold">{fmtPct(b.visitToCpa)}</td>
                                 </tr>
                               ))}

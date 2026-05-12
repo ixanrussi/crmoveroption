@@ -201,8 +201,8 @@ export default function MarketingFunnel() {
                     <defs>
                       {colors.map((c, i) => (
                         <linearGradient key={i} id={`grad-${i}`} x1="0" x2="1" y1="0" y2="0">
-                          <stop offset="0%" stopColor={c} stopOpacity="0.95" />
-                          <stop offset="100%" stopColor={c} stopOpacity="0.75" />
+                          <stop offset="0%" stopColor={c} stopOpacity="0.7" />
+                          <stop offset="100%" stopColor={colors[i + 1] ?? c} stopOpacity="0.7" />
                         </linearGradient>
                       ))}
                     </defs>

@@ -7,6 +7,7 @@ import { Users, UserPlus, Globe, Layers, Map as MapIcon } from "lucide-react";
 import WorldActivityMap from "@/components/WorldActivityMap";
 import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
 import TopBrandsCommission from "@/components/TopBrandsCommission";
+import MonthlyCpaChart from "@/components/MonthlyCpaChart";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();

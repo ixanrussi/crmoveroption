@@ -78,6 +78,8 @@ const Dashboard = () => {
         <TopAffiliatesFTD />
         <TopBrandsCommission />
       </div>
+
+      <MonthlyCpaChart />
     </div>
   );
 };

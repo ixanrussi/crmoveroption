@@ -257,6 +257,53 @@ export default function TrackerReport() {
     return t;
   }, [filteredAggs]);
 
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const computePreset = (preset: string): { from: string; to: string } | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    if (preset === "today") return { from: iso(today), to: iso(today) };
+    if (preset === "yesterday") {
+      const y = new Date(today); y.setDate(y.getDate() - 1);
+      return { from: iso(y), to: iso(y) };
+    }
+    if (preset === "last7") {
+      const f = new Date(today); f.setDate(f.getDate() - 7);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisWeek") {
+      const f = new Date(today);
+      const dow = (f.getDay() + 6) % 7; // Monday=0
+      f.setDate(f.getDate() - dow);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisMonth") {
+      const f = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "lastMonth") {
+      const f = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const t = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { from: iso(f), to: iso(t) };
+    }
+    if (preset === "thisQuarter") {
+      const q = Math.floor(today.getMonth() / 3);
+      const f = new Date(today.getFullYear(), q * 3, 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisYear") {
+      const f = new Date(today.getFullYear(), 0, 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    return null;
+  };
+
+  const handlePresetChange = (preset: string) => {
+    setDatePreset(preset);
+    const r = computePreset(preset);
+    if (r) { setDateFrom(r.from); setDateTo(r.to); }
+  };
+
   const apply = () => setAppliedRange({ from: dateFrom, to: dateTo });
   const reset = () => {
     setAffiliateFilter(ALL); setBrandFilter(ALL); setOnlyActive(false); setSearch("");

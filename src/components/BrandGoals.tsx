@@ -3,7 +3,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Target, Loader2, Save } from "lucide-react";
+import { Target, Loader2, Save, ChevronDown, BarChart3 } from "lucide-react";
 
 type Row = { brand: string; cpaCount: number };
 type ApiResponse = { total: number; pageSize: number; data: Row[] };

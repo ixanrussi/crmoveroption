@@ -222,10 +222,10 @@ export default function MarketingFunnel() {
                         <g key={st.key}>
                           <polygon points={points} fill={`url(#grad-${i})`} />
                           {/* value */}
-                          <text x={cx} y={cy - 6} textAnchor="middle" className="fill-white" style={{ fontSize: 26, fontWeight: 700 }}>
+                          <text x={cx} y={cy - 6} textAnchor="middle" fill="hsl(220 60% 18%)" style={{ fontSize: 26, fontWeight: 700 }}>
                             {fmtInt(st.value)}
                           </text>
-                          <text x={cx} y={cy + 18} textAnchor="middle" className="fill-white/90" style={{ fontSize: 13, fontWeight: 500 }}>
+                          <text x={cx} y={cy + 18} textAnchor="middle" fill="hsl(220 40% 30%)" style={{ fontSize: 13, fontWeight: 500 }}>
                             {st.label}
                           </text>
                           {/* conversion chip between stages */}

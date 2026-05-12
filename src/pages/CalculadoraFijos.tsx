@@ -537,7 +537,7 @@ export default function CalculadoraFijos() {
       <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30 no-print">
         <Switch checked={salaryMode} onCheckedChange={setSalaryMode} id="salary-mode" />
         <div className="flex-1">
-          <Label htmlFor="salary-mode" className="cursor-pointer font-semibold">Modo Salario + CPA</Label>
+          <Label htmlFor="salary-mode" className="cursor-pointer font-semibold">Modo fijo + CPA</Label>
           <p className="text-xs text-muted-foreground">
             Ofrece un salario fijo mensual al afiliado en lugar de un fijo cerrado por CPAs comprometidos.
           </p>

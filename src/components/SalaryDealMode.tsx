@@ -175,7 +175,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     if (!user) return toast.error("Inicia sesión");
     if (!affiliateId) return toast.error("Selecciona un afiliado");
     if (!name.trim()) return toast.error("Nombra el deal");
-    if (!parseFloat(salary)) return toast.error("Indica el salario");
+    if (!parseFloat(salary)) return toast.error("Indica la remuneración fija");
     setSaving(true);
     const { error } = await supabase.from("affiliate_salary_deals").insert({
       affiliate_id: affiliateId,
@@ -197,7 +197,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     } as any);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar el deal");
-    toast.success("Deal de salario guardado y atribuido al afiliado");
+    toast.success("Deal fijo guardado y atribuido al afiliado");
     loadDeals(affiliateId);
   };
 
@@ -265,10 +265,10 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" /> Oferta Salario + CPA
+            <TrendingUp className="h-5 w-5" /> Oferta fijo + CPA
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            El afiliado siente seguridad de un salario fijo mensual. Vigilamos la salud con métricas reales que llegan
+            El afiliado siente seguridad de una remuneración fija mensual. Vigilamos la salud con métricas reales que llegan
             por API (FTDs cualificados, cuentas activas, conversión y comisión cobrada al operador).
           </p>
         </CardHeader>
@@ -287,13 +287,13 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             </div>
             <div className="space-y-1">
               <Label>Nombre del deal</Label>
-              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Salario Q1 2026" />
+              <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Fijo Q1 2026" />
             </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1">
-              <Label>Salario mensual</Label>
+              <Label>Remuneración fija mensual</Label>
               <Input type="number" min="0" value={salary} onChange={(e) => setSalary(e.target.value)} />
             </div>
             <div className="space-y-1">
@@ -318,7 +318,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                 placeholder="Pago por cada FTD sobre el umbral" />
             </div>
             <div className="space-y-1">
-              <Label>Umbral de FTDs cubierto por salario</Label>
+              <Label>Umbral de FTDs cubierto por remuneración fija</Label>
               <Input type="number" min="0" value={bonusThreshold} onChange={(e) => setBonusThreshold(e.target.value)}
                 placeholder={breakeven.ftdNeeded ? `Sugerido: ${breakeven.ftdNeeded}` : ""} />
             </div>
@@ -398,7 +398,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               <div className="space-y-1">
                 <Label className="text-xs">Margen neto mín. / mes</Label>
                 <Input type="number" value={trgNetMargin} onChange={(e) => setTrgNetMargin(e.target.value)}
-                  placeholder="(CPA + RS cobrados) − salario" />
+                  placeholder="(CPA + RS cobrados) − remuneración fija" />
               </div>
             </div>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas / cláusulas extra de la negociación" />

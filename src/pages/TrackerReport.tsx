@@ -91,6 +91,7 @@ export default function TrackerReport() {
 
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
+  const [datePreset, setDatePreset] = useState<string>("last7");
   const [affiliateFilter, setAffiliateFilter] = useState(ALL);
   const [brandFilter, setBrandFilter] = useState(ALL);
   const [onlyActive, setOnlyActive] = useState(false);
@@ -256,6 +257,53 @@ export default function TrackerReport() {
     return t;
   }, [filteredAggs]);
 
+  const iso = (d: Date) => d.toISOString().slice(0, 10);
+  const computePreset = (preset: string): { from: string; to: string } | null => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const start = (d: Date) => { const x = new Date(d); x.setHours(0, 0, 0, 0); return x; };
+    if (preset === "today") return { from: iso(today), to: iso(today) };
+    if (preset === "yesterday") {
+      const y = new Date(today); y.setDate(y.getDate() - 1);
+      return { from: iso(y), to: iso(y) };
+    }
+    if (preset === "last7") {
+      const f = new Date(today); f.setDate(f.getDate() - 7);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisWeek") {
+      const f = new Date(today);
+      const dow = (f.getDay() + 6) % 7; // Monday=0
+      f.setDate(f.getDate() - dow);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisMonth") {
+      const f = new Date(today.getFullYear(), today.getMonth(), 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "lastMonth") {
+      const f = new Date(today.getFullYear(), today.getMonth() - 1, 1);
+      const t = new Date(today.getFullYear(), today.getMonth(), 0);
+      return { from: iso(f), to: iso(t) };
+    }
+    if (preset === "thisQuarter") {
+      const q = Math.floor(today.getMonth() / 3);
+      const f = new Date(today.getFullYear(), q * 3, 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    if (preset === "thisYear") {
+      const f = new Date(today.getFullYear(), 0, 1);
+      return { from: iso(f), to: iso(today) };
+    }
+    return null;
+  };
+
+  const handlePresetChange = (preset: string) => {
+    setDatePreset(preset);
+    const r = computePreset(preset);
+    if (r) { setDateFrom(r.from); setDateTo(r.to); }
+  };
+
   const apply = () => setAppliedRange({ from: dateFrom, to: dateTo });
   const reset = () => {
     setAffiliateFilter(ALL); setBrandFilter(ALL); setOnlyActive(false); setSearch("");
@@ -271,7 +319,7 @@ export default function TrackerReport() {
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Tracker Report</h1>
+          <h1 className="text-2xl font-semibold">API Report</h1>
           <p className="text-sm text-muted-foreground">Performance por afiliado real (Routy)</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to)} disabled={loading}>
@@ -285,13 +333,41 @@ export default function TrackerReport() {
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="space-y-1.5">
-              <Label>From</Label>
-              <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+              <Label>Período</Label>
+              <Select value={datePreset} onValueChange={handlePresetChange}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">Hoy</SelectItem>
+                  <SelectItem value="yesterday">Ayer</SelectItem>
+                  <SelectItem value="last7">Últimos 7 días</SelectItem>
+                  <SelectItem value="thisWeek">Esta semana</SelectItem>
+                  <SelectItem value="thisMonth">Este mes</SelectItem>
+                  <SelectItem value="lastMonth">Mes pasado</SelectItem>
+                  <SelectItem value="thisQuarter">Este trimestre</SelectItem>
+                  <SelectItem value="thisYear">Este año</SelectItem>
+                  <SelectItem value="custom">Custom</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
-            <div className="space-y-1.5">
-              <Label>To</Label>
-              <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
-            </div>
+            {datePreset === "custom" ? (
+              <>
+                <div className="space-y-1.5">
+                  <Label>From</Label>
+                  <Input type="date" value={dateFrom} onChange={(e) => setDateFrom(e.target.value)} />
+                </div>
+                <div className="space-y-1.5">
+                  <Label>To</Label>
+                  <Input type="date" value={dateTo} onChange={(e) => setDateTo(e.target.value)} />
+                </div>
+              </>
+            ) : (
+              <div className="space-y-1.5 sm:col-span-2">
+                <Label>Rango</Label>
+                <div className="h-10 flex items-center px-3 rounded-md border bg-muted/30 text-sm text-muted-foreground">
+                  {dateFrom || "—"} → {dateTo || "—"}
+                </div>
+              </div>
+            )}
             <div className="space-y-1.5">
               <Label>Affiliate</Label>
               <Select value={affiliateFilter} onValueChange={setAffiliateFilter}>

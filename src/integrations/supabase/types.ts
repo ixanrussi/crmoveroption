@@ -365,6 +365,39 @@ export type Database = {
           },
         ]
       }
+      brand_cpa_goals: {
+        Row: {
+          brand: string
+          cpa_target: number
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          period: string
+          updated_at: string
+        }
+        Insert: {
+          brand: string
+          cpa_target?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          period: string
+          updated_at?: string
+        }
+        Update: {
+          brand?: string
+          cpa_target?: number
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          period?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       calculator_simulations: {
         Row: {
           country_id: string | null

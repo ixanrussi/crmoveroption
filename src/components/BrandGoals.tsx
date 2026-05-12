@@ -165,7 +165,6 @@ export default function BrandGoals() {
                 return arr;
               })()}
               dailyTarget={totalTarget / daysInMonth}
-              today={today.getDate() === 0 ? 0 : (today.getMonth() === first.getMonth() && today.getFullYear() === first.getFullYear() ? today.getDate() : daysInMonth)}
             />
 
             {/* Per brand list */}

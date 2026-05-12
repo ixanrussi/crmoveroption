@@ -118,7 +118,7 @@ export default function BrandGoals() {
     return Array.from(set)
       .filter(b => b && b !== "—")
       .sort((a, b) => ratioOf(b) - ratioOf(a) || a.localeCompare(b));
-  }, [brandTotals, goals, goalByBrand]);
+  }, [brandTotals, goals, goalByBrand, dayOfMonth, daysInMonth]);
 
   const totalTarget = useMemo(() => goals.reduce((s, g) => s + (g.cpa_target || 0), 0), [goals]);
   const totalActual = useMemo(() => Array.from(brandTotals.values()).reduce((s, n) => s + n, 0), [brandTotals]);

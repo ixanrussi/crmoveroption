@@ -319,7 +319,7 @@ export default function TrackerReport() {
     <div className="space-y-6 p-4 md:p-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-semibold">Tracker Report</h1>
+          <h1 className="text-2xl font-semibold">API Report</h1>
           <p className="text-sm text-muted-foreground">Performance por afiliado real (Routy)</p>
         </div>
         <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to)} disabled={loading}>

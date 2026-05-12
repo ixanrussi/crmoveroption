@@ -71,6 +71,8 @@ const Dashboard = () => {
       </div>
 
       {showMap && <WorldActivityMap />}
+
+      <TopAffiliatesFTD />
     </div>
   );
 };

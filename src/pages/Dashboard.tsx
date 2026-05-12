@@ -8,6 +8,7 @@ import WorldActivityMap from "@/components/WorldActivityMap";
 import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
 import TopBrandsCommission from "@/components/TopBrandsCommission";
 import MonthlyCpaChart from "@/components/MonthlyCpaChart";
+import MarketingFunnel from "@/components/MarketingFunnel";
 
 const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
@@ -78,6 +79,8 @@ const Dashboard = () => {
         <TopAffiliatesFTD />
         <TopBrandsCommission />
       </div>
+
+      <MarketingFunnel />
 
       <MonthlyCpaChart />
     </div>

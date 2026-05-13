@@ -236,66 +236,134 @@ export default function MarketingFunnel() {
                   >
                   <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
                     <defs>
-                      {palette.map((p, i) => (
-                        <linearGradient key={i} id={`fseg-${i}`} x1="0" x2="0" y1="0" y2="1">
-                          <stop offset="0%" stopColor={p.face} stopOpacity="0.95" />
-                          <stop offset="55%" stopColor={p.face} stopOpacity="0.85" />
-                          <stop offset="100%" stopColor={p.ring} stopOpacity="0.95" />
-                        </linearGradient>
-                      ))}
-                      <radialGradient id="bowl-shade" cx="0.5" cy="0.5" r="0.6">
-                        <stop offset="0%" stopColor="hsl(210 60% 35%)" stopOpacity="0.35" />
-                        <stop offset="100%" stopColor="hsl(210 60% 35%)" stopOpacity="0" />
-                      </radialGradient>
+                      {/* Very subtle blue gradient for fill */}
+                      <linearGradient id="funnel-fill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stopColor="hsl(210 80% 65%)" stopOpacity="0.08" />
+                        <stop offset="50%" stopColor="hsl(210 80% 60%)" stopOpacity="0.12" />
+                        <stop offset="100%" stopColor="hsl(215 80% 55%)" stopOpacity="0.06" />
+                      </linearGradient>
+                      {/* Soft top highlight line */}
+                      <linearGradient id="funnel-stroke" x1="0" y1="0" x2="1" y2="0">
+                        <stop offset="0%" stopColor="hsl(210 90% 72%)" stopOpacity="0.6" />
+                        <stop offset="50%" stopColor="hsl(210 80% 60%)" stopOpacity="0.9" />
+                        <stop offset="100%" stopColor="hsl(220 85% 55%)" stopOpacity="0.6" />
+                      </linearGradient>
                     </defs>
 
-                    {/* Soft drop shadow under the funnel */}
-                    <ellipse cx={W / 2} cy={H - 14} rx={W * 0.42} ry={8} fill="hsl(220 40% 30%)" opacity={0.08} />
+                    {/* Build funnel outline as a single smooth shape */}
+                    {(() => {
+                      // Top edge
+                      let topD = `M ${xs[0]} ${cy - halves[0]}`;
+                      for (let i = 1; i <= stages.length; i++) {
+                        const xL = xs[i - 1], xR = xs[i];
+                        const hL = halves[i - 1], hR = halves[i];
+                        const cx = (xL + xR) / 2;
+                        topD += ` Q ${cx} ${cy - (hL + hR) / 2 - 2} ${xR} ${cy - hR}`;
+                      }
+                      // Bottom edge (reverse)
+                      for (let i = stages.length; i >= 1; i--) {
+                        const xL = xs[i - 1], xR = xs[i];
+                        const hL = halves[i - 1], hR = halves[i];
+                        const cx = (xL + xR) / 2;
+                        topD += ` Q ${cx} ${cy + (hL + hR) / 2 + 2} ${xL} ${cy + hL}`;
+                      }
+                      topD += " Z";
+                      return (
+                        <>
+                          {/* Faint fill */}
+                          <path d={topD} fill="url(#funnel-fill)" stroke="none" />
+                          {/* Top contour line */}
+                          <path
+                            d={(() => {
+                              let d = `M ${xs[0]} ${cy - halves[0]}`;
+                              for (let i = 1; i <= stages.length; i++) {
+                                const xL = xs[i - 1], xR = xs[i];
+                                const hL = halves[i - 1], hR = halves[i];
+                                const cx = (xL + xR) / 2;
+                                d += ` Q ${cx} ${cy - (hL + hR) / 2 - 2} ${xR} ${cy - hR}`;
+                              }
+                              return d;
+                            })()}
+                            fill="none"
+                            stroke="url(#funnel-stroke)"
+                            strokeWidth={1.5}
+                          />
+                          {/* Bottom contour line */}
+                          <path
+                            d={(() => {
+                              let d = `M ${xs[stages.length]} ${cy + halves[stages.length]}`;
+                              for (let i = stages.length; i >= 1; i--) {
+                                const xL = xs[i - 1], xR = xs[i];
+                                const hL = halves[i - 1], hR = halves[i];
+                                const cx = (xL + xR) / 2;
+                                d += ` Q ${cx} ${cy + (hL + hR) / 2 + 2} ${xL} ${cy + hL}`;
+                              }
+                              return d;
+                            })()}
+                            fill="none"
+                            stroke="url(#funnel-stroke)"
+                            strokeWidth={1.5}
+                          />
+                          {/* Vertical dividing lines between stages */}
+                          {stages.map((st, i) => {
+                            if (i === 0) return null;
+                            const x = xs[i];
+                            return (
+                              <line
+                                key={`div-${st.key}`}
+                                x1={x}
+                                y1={cy - halves[i] - 2}
+                                x2={x}
+                                y2={cy + halves[i] + 2}
+                                stroke="hsl(210 80% 60%)"
+                                strokeWidth={0.8}
+                                strokeOpacity={0.25}
+                                strokeDasharray="4 3"
+                              />
+                            );
+                          })}
+                          {/* Soft horizontal midline for each stage */}
+                          {stages.map((st, i) => {
+                            const xL = xs[i], xR = xs[i + 1];
+                            return (
+                              <line
+                                key={`mid-${st.key}`}
+                                x1={xL + 8}
+                                y1={cy}
+                                x2={xR - 8}
+                                y2={cy}
+                                stroke="hsl(210 80% 65%)"
+                                strokeWidth={0.5}
+                                strokeOpacity={0.15}
+                              />
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
 
-                    {segments.map(({ st, i, d, xL, xR, hR, rxR }) => {
+                    {/* Labels - kept at same approximate positions */}
+                    {stages.map((st, i) => {
+                      const xL = xs[i], xR = xs[i + 1];
                       const cx = (xL + xR) / 2;
                       return (
                         <g key={st.key}>
-                          <path d={d} fill={`url(#fseg-${i})`} />
-                          {/* darker ring on the right edge to simulate 3D depth */}
-                          <ellipse
-                            cx={xR}
-                            cy={cy}
-                            rx={rxR}
-                            ry={hR}
-                            fill={palette[i].ring}
-                            opacity={0.55}
-                          />
-                          {/* top highlight stripe */}
-                          <path
-                            d={`M ${xL} ${cy - halves[i] + 4} Q ${cx} ${cy - (halves[i] + halves[i + 1]) / 2 + 1} ${xR} ${cy - hR + 4}`}
-                            stroke="white"
-                            strokeOpacity={0.35}
-                            strokeWidth={2}
-                            fill="none"
-                          />
-                          {/* labels */}
-                          <text x={cx - rxR / 2} y={cy - 6} textAnchor="middle" fill="white" style={{ fontSize: 26, fontWeight: 800, letterSpacing: 0.3 }}>
+                          <text x={cx} y={cy - 6} textAnchor="middle" className="fill-foreground" style={{ fontSize: 26, fontWeight: 800, letterSpacing: 0.3 }}>
                             {fmtInt(st.value)}
                           </text>
-                          <text x={cx - rxR / 2} y={cy + 18} textAnchor="middle" fill="white" fillOpacity={0.92} style={{ fontSize: 12, fontWeight: 600 }}>
+                          <text x={cx} y={cy + 18} textAnchor="middle" className="fill-muted-foreground" style={{ fontSize: 12, fontWeight: 600 }}>
                             {st.label}
                           </text>
                         </g>
                       );
                     })}
 
-                    {/* Open-bowl shading on the leftmost (entry) */}
-                    <ellipse cx={xs[0] + 6} cy={cy} rx={Math.min(36, segW * 0.22)} ry={halves[0]} fill="url(#bowl-shade)" />
-
-                    {/* Conversion chips interleaved between stage values */}
+                    {/* Conversion chips between stages */}
                     {stages.slice(1).map((st, idx) => {
                       const i = idx + 1;
-                      const prevSeg = segments[i - 1];
-                      const curSeg = segments[i];
-                      const cxPrev = (prevSeg.xL + prevSeg.xR) / 2 - prevSeg.rxR / 2;
-                      const cxCur = (curSeg.xL + curSeg.xR) / 2 - curSeg.rxR / 2;
-                      const x = (cxPrev + cxCur) / 2;
+                      const xPrev = (xs[i - 1] + xs[i]) / 2;
+                      const xCur = (xs[i] + xs[i + 1]) / 2;
+                      const x = (xPrev + xCur) / 2;
                       return (
                         <g key={`chip-${st.key}`} transform={`translate(${x}, ${cy})`}>
                           <rect x={-40} y={-13} width={80} height={26} rx={13}

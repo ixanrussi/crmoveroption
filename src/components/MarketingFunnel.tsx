@@ -316,8 +316,8 @@ export default function MarketingFunnel() {
                                 x2={x}
                                 y2={cy + halves[i] + 2}
                                 stroke="hsl(210 80% 60%)"
-                                strokeWidth={0.8}
-                                strokeOpacity={0.25}
+                                strokeWidth={1}
+                                strokeOpacity={0.4}
                                 strokeDasharray="4 3"
                               />
                             );

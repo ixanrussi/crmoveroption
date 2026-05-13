@@ -17,7 +17,9 @@ export default function MiCuenta() {
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [newPassword, setNewPassword] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [changingPwd, setChangingPwd] = useState(false);
   const [factors, setFactors] = useState<any[]>([]);
   const [enrolling, setEnrolling] = useState<{ qr: string; secret: string; factorId: string } | null>(null);

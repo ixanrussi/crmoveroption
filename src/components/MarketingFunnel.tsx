@@ -236,11 +236,12 @@ export default function MarketingFunnel() {
                   >
                   <svg viewBox={`0 0 ${W} ${H}`} className="w-full h-auto">
                     <defs>
-                      {/* Subtle blue gradient fill - left to right with consistent low contrast */}
+                      {/* Blue gradient fill - left (lighter) to right (slightly deeper) */}
                       <linearGradient id="funnel-fill" x1="0" y1="0" x2="1" y2="0">
-                        <stop offset="0%" stopColor="hsl(210 90% 80%)" stopOpacity="0.28" />
-                        <stop offset="50%" stopColor="hsl(212 85% 78%)" stopOpacity="0.22" />
-                        <stop offset="100%" stopColor="hsl(215 80% 75%)" stopOpacity="0.26" />
+                        <stop offset="0%" stopColor="hsl(205 95% 88%)" stopOpacity="0.55" />
+                        <stop offset="35%" stopColor="hsl(208 90% 80%)" stopOpacity="0.5" />
+                        <stop offset="70%" stopColor="hsl(212 85% 72%)" stopOpacity="0.55" />
+                        <stop offset="100%" stopColor="hsl(218 80% 64%)" stopOpacity="0.6" />
                       </linearGradient>
                       {/* Soft top highlight line */}
                       <linearGradient id="funnel-stroke" x1="0" y1="0" x2="1" y2="0">

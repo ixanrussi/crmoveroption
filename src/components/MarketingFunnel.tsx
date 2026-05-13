@@ -238,10 +238,10 @@ export default function MarketingFunnel() {
                     <defs>
                       {/* Blue gradient fill - left (deeper) to right (lighter), full coverage */}
                       <linearGradient id="funnel-fill" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2={W} y2="0">
-                        <stop offset="0%" stopColor="hsl(218 80% 64%)" stopOpacity="0.6" />
-                        <stop offset="35%" stopColor="hsl(212 85% 72%)" stopOpacity="0.55" />
-                        <stop offset="70%" stopColor="hsl(208 90% 80%)" stopOpacity="0.55" />
-                        <stop offset="100%" stopColor="hsl(205 95% 88%)" stopOpacity="0.55" />
+                        <stop offset="0%" stopColor="hsl(218 80% 62%)" stopOpacity="0.75" />
+                        <stop offset="40%" stopColor="hsl(212 85% 70%)" stopOpacity="0.7" />
+                        <stop offset="75%" stopColor="hsl(208 88% 76%)" stopOpacity="0.7" />
+                        <stop offset="100%" stopColor="hsl(205 90% 78%)" stopOpacity="0.75" />
                       </linearGradient>
                       {/* Soft top highlight line */}
                       <linearGradient id="funnel-stroke" x1="0" y1="0" x2="1" y2="0">

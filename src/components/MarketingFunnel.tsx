@@ -333,8 +333,8 @@ export default function MarketingFunnel() {
                                 x2={xR - 8}
                                 y2={cy}
                                 stroke="hsl(210 80% 65%)"
-                                strokeWidth={0.5}
-                                strokeOpacity={0.15}
+                                strokeWidth={0.6}
+                                strokeOpacity={0.3}
                               />
                             );
                           })}

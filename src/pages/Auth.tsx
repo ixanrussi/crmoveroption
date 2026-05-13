@@ -26,6 +26,7 @@ const Auth = () => {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [otp, setOtp] = useState("");
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);

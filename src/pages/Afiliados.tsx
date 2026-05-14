@@ -959,6 +959,8 @@ export default function Afiliados() {
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
               <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
+              <TableHead className="w-10 text-center">Margen</TableHead>
+              <TableHead className="w-10 text-center">Planes</TableHead>
               <TableHead>País</TableHead><TableHead>
                 <span className="inline-flex items-center gap-1">
                   % MB

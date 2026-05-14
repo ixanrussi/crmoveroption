@@ -1013,18 +1013,29 @@ export default function Afiliados() {
                     })()}
                   </TableCell>
                   <TableCell className="text-center align-middle">
-                    {affiliateHasLowMargin(r) && (
-                      <HoverCard openDelay={100}>
-                        <HoverCardTrigger asChild>
-                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-500/15 text-orange-600 cursor-help" aria-label="Margen bajo">
-                            <TrendingDown className="h-3 w-3" />
-                          </span>
-                        </HoverCardTrigger>
-                        <HoverCardContent className="w-64 p-2 text-xs" align="start">
-                          Tiene planes de comisión con margen menor al 30% respecto al CPA del operador.
-                        </HoverCardContent>
-                      </HoverCard>
-                    )}
+                    {(() => {
+                      const m = affiliateMinMargin(r);
+                      if (m == null) return null;
+                      let cls = "";
+                      let Icon: any = null;
+                      let label = "";
+                      if (m < 28) { cls = "bg-orange-500/15 text-orange-600"; Icon = TrendingDown; label = "Margen bajo"; }
+                      else if (m <= 32) { cls = "bg-emerald-500/15 text-emerald-600"; Icon = Percent; label = "Margen en rango"; }
+                      else if (m >= 33) { cls = "bg-emerald-500/15 text-emerald-600"; Icon = TrendingUp; label = "Margen alto"; }
+                      else return null;
+                      return (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className={`inline-flex items-center justify-center h-5 w-5 rounded-full cursor-help ${cls}`} aria-label={label}>
+                              <Icon className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-64 p-2 text-xs" align="start">
+                            {label}: peor margen del afiliado vs CPA del operador es {m.toFixed(0)}%.
+                          </HoverCardContent>
+                        </HoverCard>
+                      );
+                    })()}
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (

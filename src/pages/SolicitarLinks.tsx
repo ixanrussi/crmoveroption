@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Send, Bell, Check, X } from "lucide-react";
+import { Loader2, Send, Bell, Check, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Affiliate { id: string; fixed_name: string; alias: string | null; brands: string[] }
@@ -136,6 +136,14 @@ export default function SolicitarLinks() {
     load();
   };
 
+  const removeRequest = async (r: Request) => {
+    if (!confirm("¿Eliminar esta solicitud?")) return;
+    const { error } = await supabase.from("tracking_link_requests").delete().eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Solicitud eliminada");
+    setRequests((prev) => prev.filter((x) => x.id !== r.id));
+  };
+
   const affName = (id: string) => {
     const a = affiliates.find((x) => x.id === id);
     return a ? `${a.fixed_name}${a.alias ? ` (${a.alias})` : ""}` : "—";
@@ -258,9 +266,14 @@ export default function SolicitarLinks() {
                           <a href={r.tracking_link} target="_blank" rel="noreferrer" className="text-primary underline">{r.tracking_link}</a>
                         ) : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex gap-2">
                         {isAdmin && r.status === "pending" && (
                           <Button size="sm" variant="outline" onClick={() => openResolve(r)}>Resolver</Button>
+                        )}
+                        {(isAdmin || r.requested_by === user?.id) && (
+                          <Button size="sm" variant="ghost" onClick={() => removeRequest(r)} title="Eliminar">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

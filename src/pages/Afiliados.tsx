@@ -987,50 +987,16 @@ export default function Afiliados() {
                 if (Array.isArray(r.aliases) && r.aliases.some((a: string) => a?.toLowerCase().includes(q))) return true;
                 return false;
               }).map((r) => (
-                <TableRow key={r.id}>
+                <TableRow key={r.id} className="[&>td]:py-2">
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">
-                    <div className="flex items-center gap-1.5">
-                      <button
-                        type="button"
-                        className="text-left hover:underline text-primary"
-                        onClick={() => openEdit(r)}
-                      >
-                        {r.fixed_name}
-                      </button>
-                      {affiliateHasLowMargin(r) && (
-                        <HoverCard openDelay={100}>
-                          <HoverCardTrigger asChild>
-                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-500/15 text-orange-600 cursor-help" aria-label="Margen bajo">
-                              <TrendingDown className="h-3 w-3" />
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-64 p-2 text-xs" align="start">
-                            Tiene planes de comisión con margen menor al 30% respecto al CPA del operador.
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
-                      {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (
-                        <HoverCard openDelay={100}>
-                          <HoverCardTrigger asChild>
-                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 cursor-help">
-                              <DollarSign className="h-3 w-3" />
-                            </span>
-                          </HoverCardTrigger>
-                          <HoverCardContent className="w-72 p-2" align="start">
-                            <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
-                            <ul className="divide-y divide-border rounded-md overflow-hidden border">
-                              {r.affiliate_commission_plans.map((p: any, idx: number) => (
-                                <li key={p.id} className={`text-xs flex items-center gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
-                                  <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"} — {p.template?.name || "Sin nombre"}</span>
-                                  {p.brand && <Badge variant="outline" className="shrink-0 text-[10px]">{p.brand}</Badge>}
-                                </li>
-                              ))}
-                            </ul>
-                          </HoverCardContent>
-                        </HoverCard>
-                      )}
-                    </div>
+                    <button
+                      type="button"
+                      className="text-left hover:underline text-primary"
+                      onClick={() => openEdit(r)}
+                    >
+                      {r.fixed_name}
+                    </button>
                     {(() => {
                       const g = goalProgress[r.id];
                       if (!g || g.target === 0) return null;
@@ -1043,6 +1009,42 @@ export default function Afiliados() {
                         </div>
                       );
                     })()}
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    {affiliateHasLowMargin(r) && (
+                      <HoverCard openDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-500/15 text-orange-600 cursor-help" aria-label="Margen bajo">
+                            <TrendingDown className="h-3 w-3" />
+                          </span>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-64 p-2 text-xs" align="start">
+                          Tiene planes de comisión con margen menor al 30% respecto al CPA del operador.
+                        </HoverCardContent>
+                      </HoverCard>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
+                    {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (
+                      <HoverCard openDelay={100}>
+                        <HoverCardTrigger asChild>
+                          <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-emerald-500/15 text-emerald-600 cursor-help">
+                            <DollarSign className="h-3 w-3" />
+                          </span>
+                        </HoverCardTrigger>
+                        <HoverCardContent className="w-72 p-2" align="start">
+                          <p className="text-xs font-semibold mb-1.5">Planes de comisión</p>
+                          <ul className="divide-y divide-border rounded-md overflow-hidden border">
+                            {r.affiliate_commission_plans.map((p: any, idx: number) => (
+                              <li key={p.id} className={`text-xs flex items-center gap-2 px-2 py-1.5 ${idx % 2 === 0 ? "bg-muted/40" : "bg-background"}`}>
+                                <span className="font-medium truncate">{clients.find((c) => c.id === p.client_id)?.company_name || "—"} — {p.template?.name || "Sin nombre"}</span>
+                                {p.brand && <Badge variant="outline" className="shrink-0 text-[10px]">{p.brand}</Badge>}
+                              </li>
+                            ))}
+                          </ul>
+                        </HoverCardContent>
+                      </HoverCard>
+                    )}
                   </TableCell>
                   <TableCell>{r.country?.name}</TableCell>
                   <TableCell>

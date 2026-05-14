@@ -64,6 +64,7 @@ export default function Afiliados() {
   const [countries, setCountries] = useState<any[]>([]);
   const [channels, setChannels] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
+  const [clientPlans, setClientPlans] = useState<any[]>([]);
   const [templates, setTemplates] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
@@ -164,16 +165,18 @@ export default function Afiliados() {
     setGoalProgress(progress);
   };
   const loadLookups = async () => {
-    const [c, ch, cl, tpl] = await Promise.all([
+    const [c, ch, cl, tpl, cp] = await Promise.all([
       supabase.from("countries").select("*").order("name"),
       supabase.from("affiliate_channels").select("*").order("name"),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_plan_templates").select("*, client:clients(company_name)").order("name", { ascending: true }),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
     setClients(cl.data ?? []);
     setTemplates(tpl.data ?? []);
+    setClientPlans(cp.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
@@ -227,6 +230,20 @@ export default function Afiliados() {
   const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
     setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
   const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
+
+  // Returns margin pct between operator (overgroup) CPA and affiliate CPA, or null if not computable
+  const getPlanMargin = (pl: CommissionPlan): number | null => {
+    const affCpa = Number(pl.cpa);
+    if (!pl.client_id || !pl.cpa || !Number.isFinite(affCpa) || affCpa <= 0) return null;
+    const bl = (pl.brand || "").toLowerCase();
+    const cands = clientPlans
+      .filter((cp: any) => cp.client_id === pl.client_id && cp.cpa != null)
+      .filter((cp: any) => !pl.brand || !cp.brand || cp.brand.toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
+    if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
+    return ((opCpa - affCpa) / opCpa) * 100;
+  };
   const addPlanFromTemplate = (templateId: string) => {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;
@@ -675,8 +692,11 @@ export default function Afiliados() {
                   {plans.length === 0 && (
                     <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
                   )}
-                  {plans.map((pl, i) => (
-                    <Collapsible key={i} defaultOpen={false} className="border rounded-md bg-muted/30">
+                  {plans.map((pl, i) => {
+                    const margin = getPlanMargin(pl);
+                    const lowMargin = margin != null && margin < 30;
+                    return (
+                    <Collapsible key={i} defaultOpen={false} className={`border rounded-md ${lowMargin ? "bg-orange-100 dark:bg-orange-950/40 border-orange-300 dark:border-orange-700" : "bg-muted/30"}`}>
                       <div className="flex items-center justify-between p-3">
                         <CollapsibleTrigger asChild>
                           <button type="button" className="flex items-center gap-2 flex-1 text-left min-w-0">
@@ -693,6 +713,11 @@ export default function Afiliados() {
                             <div className="flex gap-2 ml-2">
                               <Badge variant="secondary">CPA: {pl.cpa || "—"}</Badge>
                               <Badge variant="secondary">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
+                              {lowMargin && (
+                                <Badge className="bg-orange-500 hover:bg-orange-500 text-white">
+                                  Margen {margin!.toFixed(0)}%
+                                </Badge>
+                              )}
                             </div>
                           </button>
                         </CollapsibleTrigger>
@@ -881,7 +906,8 @@ export default function Afiliados() {
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>

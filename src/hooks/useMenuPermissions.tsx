@@ -8,6 +8,7 @@ export type MenuKey =
   | "afiliados"
   | "prospects-operadores"
   | "prospects-afiliados"
+  | "solicitar-links"
   | "planes-comision"
   | "calculadora-fijos"
   | "tracker-report"

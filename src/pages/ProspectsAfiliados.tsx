@@ -27,7 +27,7 @@ interface ProspectAffiliate {
   notes: string | null;
   created_by: string | null;
   status: string;
-  affiliate_channel_links?: { channel_id: string; channel?: { name: string } }[];
+  affiliate_channel_links?: { channel_id: string; link?: string | null; channel?: { name: string } }[];
 }
 
 const empty = {
@@ -38,6 +38,7 @@ const empty = {
   country_ids: [] as string[],
   brands: [] as string[],
   channel_ids: [] as string[],
+  channel_links: {} as Record<string, string>,
   notes: "",
 };
 
@@ -60,7 +61,7 @@ export default function ProspectsAfiliados() {
     setLoading(true);
     let q = supabase
       .from("affiliates")
-      .select("id, fixed_name, alias, email, phone, country_ids, brands, notes, created_by, status, affiliate_channel_links(channel_id, channel:affiliate_channels(name))")
+      .select("id, fixed_name, alias, email, phone, country_ids, brands, notes, created_by, status, affiliate_channel_links(channel_id, link, channel:affiliate_channels(name))")
       .eq("status", "prospect")
       .order("fixed_name");
     if (!canSeeAll && user?.id) q = q.eq("created_by", user.id);
@@ -90,6 +91,7 @@ export default function ProspectsAfiliados() {
 
   const openEdit = (row: ProspectAffiliate) => {
     setEditing(row);
+    const links = row.affiliate_channel_links ?? [];
     setForm({
       fixed_name: row.fixed_name ?? "",
       alias: row.alias ?? "",
@@ -97,7 +99,8 @@ export default function ProspectsAfiliados() {
       phone: row.phone ?? "",
       country_ids: row.country_ids ?? [],
       brands: row.brands ?? [],
-      channel_ids: (row.affiliate_channel_links ?? []).map((l) => l.channel_id),
+      channel_ids: links.map((l) => l.channel_id),
+      channel_links: Object.fromEntries(links.map((l) => [l.channel_id, l.link ?? ""])),
       notes: row.notes ?? "",
     });
     setBrandInput("");
@@ -164,7 +167,11 @@ export default function ProspectsAfiliados() {
       if (form.channel_ids.length > 0) {
         await supabase
           .from("affiliate_channel_links")
-          .insert(form.channel_ids.map((channel_id) => ({ affiliate_id: affiliateId!, channel_id })));
+          .insert(form.channel_ids.map((channel_id) => ({
+            affiliate_id: affiliateId!,
+            channel_id,
+            link: form.channel_links[channel_id]?.trim() || null,
+          })));
       }
     }
 
@@ -337,7 +344,11 @@ export default function ProspectsAfiliados() {
                             checked={checked}
                             onCheckedChange={(v) => {
                               const cur = form.channel_ids;
-                              setForm({ ...form, channel_ids: v ? [...cur, c.id] : cur.filter((x) => x !== c.id) });
+                              const next = v ? [...cur, c.id] : cur.filter((x) => x !== c.id);
+                              const nextLinks = { ...form.channel_links };
+                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = ""; }
+                              else { delete nextLinks[c.id]; }
+                              setForm({ ...form, channel_ids: next, channel_links: nextLinks });
                             }}
                           />
                           {c.name}
@@ -365,6 +376,26 @@ export default function ProspectsAfiliados() {
                   </div>
                 </PopoverContent>
               </Popover>
+              {form.channel_ids.length > 0 && (
+                <div className="grid gap-2 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">URL del canal del afiliado</p>
+                  {form.channel_ids.map((cid) => {
+                    const ch = channels.find((c) => c.id === cid);
+                    return (
+                      <div key={cid} className="grid grid-cols-[120px_1fr] items-center gap-2">
+                        <Label className="text-xs font-normal truncate">{ch?.name ?? "—"}</Label>
+                        <Input
+                          placeholder="https://..."
+                          value={form.channel_links[cid] ?? ""}
+                          onChange={(e) =>
+                            setForm({ ...form, channel_links: { ...form.channel_links, [cid]: e.target.value } })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">

@@ -6,6 +6,8 @@ export type MenuKey =
   | "dashboard"
   | "clientes"
   | "afiliados"
+  | "prospects-operadores"
+  | "prospects-afiliados"
   | "planes-comision"
   | "calculadora-fijos"
   | "tracker-report"

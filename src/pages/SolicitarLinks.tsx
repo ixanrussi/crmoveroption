@@ -230,17 +230,56 @@ export default function SolicitarLinks() {
             </div>
             <div className="space-y-2">
               <Label>Marca</Label>
-              <Select value={form.brand} onValueChange={(v) => setForm({ ...form, brand: v, country_id: "" })} disabled={!brandOptions.length}>
-                <SelectTrigger><SelectValue placeholder={brandOptions.length ? "Selecciona" : "Sin marcas"} /></SelectTrigger>
-                <SelectContent>
-                  {brandOptions.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
-                </SelectContent>
-              </Select>
+              <Popover open={brandPickerOpen} onOpenChange={setBrandPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className={cn("w-full justify-between font-normal", !form.brand && "text-muted-foreground")}
+                  >
+                    {form.brand
+                      ? `${form.brand}${selectedClient ? ` · ${selectedClient.company_name}` : ""}`
+                      : "Buscar marca..."}
+                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar marca u operador..." />
+                    <CommandList>
+                      <CommandEmpty>Sin resultados</CommandEmpty>
+                      <CommandGroup>
+                        {brandEntries.map((e) => (
+                          <CommandItem
+                            key={e.key}
+                            value={`${e.brand} ${e.client_name}`}
+                            onSelect={() => {
+                              setForm((f) => ({ ...f, client_id: e.client_id, brand: e.brand, country_id: "" }));
+                              setBrandPickerOpen(false);
+                            }}
+                          >
+                            <Check className={cn("h-4 w-4", selectedBrandKey === e.key ? "opacity-100" : "opacity-0")} />
+                            <span className="font-medium">{e.brand}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">{e.client_name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label>País</Label>
-              <Select value={form.country_id} onValueChange={(v) => setForm({ ...form, country_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+              <Select
+                value={form.country_id}
+                onValueChange={(v) => setForm({ ...form, country_id: v })}
+                disabled={countryOptions.length <= 1}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={countryOptions.length ? "Selecciona" : "—"} />
+                </SelectTrigger>
                 <SelectContent>
                   {countryOptions.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
                 </SelectContent>

@@ -10,8 +10,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Send, Bell, Check, X, Trash2 } from "lucide-react";
+import { Loader2, Send, Bell, Check, X, Trash2, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 
 interface Affiliate { id: string; fixed_name: string; alias: string | null; brands: string[] }
 interface Client { id: string; company_name: string; brands: string[]; country_ids: string[] }
@@ -70,6 +73,22 @@ export default function SolicitarLinks() {
 
   const selectedClient = useMemo(() => clients.find((c) => c.id === form.client_id), [clients, form.client_id]);
   const brandOptions = selectedClient?.brands ?? [];
+
+  // Searchable list of all (client, brand) combinations across active operators
+  const brandEntries = useMemo(() => {
+    const list: { client_id: string; brand: string; client_name: string; key: string }[] = [];
+    clients.forEach((c) => {
+      (c.brands ?? []).forEach((b) => {
+        if (!b) return;
+        list.push({ client_id: c.id, brand: b, client_name: c.company_name, key: `${c.id}::${b}` });
+      });
+    });
+    return list.sort((a, b) => a.brand.localeCompare(b.brand));
+  }, [clients]);
+
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const selectedBrandKey = form.client_id && form.brand ? `${form.client_id}::${form.brand}` : "";
+
   const countryOptions = useMemo(() => {
     if (!selectedClient) return countries;
     // If a brand is selected, restrict by countries of that brand's commission plans
@@ -85,6 +104,17 @@ export default function SolicitarLinks() {
     const filtered = countries.filter((c) => ids.has(c.id));
     return filtered.length ? filtered : countries;
   }, [countries, selectedClient, form.brand, plans]);
+
+  // Auto-select country when there's only one option; clear if current value not in list
+  useEffect(() => {
+    if (!form.client_id) return;
+    if (countryOptions.length === 1) {
+      const only = countryOptions[0].id;
+      if (form.country_id !== only) setForm((f) => ({ ...f, country_id: only }));
+    } else if (form.country_id && !countryOptions.some((c) => c.id === form.country_id)) {
+      setForm((f) => ({ ...f, country_id: "" }));
+    }
+  }, [countryOptions, form.client_id]);
 
   const submit = async () => {
     if (!user?.id) return;
@@ -200,17 +230,56 @@ export default function SolicitarLinks() {
             </div>
             <div className="space-y-2">
               <Label>Marca</Label>
-              <Select value={form.brand} onValueChange={(v) => setForm({ ...form, brand: v, country_id: "" })} disabled={!brandOptions.length}>
-                <SelectTrigger><SelectValue placeholder={brandOptions.length ? "Selecciona" : "Sin marcas"} /></SelectTrigger>
-                <SelectContent>
-                  {brandOptions.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}
-                </SelectContent>
-              </Select>
+              <Popover open={brandPickerOpen} onOpenChange={setBrandPickerOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    role="combobox"
+                    className={cn("w-full justify-between font-normal", !form.brand && "text-muted-foreground")}
+                  >
+                    {form.brand
+                      ? `${form.brand}${selectedClient ? ` · ${selectedClient.company_name}` : ""}`
+                      : "Buscar marca..."}
+                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                  <Command>
+                    <CommandInput placeholder="Buscar marca u operador..." />
+                    <CommandList>
+                      <CommandEmpty>Sin resultados</CommandEmpty>
+                      <CommandGroup>
+                        {brandEntries.map((e) => (
+                          <CommandItem
+                            key={e.key}
+                            value={`${e.brand} ${e.client_name}`}
+                            onSelect={() => {
+                              setForm((f) => ({ ...f, client_id: e.client_id, brand: e.brand, country_id: "" }));
+                              setBrandPickerOpen(false);
+                            }}
+                          >
+                            <Check className={cn("h-4 w-4", selectedBrandKey === e.key ? "opacity-100" : "opacity-0")} />
+                            <span className="font-medium">{e.brand}</span>
+                            <span className="ml-2 text-xs text-muted-foreground">{e.client_name}</span>
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label>País</Label>
-              <Select value={form.country_id} onValueChange={(v) => setForm({ ...form, country_id: v })}>
-                <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
+              <Select
+                value={form.country_id}
+                onValueChange={(v) => setForm({ ...form, country_id: v })}
+                disabled={countryOptions.length <= 1}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder={countryOptions.length ? "Selecciona" : "—"} />
+                </SelectTrigger>
                 <SelectContent>
                   {countryOptions.map((c) => (<SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>))}
                 </SelectContent>

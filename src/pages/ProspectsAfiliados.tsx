@@ -91,6 +91,7 @@ export default function ProspectsAfiliados() {
 
   const openEdit = (row: ProspectAffiliate) => {
     setEditing(row);
+    const links = row.affiliate_channel_links ?? [];
     setForm({
       fixed_name: row.fixed_name ?? "",
       alias: row.alias ?? "",
@@ -98,7 +99,8 @@ export default function ProspectsAfiliados() {
       phone: row.phone ?? "",
       country_ids: row.country_ids ?? [],
       brands: row.brands ?? [],
-      channel_ids: (row.affiliate_channel_links ?? []).map((l) => l.channel_id),
+      channel_ids: links.map((l) => l.channel_id),
+      channel_links: Object.fromEntries(links.map((l) => [l.channel_id, l.link ?? ""])),
       notes: row.notes ?? "",
     });
     setBrandInput("");

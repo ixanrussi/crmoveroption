@@ -53,6 +53,8 @@ export default function ProspectsAfiliados() {
   const [editing, setEditing] = useState<ProspectAffiliate | null>(null);
   const [form, setForm] = useState({ ...empty });
   const [brandInput, setBrandInput] = useState("");
+  const [newChannelName, setNewChannelName] = useState("");
+  const [creatingChannel, setCreatingChannel] = useState(false);
 
   const load = async () => {
     setLoading(true);

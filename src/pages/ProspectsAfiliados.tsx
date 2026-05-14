@@ -61,7 +61,7 @@ export default function ProspectsAfiliados() {
     setLoading(true);
     let q = supabase
       .from("affiliates")
-      .select("id, fixed_name, alias, email, phone, country_ids, brands, notes, created_by, status, affiliate_channel_links(channel_id, channel:affiliate_channels(name))")
+      .select("id, fixed_name, alias, email, phone, country_ids, brands, notes, created_by, status, affiliate_channel_links(channel_id, link, channel:affiliate_channels(name))")
       .eq("status", "prospect")
       .order("fixed_name");
     if (!canSeeAll && user?.id) q = q.eq("created_by", user.id);

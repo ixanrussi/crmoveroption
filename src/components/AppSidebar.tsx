@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, UserSearch } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, UserSearch, Link2 } from "lucide-react";
 import { useMenuPermissions, type MenuKey } from "@/hooks/useMenuPermissions";
 import logo from "@/assets/overoption-logo.png";
 import {
@@ -15,6 +15,7 @@ const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = 
   { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
   { title: "Operadores prospect", url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
   { title: "Afiliados prospect", url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
+  { title: "Solicitar links", url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
   { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
   
   

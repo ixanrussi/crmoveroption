@@ -996,6 +996,18 @@ export default function Afiliados() {
                       >
                         {r.fixed_name}
                       </button>
+                      {affiliateHasLowMargin(r) && (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-500/15 text-orange-600 cursor-help" aria-label="Margen bajo">
+                              <TrendingDown className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-64 p-2 text-xs" align="start">
+                            Tiene planes de comisión con margen menor al 30% respecto al CPA del operador.
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
                       {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (
                         <HoverCard openDelay={100}>
                           <HoverCardTrigger asChild>

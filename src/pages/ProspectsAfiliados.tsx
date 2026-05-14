@@ -38,7 +38,7 @@ const empty = {
   country_ids: [] as string[],
   brands: [] as string[],
   channel_ids: [] as string[],
-  channel_links: {} as Record<string, string>,
+  channel_links: {} as Record<string, string[]>,
   notes: "",
 };
 

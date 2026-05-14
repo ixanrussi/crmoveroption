@@ -169,17 +169,27 @@ export default function ProspectsAfiliados() {
     }
     if (error) { setSaving(false); toast.error(error.message); return; }
 
-    // Sync channels
+    // Sync channels (allow multiple links per channel, no duplicates per channel)
     if (affiliateId) {
       await supabase.from("affiliate_channel_links").delete().eq("affiliate_id", affiliateId);
-      if (form.channel_ids.length > 0) {
-        await supabase
-          .from("affiliate_channel_links")
-          .insert(form.channel_ids.map((channel_id) => ({
-            affiliate_id: affiliateId!,
-            channel_id,
-            link: form.channel_links[channel_id]?.trim() || null,
-          })));
+      const rowsToInsert: { affiliate_id: string; channel_id: string; link: string | null }[] = [];
+      for (const channel_id of form.channel_ids) {
+        const links = (form.channel_links[channel_id] ?? [""]).map((l) => l.trim());
+        const seen = new Set<string>();
+        const cleaned = links.filter((l) => {
+          if (!l) return false;
+          if (seen.has(l)) return false;
+          seen.add(l);
+          return true;
+        });
+        if (cleaned.length === 0) {
+          rowsToInsert.push({ affiliate_id: affiliateId!, channel_id, link: null });
+        } else {
+          for (const link of cleaned) rowsToInsert.push({ affiliate_id: affiliateId!, channel_id, link });
+        }
+      }
+      if (rowsToInsert.length > 0) {
+        await supabase.from("affiliate_channel_links").insert(rowsToInsert);
       }
     }
 

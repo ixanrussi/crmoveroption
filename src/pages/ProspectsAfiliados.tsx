@@ -27,7 +27,7 @@ interface ProspectAffiliate {
   notes: string | null;
   created_by: string | null;
   status: string;
-  affiliate_channel_links?: { channel_id: string; channel?: { name: string } }[];
+  affiliate_channel_links?: { channel_id: string; link?: string | null; channel?: { name: string } }[];
 }
 
 const empty = {
@@ -38,6 +38,7 @@ const empty = {
   country_ids: [] as string[],
   brands: [] as string[],
   channel_ids: [] as string[],
+  channel_links: {} as Record<string, string>,
   notes: "",
 };
 

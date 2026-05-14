@@ -192,7 +192,7 @@ export default function SolicitarLinks() {
             </div>
             <div className="space-y-2">
               <Label>Marca</Label>
-              <Select value={form.brand} onValueChange={(v) => setForm({ ...form, brand: v })} disabled={!brandOptions.length}>
+              <Select value={form.brand} onValueChange={(v) => setForm({ ...form, brand: v, country_id: "" })} disabled={!brandOptions.length}>
                 <SelectTrigger><SelectValue placeholder={brandOptions.length ? "Selecciona" : "Sin marcas"} /></SelectTrigger>
                 <SelectContent>
                   {brandOptions.map((b) => (<SelectItem key={b} value={b}>{b}</SelectItem>))}

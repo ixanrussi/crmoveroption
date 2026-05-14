@@ -12,7 +12,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -243,6 +243,17 @@ export default function Afiliados() {
     const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
     if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
     return ((opCpa - affCpa) / opCpa) * 100;
+  };
+  const affiliateHasLowMargin = (r: any): boolean => {
+    const ps = Array.isArray(r?.affiliate_commission_plans) ? r.affiliate_commission_plans : [];
+    return ps.some((p: any) => {
+      const m = getPlanMargin({
+        client_id: p.client_id ?? "",
+        brand: p.brand ?? "",
+        cpa: p.cpa?.toString() ?? "",
+      } as CommissionPlan);
+      return m != null && m < 30;
+    });
   };
   const addPlanFromTemplate = (templateId: string) => {
     const t = templates.find((x) => x.id === templateId);
@@ -985,6 +996,18 @@ export default function Afiliados() {
                       >
                         {r.fixed_name}
                       </button>
+                      {affiliateHasLowMargin(r) && (
+                        <HoverCard openDelay={100}>
+                          <HoverCardTrigger asChild>
+                            <span className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-orange-500/15 text-orange-600 cursor-help" aria-label="Margen bajo">
+                              <TrendingDown className="h-3 w-3" />
+                            </span>
+                          </HoverCardTrigger>
+                          <HoverCardContent className="w-64 p-2 text-xs" align="start">
+                            Tiene planes de comisión con margen menor al 30% respecto al CPA del operador.
+                          </HoverCardContent>
+                        </HoverCard>
+                      )}
                       {Array.isArray(r.affiliate_commission_plans) && r.affiliate_commission_plans.length > 0 && (
                         <HoverCard openDelay={100}>
                           <HoverCardTrigger asChild>

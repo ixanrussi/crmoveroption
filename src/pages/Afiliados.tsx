@@ -692,8 +692,11 @@ export default function Afiliados() {
                   {plans.length === 0 && (
                     <p className="text-sm text-muted-foreground">Sin planes de comisión.</p>
                   )}
-                  {plans.map((pl, i) => (
-                    <Collapsible key={i} defaultOpen={false} className="border rounded-md bg-muted/30">
+                  {plans.map((pl, i) => {
+                    const margin = getPlanMargin(pl);
+                    const lowMargin = margin != null && margin < 30;
+                    return (
+                    <Collapsible key={i} defaultOpen={false} className={`border rounded-md ${lowMargin ? "bg-orange-100 dark:bg-orange-950/40 border-orange-300 dark:border-orange-700" : "bg-muted/30"}`}>
                       <div className="flex items-center justify-between p-3">
                         <CollapsibleTrigger asChild>
                           <button type="button" className="flex items-center gap-2 flex-1 text-left min-w-0">
@@ -710,6 +713,11 @@ export default function Afiliados() {
                             <div className="flex gap-2 ml-2">
                               <Badge variant="secondary">CPA: {pl.cpa || "—"}</Badge>
                               <Badge variant="secondary">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
+                              {lowMargin && (
+                                <Badge className="bg-orange-500 hover:bg-orange-500 text-white">
+                                  Margen {margin!.toFixed(0)}%
+                                </Badge>
+                              )}
                             </div>
                           </button>
                         </CollapsibleTrigger>

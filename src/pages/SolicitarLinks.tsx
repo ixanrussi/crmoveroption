@@ -219,7 +219,7 @@ export default function SolicitarLinks() {
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Marca</Label>
+              <Label>Operador/Marca</Label>
               <div className="relative">
                 <Input
                   placeholder="Buscar marca u operador..."

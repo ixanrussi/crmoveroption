@@ -22,6 +22,7 @@ import ActivityLogs from "./pages/ActivityLogs";
 import RoleMenuPermissions from "./pages/RoleMenuPermissions";
 import ProspectsOperadores from "./pages/ProspectsOperadores";
 import ProspectsAfiliados from "./pages/ProspectsAfiliados";
+import SolicitarLinks from "./pages/SolicitarLinks";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

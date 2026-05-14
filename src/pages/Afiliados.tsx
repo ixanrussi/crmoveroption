@@ -244,6 +244,17 @@ export default function Afiliados() {
     if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
     return ((opCpa - affCpa) / opCpa) * 100;
   };
+  const affiliateHasLowMargin = (r: any): boolean => {
+    const ps = Array.isArray(r?.affiliate_commission_plans) ? r.affiliate_commission_plans : [];
+    return ps.some((p: any) => {
+      const m = getPlanMargin({
+        client_id: p.client_id ?? "",
+        brand: p.brand ?? "",
+        cpa: p.cpa?.toString() ?? "",
+      } as CommissionPlan);
+      return m != null && m < 30;
+    });
+  };
   const addPlanFromTemplate = (templateId: string) => {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;

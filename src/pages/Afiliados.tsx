@@ -567,15 +567,64 @@ export default function Afiliados() {
                     ) : (
                       channelIds.map((cid) => {
                         const ch = channels.find((c) => c.id === cid);
+                        const links = channelLinks[cid] ?? [""];
+                        const updateLinks = (next: string[]) =>
+                          setChannelLinks({ ...channelLinks, [cid]: next });
                         return (
-                          <div key={cid} className="grid grid-cols-[140px_1fr] gap-2 items-center">
-                            <Label className="text-sm">{ch?.name}</Label>
-                            <Input
-                              type="url"
-                              placeholder="https://..."
-                              value={channelLinks[cid] ?? ""}
-                              onChange={(e) => setChannelLinks({ ...channelLinks, [cid]: e.target.value })}
-                            />
+                          <div key={cid} className="grid gap-1">
+                            {links.map((val, idx) => {
+                              const trimmed = val.trim();
+                              const isDup =
+                                trimmed.length > 0 &&
+                                links.findIndex((l, i) => i !== idx && l.trim() === trimmed) !== -1;
+                              const isLast = idx === links.length - 1;
+                              return (
+                                <div key={idx} className="grid grid-cols-[140px_1fr_auto_auto] items-center gap-2">
+                                  <Label className="text-sm truncate">{idx === 0 ? ch?.name ?? "—" : ""}</Label>
+                                  <Input
+                                    type="url"
+                                    placeholder="https://..."
+                                    value={val}
+                                    aria-invalid={isDup}
+                                    className={isDup ? "border-destructive" : ""}
+                                    onChange={(e) => {
+                                      const next = [...links];
+                                      next[idx] = e.target.value;
+                                      updateLinks(next);
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    disabled={links.length === 1}
+                                    onClick={() => updateLinks(links.filter((_, i) => i !== idx))}
+                                    title="Eliminar link"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    disabled={!isLast}
+                                    onClick={() => {
+                                      const trimmedAll = links.map((l) => l.trim());
+                                      if (trimmedAll.some((l, i) => l && trimmedAll.indexOf(l) !== i)) {
+                                        toast.error("No se permiten links duplicados en el mismo canal");
+                                        return;
+                                      }
+                                      updateLinks([...links, ""]);
+                                    }}
+                                    title="Añadir otro link"
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
                           </div>
                         );
                       })

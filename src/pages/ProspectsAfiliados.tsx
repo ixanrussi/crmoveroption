@@ -344,7 +344,11 @@ export default function ProspectsAfiliados() {
                             checked={checked}
                             onCheckedChange={(v) => {
                               const cur = form.channel_ids;
-                              setForm({ ...form, channel_ids: v ? [...cur, c.id] : cur.filter((x) => x !== c.id) });
+                              const next = v ? [...cur, c.id] : cur.filter((x) => x !== c.id);
+                              const nextLinks = { ...form.channel_links };
+                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = ""; }
+                              else { delete nextLinks[c.id]; }
+                              setForm({ ...form, channel_ids: next, channel_links: nextLinks });
                             }}
                           />
                           {c.name}

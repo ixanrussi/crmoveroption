@@ -364,7 +364,7 @@ export default function ProspectsAfiliados() {
                               const cur = form.channel_ids;
                               const next = v ? [...cur, c.id] : cur.filter((x) => x !== c.id);
                               const nextLinks = { ...form.channel_links };
-                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = ""; }
+                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = [""]; }
                               else { delete nextLinks[c.id]; }
                               setForm({ ...form, channel_ids: next, channel_links: nextLinks });
                             }}

@@ -20,6 +20,8 @@ import TrackerReport from "./pages/TrackerReport";
 import CommissionPlans from "./pages/CommissionPlans";
 import ActivityLogs from "./pages/ActivityLogs";
 import RoleMenuPermissions from "./pages/RoleMenuPermissions";
+import ProspectsOperadores from "./pages/ProspectsOperadores";
+import ProspectsAfiliados from "./pages/ProspectsAfiliados";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

@@ -167,7 +167,11 @@ export default function ProspectsAfiliados() {
       if (form.channel_ids.length > 0) {
         await supabase
           .from("affiliate_channel_links")
-          .insert(form.channel_ids.map((channel_id) => ({ affiliate_id: affiliateId!, channel_id })));
+          .insert(form.channel_ids.map((channel_id) => ({
+            affiliate_id: affiliateId!,
+            channel_id,
+            link: form.channel_links[channel_id]?.trim() || null,
+          })));
       }
     }
 

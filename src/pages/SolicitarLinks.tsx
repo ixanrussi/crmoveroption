@@ -87,6 +87,7 @@ export default function SolicitarLinks() {
   }, [clients]);
 
   const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const [brandQuery, setBrandQuery] = useState("");
   const selectedBrandKey = form.client_id && form.brand ? `${form.client_id}::${form.brand}` : "";
 
   const countryOptions = useMemo(() => {

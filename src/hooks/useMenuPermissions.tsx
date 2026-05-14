@@ -52,7 +52,7 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
   },
 ];
 
-export const CONFIGURABLE_ROLES: AppRole[] = ["admin", "user", "comercial"];
+export const CONFIGURABLE_ROLES: AppRole[] = ["admin", "comercial"];
 
 interface Ctx {
   permissions: Record<string, Set<MenuKey>>;

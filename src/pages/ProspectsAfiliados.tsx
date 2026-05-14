@@ -395,20 +395,69 @@ export default function ProspectsAfiliados() {
                 </PopoverContent>
               </Popover>
               {form.channel_ids.length > 0 && (
-                <div className="grid gap-2 mt-2 rounded-md border p-3 bg-muted/30">
-                  <p className="text-xs text-muted-foreground">URL del canal del afiliado</p>
+                <div className="grid gap-3 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">URLs del canal del afiliado</p>
                   {form.channel_ids.map((cid) => {
                     const ch = channels.find((c) => c.id === cid);
+                    const links = form.channel_links[cid] ?? [""];
+                    const updateLinks = (next: string[]) =>
+                      setForm({ ...form, channel_links: { ...form.channel_links, [cid]: next } });
                     return (
-                      <div key={cid} className="grid grid-cols-[120px_1fr] items-center gap-2">
-                        <Label className="text-xs font-normal truncate">{ch?.name ?? "—"}</Label>
-                        <Input
-                          placeholder="https://..."
-                          value={form.channel_links[cid] ?? ""}
-                          onChange={(e) =>
-                            setForm({ ...form, channel_links: { ...form.channel_links, [cid]: e.target.value } })
-                          }
-                        />
+                      <div key={cid} className="grid gap-1">
+                        {links.map((val, idx) => {
+                          const trimmed = val.trim();
+                          const isDup =
+                            trimmed.length > 0 &&
+                            links.findIndex((l, i) => i !== idx && l.trim() === trimmed) !== -1;
+                          const isLast = idx === links.length - 1;
+                          return (
+                            <div key={idx} className="grid grid-cols-[120px_1fr_auto_auto] items-center gap-2">
+                              <Label className="text-xs font-normal truncate">
+                                {idx === 0 ? ch?.name ?? "—" : ""}
+                              </Label>
+                              <Input
+                                placeholder="https://..."
+                                value={val}
+                                aria-invalid={isDup}
+                                className={isDup ? "border-destructive" : ""}
+                                onChange={(e) => {
+                                  const next = [...links];
+                                  next[idx] = e.target.value;
+                                  updateLinks(next);
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                disabled={links.length === 1}
+                                onClick={() => updateLinks(links.filter((_, i) => i !== idx))}
+                                title="Eliminar link"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                disabled={!isLast}
+                                onClick={() => {
+                                  const trimmedAll = links.map((l) => l.trim());
+                                  if (trimmedAll.some((l, i) => l && trimmedAll.indexOf(l) !== i)) {
+                                    toast.error("No se permiten links duplicados en el mismo canal");
+                                    return;
+                                  }
+                                  updateLinks([...links, ""]);
+                                }}
+                                title="Añadir otro link"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}

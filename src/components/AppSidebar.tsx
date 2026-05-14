@@ -12,13 +12,11 @@ import { Button } from "./ui/button";
 const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = [
   { title: "Dashboard", url: "/", icon: LayoutDashboard, key: "dashboard" },
   { title: "Operadores", url: "/clientes", icon: Users, key: "clientes" },
-  { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
   { title: "Operadores prospect", url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
+  { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
   { title: "Afiliados prospect", url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
   { title: "Solicitar links", url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
   { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
-  
-  
   { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
   { title: "API Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
 ];

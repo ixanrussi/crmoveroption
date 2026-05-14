@@ -15,6 +15,7 @@ const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = 
   { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
   { title: "Operadores prospect", url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
   { title: "Afiliados prospect", url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
+  { title: "Solicitar links", url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
   { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
   
   

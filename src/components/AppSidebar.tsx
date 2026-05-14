@@ -32,10 +32,10 @@ export function AppSidebar() {
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
-  const { isSuperAdmin, signOut, user } = useAuth();
+  const { isSuperAdmin, isComercial, isAdmin, signOut, user } = useAuth();
   const { can } = useMenuPermissions();
   const isActive = (p: string) => pathname === p;
-  const mainItems = allMainItems.filter((i) => can(i.key));
+  const mainItems = allMainItems.filter((i) => can(i.key)).filter((i) => !(isComercial && !isAdmin && !isSuperAdmin && i.key === "prospects-operadores"));
   const visibleListItems = listItems.filter((i) => can(i.key));
 
   return (

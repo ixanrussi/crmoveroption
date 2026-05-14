@@ -206,7 +206,7 @@ export default function SolicitarLinks() {
       <Card>
         <CardHeader><CardTitle>Nueva solicitud</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label>Afiliado *</Label>
               <Select value={form.affiliate_id} onValueChange={(v) => setForm({ ...form, affiliate_id: v })}>
@@ -214,17 +214,6 @@ export default function SolicitarLinks() {
                 <SelectContent>
                   {affiliates.map((a) => (
                     <SelectItem key={a.id} value={a.id}>{a.fixed_name}{a.alias ? ` (${a.alias})` : ""}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label>Operador *</Label>
-              <Select value={form.client_id} onValueChange={(v) => setForm({ ...form, client_id: v, brand: "", country_id: "" })}>
-                <SelectTrigger><SelectValue placeholder="Selecciona" /></SelectTrigger>
-                <SelectContent>
-                  {clients.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>

@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -10,6 +11,7 @@ import { toast } from "sonner";
 import { ShieldCheck, ShieldAlert, Upload, Eye, EyeOff } from "lucide-react";
 
 export default function MiCuenta() {
+  const { t } = useTranslation();
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -44,7 +46,7 @@ export default function MiCuenta() {
     if (!ch) return;
     const { error } = await supabase.auth.mfa.verify({ factorId: enrolling.factorId, challengeId: ch.id, code: otp });
     if (error) { toast.error(error.message); return; }
-    toast.success("2FA activado");
+    toast.success(t("myAccount.enabled2fa"));
     setEnrolling(null);
     setOtp("");
     loadFactors();
@@ -53,7 +55,7 @@ export default function MiCuenta() {
   const removeFactor = async (id: string) => {
     const { error } = await supabase.auth.mfa.unenroll({ factorId: id });
     if (error) { toast.error(error.message); return; }
-    toast.success("2FA desactivado");
+    toast.success(t("myAccount.disabled2fa"));
     loadFactors();
   };
 
@@ -85,7 +87,7 @@ export default function MiCuenta() {
     const { error } = await supabase.from("profiles").update({ ...profile, full_name }).eq("id", user.id);
     setSaving(false);
     if (error) toast.error(error.message);
-    else toast.success("Perfil actualizado");
+    else toast.success(t("myAccount.profileUpdated"));
   };
 
   const onAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -100,19 +102,19 @@ export default function MiCuenta() {
     const url = `${pub.publicUrl}?t=${Date.now()}`;
     const { error: updErr } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);
     if (updErr) toast.error(updErr.message);
-    else { setProfile((p) => ({ ...p, avatar_url: url })); toast.success("Foto actualizada"); }
+    else { setProfile((p) => ({ ...p, avatar_url: url })); toast.success(t("myAccount.photoUpdated")); }
     setUploadingAvatar(false);
   };
 
   const changePassword = async () => {
-    if (newPassword.length < 6) { toast.error("La contraseña debe tener al menos 6 caracteres"); return; }
-    if (newPassword !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return; }
+    if (newPassword.length < 6) { toast.error(t("myAccount.pwdMin")); return; }
+    if (newPassword !== confirmPassword) { toast.error(t("myAccount.pwdMismatch")); return; }
     setChangingPwd(true);
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     setChangingPwd(false);
     if (error) toast.error(error.message);
     else {
-      toast.success("Contraseña actualizada");
+      toast.success(t("auth.passwordUpdated"));
       setNewPassword(""); setConfirmPassword("");
     }
   };
@@ -120,14 +122,14 @@ export default function MiCuenta() {
   return (
     <div className="space-y-6 max-w-2xl">
       <div>
-        <h1 className="text-2xl font-bold">Mi cuenta</h1>
-        <p className="text-muted-foreground text-sm">Gestiona tu información personal y seguridad.</p>
+        <h1 className="text-2xl font-bold">{t("myAccount.title")}</h1>
+        <p className="text-muted-foreground text-sm">{t("myAccount.subtitle")}</p>
       </div>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Información de perfil</CardTitle>
-          <CardDescription>Actualiza tus datos personales.</CardDescription>
+          <CardTitle className="text-base">{t("myAccount.profileInfo")}</CardTitle>
+          <CardDescription>{t("myAccount.profileDesc")}</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center gap-4">
@@ -138,46 +140,46 @@ export default function MiCuenta() {
             <div>
               <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={onAvatarChange} />
               <Button variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={uploadingAvatar}>
-                <Upload className="h-4 w-4" /> {uploadingAvatar ? "Subiendo..." : "Cambiar foto"}
+                <Upload className="h-4 w-4" /> {uploadingAvatar ? t("common.uploading") : t("myAccount.changePhoto")}
               </Button>
-              <p className="text-xs text-muted-foreground mt-1">PNG, JPG hasta ~2MB</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("myAccount.photoHint")}</p>
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Email</Label>
+            <Label>{t("common.email")}</Label>
             <Input value={user?.email ?? ""} disabled />
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Nombre</Label>
+              <Label>{t("common.name")}</Label>
               <Input value={profile.first_name} onChange={(e) => setProfile({ ...profile, first_name: e.target.value })} disabled={loading} />
             </div>
             <div className="space-y-2">
-              <Label>Apellido</Label>
+              <Label>{t("common.lastName")}</Label>
               <Input value={profile.last_name} onChange={(e) => setProfile({ ...profile, last_name: e.target.value })} disabled={loading} />
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Teléfono</Label>
+            <Label>{t("common.phone")}</Label>
             <Input value={profile.phone} onChange={(e) => setProfile({ ...profile, phone: e.target.value })} disabled={loading} />
           </div>
           <div className="space-y-2">
-            <Label>Cargo</Label>
+            <Label>{t("common.jobTitle")}</Label>
             <Input value={profile.job_title} onChange={(e) => setProfile({ ...profile, job_title: e.target.value })} disabled={loading} />
           </div>
           <Button onClick={saveProfile} disabled={saving || loading}>
-            {saving ? "Guardando..." : "Guardar cambios"}
+            {saving ? t("common.saving") : t("common.saveChanges")}
           </Button>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader>
-          <CardTitle className="text-base">Cambiar contraseña</CardTitle>
+          <CardTitle className="text-base">{t("myAccount.changePassword")}</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <Label>Nueva contraseña</Label>
+            <Label>{t("myAccount.newPassword")}</Label>
             <div className="relative">
               <Input type={showNewPassword ? "text" : "password"} value={newPassword} onChange={(e) => setNewPassword(e.target.value)} className="pr-10" />
               <button type="button" onClick={() => setShowNewPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -186,7 +188,7 @@ export default function MiCuenta() {
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Confirmar contraseña</Label>
+            <Label>{t("myAccount.confirmPassword")}</Label>
             <div className="relative">
               <Input type={showConfirmPassword ? "text" : "password"} value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} className="pr-10" />
               <button type="button" onClick={() => setShowConfirmPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -195,7 +197,7 @@ export default function MiCuenta() {
             </div>
           </div>
           <Button onClick={changePassword} disabled={changingPwd}>
-            {changingPwd ? "Actualizando..." : "Actualizar contraseña"}
+            {changingPwd ? t("myAccount.updating") : t("myAccount.updatePassword")}
           </Button>
         </CardContent>
       </Card>
@@ -204,28 +206,28 @@ export default function MiCuenta() {
         <CardHeader>
           <CardTitle className="text-base flex items-center gap-2">
             {factors.length > 0 ? <ShieldCheck className="h-5 w-5 text-success" /> : <ShieldAlert className="h-5 w-5 text-warning" />}
-            Autenticación de dos factores (2FA)
+            {t("myAccount.twoFa")}
           </CardTitle>
           <CardDescription>
-            {factors.length > 0 ? "Tu cuenta está protegida con 2FA." : "Agrega una capa extra de seguridad a tu cuenta."}
+            {factors.length > 0 ? t("myAccount.twoFaOn") : t("myAccount.twoFaOff")}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           {factors.length === 0 && !enrolling && (
-            <Button onClick={startEnroll}>Activar 2FA</Button>
+            <Button onClick={startEnroll}>{t("myAccount.enable2fa")}</Button>
           )}
           {enrolling && (
             <div className="space-y-3">
-              <p className="text-sm">Escanea este QR con tu app autenticadora (Google Authenticator, Authy, etc.):</p>
+              <p className="text-sm">{t("myAccount.scanQr")}</p>
               <img src={enrolling.qr} alt="QR 2FA" className="border rounded" />
-              <p className="text-xs text-muted-foreground">O ingresa el código: <code className="font-mono">{enrolling.secret}</code></p>
+              <p className="text-xs text-muted-foreground">{t("myAccount.orEnterCode")} <code className="font-mono">{enrolling.secret}</code></p>
               <div className="space-y-2 max-w-xs">
-                <Label>Código de 6 dígitos</Label>
+                <Label>{t("myAccount.sixDigitCode")}</Label>
                 <Input value={otp} onChange={(e) => setOtp(e.target.value)} maxLength={6} />
               </div>
               <div className="flex gap-2">
-                <Button onClick={verifyEnroll}>Verificar y activar</Button>
-                <Button variant="outline" onClick={() => setEnrolling(null)}>Cancelar</Button>
+                <Button onClick={verifyEnroll}>{t("myAccount.verifyEnable")}</Button>
+                <Button variant="outline" onClick={() => setEnrolling(null)}>{t("common.cancel")}</Button>
               </div>
             </div>
           )}
@@ -233,9 +235,9 @@ export default function MiCuenta() {
             <div key={f.id} className="flex items-center justify-between p-3 rounded-md bg-muted">
               <div>
                 <p className="text-sm font-medium">{f.friendly_name || "Authenticator"}</p>
-                <p className="text-xs text-muted-foreground">Estado: {f.status}</p>
+                <p className="text-xs text-muted-foreground">{t("common.status")}: {f.status}</p>
               </div>
-              <Button variant="destructive" size="sm" onClick={() => removeFactor(f.id)}>Desactivar</Button>
+              <Button variant="destructive" size="sm" onClick={() => removeFactor(f.id)}>{t("myAccount.disable2fa")}</Button>
             </div>
           ))}
         </CardContent>

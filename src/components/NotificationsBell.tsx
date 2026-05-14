@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Bell } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ type RequestRow = {
 };
 
 export function NotificationsBell() {
+  const { t } = useTranslation();
   const { user, isAdmin, isComercial } = useAuth();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
@@ -71,14 +73,14 @@ export function NotificationsBell() {
     : items.filter((i) => i.status !== "pending").length;
 
   const statusLabel = (s: string) =>
-    s === "pending" ? "Pendiente" : s === "created" ? "Creado" : "Rechazado";
+    s === "pending" ? t("common.pending") : s === "created" ? t("common.created") : t("common.rejected");
   const statusVariant = (s: string): "default" | "secondary" | "destructive" =>
     s === "created" ? "default" : s === "rejected" ? "destructive" : "secondary";
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notificaciones">
+        <Button variant="ghost" size="icon" className="relative" aria-label={t("notifications.aria")}>
           <Bell className="h-5 w-5" />
           {count > 0 && (
             <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-destructive text-destructive-foreground text-[10px] font-semibold flex items-center justify-center">
@@ -90,7 +92,7 @@ export function NotificationsBell() {
       <PopoverContent align="end" className="w-96 p-0">
         <div className="px-4 py-3 border-b flex items-center justify-between">
           <p className="text-sm font-semibold">
-            {isAdmin ? "Links pendientes" : "Mis solicitudes"}
+            {isAdmin ? t("notifications.pendingLinks") : t("notifications.myRequests")}
           </p>
           <Button
             variant="link"
@@ -101,13 +103,13 @@ export function NotificationsBell() {
               navigate("/solicitar-links");
             }}
           >
-            Ver todo
+            {t("notifications.seeAll")}
           </Button>
         </div>
         <ScrollArea className="max-h-96">
           {items.length === 0 ? (
             <p className="text-xs text-muted-foreground p-4 text-center">
-              Sin notificaciones
+              {t("notifications.empty")}
             </p>
           ) : (
             <ul className="divide-y">

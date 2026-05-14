@@ -1273,6 +1273,57 @@ export type Database = {
         }
         Relationships: []
       }
+      tracking_link_requests: {
+        Row: {
+          admin_notes: string | null
+          affiliate_id: string
+          brand: string | null
+          client_id: string
+          country_id: string | null
+          created_at: string
+          id: string
+          notes: string | null
+          requested_by: string
+          resolved_at: string | null
+          resolved_by: string | null
+          status: Database["public"]["Enums"]["tracking_link_request_status"]
+          tracking_link: string | null
+          updated_at: string
+        }
+        Insert: {
+          admin_notes?: string | null
+          affiliate_id: string
+          brand?: string | null
+          client_id: string
+          country_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requested_by: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["tracking_link_request_status"]
+          tracking_link?: string | null
+          updated_at?: string
+        }
+        Update: {
+          admin_notes?: string | null
+          affiliate_id?: string
+          brand?: string | null
+          client_id?: string
+          country_id?: string | null
+          created_at?: string
+          id?: string
+          notes?: string | null
+          requested_by?: string
+          resolved_at?: string | null
+          resolved_by?: string | null
+          status?: Database["public"]["Enums"]["tracking_link_request_status"]
+          tracking_link?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -1314,6 +1365,7 @@ export type Database = {
       client_status: "active" | "inactive" | "prospect"
       closure_status: "draft" | "confirmed" | "paid"
       salary_deal_status: "active" | "paused" | "ended"
+      tracking_link_request_status: "pending" | "created" | "rejected"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1446,6 +1498,7 @@ export const Constants = {
       client_status: ["active", "inactive", "prospect"],
       closure_status: ["draft", "confirmed", "paid"],
       salary_deal_status: ["active", "paused", "ended"],
+      tracking_link_request_status: ["pending", "created", "rejected"],
     },
   },
 } as const

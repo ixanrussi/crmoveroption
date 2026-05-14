@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Loader2, Pencil, X } from "lucide-react";
+import { Plus, Loader2, Pencil, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Country { id: string; name: string }
@@ -38,7 +38,7 @@ const empty = {
   country_ids: [] as string[],
   brands: [] as string[],
   channel_ids: [] as string[],
-  channel_links: {} as Record<string, string>,
+  channel_links: {} as Record<string, string[]>,
   notes: "",
 };
 
@@ -92,6 +92,14 @@ export default function ProspectsAfiliados() {
   const openEdit = (row: ProspectAffiliate) => {
     setEditing(row);
     const links = row.affiliate_channel_links ?? [];
+    const grouped: Record<string, string[]> = {};
+    for (const l of links) {
+      if (!grouped[l.channel_id]) grouped[l.channel_id] = [];
+      grouped[l.channel_id].push(l.link ?? "");
+    }
+    for (const k of Object.keys(grouped)) {
+      if (grouped[k].length === 0) grouped[k] = [""];
+    }
     setForm({
       fixed_name: row.fixed_name ?? "",
       alias: row.alias ?? "",
@@ -99,8 +107,8 @@ export default function ProspectsAfiliados() {
       phone: row.phone ?? "",
       country_ids: row.country_ids ?? [],
       brands: row.brands ?? [],
-      channel_ids: links.map((l) => l.channel_id),
-      channel_links: Object.fromEntries(links.map((l) => [l.channel_id, l.link ?? ""])),
+      channel_ids: Object.keys(grouped),
+      channel_links: grouped,
       notes: row.notes ?? "",
     });
     setBrandInput("");
@@ -138,6 +146,14 @@ export default function ProspectsAfiliados() {
 
   const save = async () => {
     if (!form.fixed_name.trim()) { toast.error("Nombre fijo requerido"); return; }
+    for (const cid of form.channel_ids) {
+      const trimmed = (form.channel_links[cid] ?? []).map((l) => l.trim()).filter(Boolean);
+      if (new Set(trimmed).size !== trimmed.length) {
+        const ch = channels.find((c) => c.id === cid);
+        toast.error(`Links duplicados en el canal ${ch?.name ?? ""}`);
+        return;
+      }
+    }
     setSaving(true);
     const payload: any = {
       fixed_name: form.fixed_name.trim(),
@@ -161,17 +177,27 @@ export default function ProspectsAfiliados() {
     }
     if (error) { setSaving(false); toast.error(error.message); return; }
 
-    // Sync channels
+    // Sync channels (allow multiple links per channel, no duplicates per channel)
     if (affiliateId) {
       await supabase.from("affiliate_channel_links").delete().eq("affiliate_id", affiliateId);
-      if (form.channel_ids.length > 0) {
-        await supabase
-          .from("affiliate_channel_links")
-          .insert(form.channel_ids.map((channel_id) => ({
-            affiliate_id: affiliateId!,
-            channel_id,
-            link: form.channel_links[channel_id]?.trim() || null,
-          })));
+      const rowsToInsert: { affiliate_id: string; channel_id: string; link: string | null }[] = [];
+      for (const channel_id of form.channel_ids) {
+        const links = (form.channel_links[channel_id] ?? [""]).map((l) => l.trim());
+        const seen = new Set<string>();
+        const cleaned = links.filter((l) => {
+          if (!l) return false;
+          if (seen.has(l)) return false;
+          seen.add(l);
+          return true;
+        });
+        if (cleaned.length === 0) {
+          rowsToInsert.push({ affiliate_id: affiliateId!, channel_id, link: null });
+        } else {
+          for (const link of cleaned) rowsToInsert.push({ affiliate_id: affiliateId!, channel_id, link });
+        }
+      }
+      if (rowsToInsert.length > 0) {
+        await supabase.from("affiliate_channel_links").insert(rowsToInsert);
       }
     }
 
@@ -346,7 +372,7 @@ export default function ProspectsAfiliados() {
                               const cur = form.channel_ids;
                               const next = v ? [...cur, c.id] : cur.filter((x) => x !== c.id);
                               const nextLinks = { ...form.channel_links };
-                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = ""; }
+                              if (v) { if (!(c.id in nextLinks)) nextLinks[c.id] = [""]; }
                               else { delete nextLinks[c.id]; }
                               setForm({ ...form, channel_ids: next, channel_links: nextLinks });
                             }}
@@ -377,20 +403,69 @@ export default function ProspectsAfiliados() {
                 </PopoverContent>
               </Popover>
               {form.channel_ids.length > 0 && (
-                <div className="grid gap-2 mt-2 rounded-md border p-3 bg-muted/30">
-                  <p className="text-xs text-muted-foreground">URL del canal del afiliado</p>
+                <div className="grid gap-3 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">URLs del canal del afiliado</p>
                   {form.channel_ids.map((cid) => {
                     const ch = channels.find((c) => c.id === cid);
+                    const links = form.channel_links[cid] ?? [""];
+                    const updateLinks = (next: string[]) =>
+                      setForm({ ...form, channel_links: { ...form.channel_links, [cid]: next } });
                     return (
-                      <div key={cid} className="grid grid-cols-[120px_1fr] items-center gap-2">
-                        <Label className="text-xs font-normal truncate">{ch?.name ?? "—"}</Label>
-                        <Input
-                          placeholder="https://..."
-                          value={form.channel_links[cid] ?? ""}
-                          onChange={(e) =>
-                            setForm({ ...form, channel_links: { ...form.channel_links, [cid]: e.target.value } })
-                          }
-                        />
+                      <div key={cid} className="grid gap-1">
+                        {links.map((val, idx) => {
+                          const trimmed = val.trim();
+                          const isDup =
+                            trimmed.length > 0 &&
+                            links.findIndex((l, i) => i !== idx && l.trim() === trimmed) !== -1;
+                          const isLast = idx === links.length - 1;
+                          return (
+                            <div key={idx} className="grid grid-cols-[120px_1fr_auto_auto] items-center gap-2">
+                              <Label className="text-xs font-normal truncate">
+                                {idx === 0 ? ch?.name ?? "—" : ""}
+                              </Label>
+                              <Input
+                                placeholder="https://..."
+                                value={val}
+                                aria-invalid={isDup}
+                                className={isDup ? "border-destructive" : ""}
+                                onChange={(e) => {
+                                  const next = [...links];
+                                  next[idx] = e.target.value;
+                                  updateLinks(next);
+                                }}
+                              />
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                disabled={links.length === 1}
+                                onClick={() => updateLinks(links.filter((_, i) => i !== idx))}
+                                title="Eliminar link"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                              </Button>
+                              <Button
+                                type="button"
+                                size="icon"
+                                variant="ghost"
+                                className="h-8 w-8"
+                                disabled={!isLast}
+                                onClick={() => {
+                                  const trimmedAll = links.map((l) => l.trim());
+                                  if (trimmedAll.some((l, i) => l && trimmedAll.indexOf(l) !== i)) {
+                                    toast.error("No se permiten links duplicados en el mismo canal");
+                                    return;
+                                  }
+                                  updateLinks([...links, ""]);
+                                }}
+                                title="Añadir otro link"
+                              >
+                                <Plus className="h-3.5 w-3.5" />
+                              </Button>
+                            </div>
+                          );
+                        })}
                       </div>
                     );
                   })}

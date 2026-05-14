@@ -146,6 +146,14 @@ export default function ProspectsAfiliados() {
 
   const save = async () => {
     if (!form.fixed_name.trim()) { toast.error("Nombre fijo requerido"); return; }
+    for (const cid of form.channel_ids) {
+      const trimmed = (form.channel_links[cid] ?? []).map((l) => l.trim()).filter(Boolean);
+      if (new Set(trimmed).size !== trimmed.length) {
+        const ch = channels.find((c) => c.id === cid);
+        toast.error(`Links duplicados en el canal ${ch?.name ?? ""}`);
+        return;
+      }
+    }
     setSaving(true);
     const payload: any = {
       fixed_name: form.fixed_name.trim(),

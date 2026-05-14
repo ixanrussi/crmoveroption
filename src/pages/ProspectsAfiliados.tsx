@@ -104,6 +104,27 @@ export default function ProspectsAfiliados() {
     setOpen(true);
   };
 
+  const createChannel = async () => {
+    const name = newChannelName.trim();
+    if (!name) return;
+    if (channels.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
+      toast.error("Ese canal ya existe");
+      return;
+    }
+    setCreatingChannel(true);
+    const { data, error } = await supabase
+      .from("affiliate_channels")
+      .insert({ name })
+      .select("id,name")
+      .single();
+    setCreatingChannel(false);
+    if (error) { toast.error(error.message); return; }
+    setChannels((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
+    setForm((f) => ({ ...f, channel_ids: [...f.channel_ids, data.id] }));
+    setNewChannelName("");
+    toast.success("Canal creado");
+  };
+
   const addBrand = () => {
     const v = brandInput.trim();
     if (!v) return;

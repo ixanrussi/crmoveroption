@@ -11,7 +11,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Plus, Loader2, Pencil, X } from "lucide-react";
+import { Plus, Loader2, Pencil, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Country { id: string; name: string }

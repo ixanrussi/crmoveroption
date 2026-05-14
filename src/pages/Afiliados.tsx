@@ -165,16 +165,18 @@ export default function Afiliados() {
     setGoalProgress(progress);
   };
   const loadLookups = async () => {
-    const [c, ch, cl, tpl] = await Promise.all([
+    const [c, ch, cl, tpl, cp] = await Promise.all([
       supabase.from("countries").select("*").order("name"),
       supabase.from("affiliate_channels").select("*").order("name"),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_plan_templates").select("*, client:clients(company_name)").order("name", { ascending: true }),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
     setClients(cl.data ?? []);
     setTemplates(tpl.data ?? []);
+    setClientPlans(cp.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 

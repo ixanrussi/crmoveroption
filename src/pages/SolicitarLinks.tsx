@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Send, Bell, Check, X } from "lucide-react";
+import { Loader2, Send, Bell, Check, X, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 interface Affiliate { id: string; fixed_name: string; alias: string | null; brands: string[] }

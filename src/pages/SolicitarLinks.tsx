@@ -73,6 +73,22 @@ export default function SolicitarLinks() {
 
   const selectedClient = useMemo(() => clients.find((c) => c.id === form.client_id), [clients, form.client_id]);
   const brandOptions = selectedClient?.brands ?? [];
+
+  // Searchable list of all (client, brand) combinations across active operators
+  const brandEntries = useMemo(() => {
+    const list: { client_id: string; brand: string; client_name: string; key: string }[] = [];
+    clients.forEach((c) => {
+      (c.brands ?? []).forEach((b) => {
+        if (!b) return;
+        list.push({ client_id: c.id, brand: b, client_name: c.company_name, key: `${c.id}::${b}` });
+      });
+    });
+    return list.sort((a, b) => a.brand.localeCompare(b.brand));
+  }, [clients]);
+
+  const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const selectedBrandKey = form.client_id && form.brand ? `${form.client_id}::${form.brand}` : "";
+
   const countryOptions = useMemo(() => {
     if (!selectedClient) return countries;
     // If a brand is selected, restrict by countries of that brand's commission plans
@@ -88,6 +104,17 @@ export default function SolicitarLinks() {
     const filtered = countries.filter((c) => ids.has(c.id));
     return filtered.length ? filtered : countries;
   }, [countries, selectedClient, form.brand, plans]);
+
+  // Auto-select country when there's only one option; clear if current value not in list
+  useEffect(() => {
+    if (!form.client_id) return;
+    if (countryOptions.length === 1) {
+      const only = countryOptions[0].id;
+      if (form.country_id !== only) setForm((f) => ({ ...f, country_id: only }));
+    } else if (form.country_id && !countryOptions.some((c) => c.id === form.country_id)) {
+      setForm((f) => ({ ...f, country_id: "" }));
+    }
+  }, [countryOptions, form.client_id]);
 
   const submit = async () => {
     if (!user?.id) return;

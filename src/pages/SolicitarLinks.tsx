@@ -136,6 +136,14 @@ export default function SolicitarLinks() {
     load();
   };
 
+  const removeRequest = async (r: Request) => {
+    if (!confirm("¿Eliminar esta solicitud?")) return;
+    const { error } = await supabase.from("tracking_link_requests").delete().eq("id", r.id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Solicitud eliminada");
+    setRequests((prev) => prev.filter((x) => x.id !== r.id));
+  };
+
   const affName = (id: string) => {
     const a = affiliates.find((x) => x.id === id);
     return a ? `${a.fixed_name}${a.alias ? ` (${a.alias})` : ""}` : "—";

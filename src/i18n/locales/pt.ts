@@ -93,7 +93,7 @@ const pt: Translations = {
     affiliates: "Afiliados",
     affiliatesProspect: "Afiliados prospect",
     requestLinks: "Solicitar links",
-    commissionPlans: "Planos de Comissão Afiliado",
+    commissionPlans: "Planes de Comissão Afiliado",
     fixedCalculator: "Calculadora de Fixos",
     apiReport: "API Report",
     geos: "GEO´s",

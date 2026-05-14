@@ -87,6 +87,7 @@ export default function SolicitarLinks() {
   }, [clients]);
 
   const [brandPickerOpen, setBrandPickerOpen] = useState(false);
+  const [brandQuery, setBrandQuery] = useState("");
   const selectedBrandKey = form.client_id && form.brand ? `${form.client_id}::${form.brand}` : "";
 
   const countryOptions = useMemo(() => {
@@ -230,45 +231,50 @@ export default function SolicitarLinks() {
             </div>
             <div className="space-y-2">
               <Label>Marca</Label>
-              <Popover open={brandPickerOpen} onOpenChange={setBrandPickerOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    role="combobox"
-                    className={cn("w-full justify-between font-normal", !form.brand && "text-muted-foreground")}
-                  >
-                    {form.brand
-                      ? `${form.brand}${selectedClient ? ` · ${selectedClient.company_name}` : ""}`
-                      : "Buscar marca..."}
-                    <ChevronsUpDown className="h-4 w-4 opacity-50" />
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
-                  <Command>
-                    <CommandInput placeholder="Buscar marca u operador..." />
-                    <CommandList>
-                      <CommandEmpty>Sin resultados</CommandEmpty>
-                      <CommandGroup>
-                        {brandEntries.map((e) => (
-                          <CommandItem
-                            key={e.key}
-                            value={`${e.brand} ${e.client_name}`}
-                            onSelect={() => {
-                              setForm((f) => ({ ...f, client_id: e.client_id, brand: e.brand, country_id: "" }));
-                              setBrandPickerOpen(false);
-                            }}
-                          >
-                            <Check className={cn("h-4 w-4", selectedBrandKey === e.key ? "opacity-100" : "opacity-0")} />
-                            <span className="font-medium">{e.brand}</span>
-                            <span className="ml-2 text-xs text-muted-foreground">{e.client_name}</span>
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+              <div className="relative">
+                <Input
+                  placeholder="Buscar marca u operador..."
+                  value={brandPickerOpen ? brandQuery : (form.brand ? `${form.brand}${selectedClient ? ` · ${selectedClient.company_name}` : ""}` : brandQuery)}
+                  onFocus={() => setBrandPickerOpen(true)}
+                  onBlur={() => setTimeout(() => setBrandPickerOpen(false), 150)}
+                  onChange={(e) => { setBrandQuery(e.target.value); setBrandPickerOpen(true); }}
+                />
+                {brandPickerOpen && (
+                  <div className="absolute z-50 mt-1 w-full rounded-md border bg-popover shadow-md max-h-64 overflow-auto">
+                    {(() => {
+                      const q = brandQuery.trim().toLowerCase();
+                      const filtered = q
+                        ? brandEntries.filter((e) =>
+                            e.brand.toLowerCase().includes(q) || e.client_name.toLowerCase().includes(q),
+                          )
+                        : brandEntries;
+                      if (!filtered.length) {
+                        return <div className="px-3 py-2 text-sm text-muted-foreground">Sin resultados</div>;
+                      }
+                      return filtered.map((e) => (
+                        <button
+                          key={e.key}
+                          type="button"
+                          onMouseDown={(ev) => ev.preventDefault()}
+                          onClick={() => {
+                            setForm((f) => ({ ...f, client_id: e.client_id, brand: e.brand, country_id: "" }));
+                            setBrandQuery("");
+                            setBrandPickerOpen(false);
+                          }}
+                          className={cn(
+                            "flex w-full items-center gap-2 px-3 py-2 text-left text-sm hover:bg-accent",
+                            selectedBrandKey === e.key && "bg-accent",
+                          )}
+                        >
+                          <Check className={cn("h-4 w-4", selectedBrandKey === e.key ? "opacity-100" : "opacity-0")} />
+                          <span className="font-medium">{e.brand}</span>
+                          <span className="ml-auto text-xs text-muted-foreground">{e.client_name}</span>
+                        </button>
+                      ));
+                    })()}
+                  </div>
+                )}
+              </div>
             </div>
             <div className="space-y-2">
               <Label>País</Label>

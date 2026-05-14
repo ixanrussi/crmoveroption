@@ -39,6 +39,7 @@ export default function SolicitarLinks() {
   const [clients, setClients] = useState<Client[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [plans, setPlans] = useState<{ client_id: string; brand: string | null; country_ids: string[] }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...empty });
@@ -50,16 +51,18 @@ export default function SolicitarLinks() {
 
   const load = async () => {
     setLoading(true);
-    const [a, c, co, r] = await Promise.all([
+    const [a, c, co, r, p] = await Promise.all([
       supabase.from("affiliates").select("id, fixed_name, alias, brands").eq("status", "active").order("fixed_name"),
       supabase.from("clients").select("id, company_name, brands, country_ids").eq("status", "active").order("company_name"),
       supabase.from("countries").select("id,name").order("name"),
       supabase.from("tracking_link_requests").select("*").order("created_at", { ascending: false }),
+      supabase.from("client_commission_plans").select("client_id, brand, country_ids"),
     ]);
     setAffiliates((a.data as any) ?? []);
     setClients((c.data as any) ?? []);
     setCountries(co.data ?? []);
     setRequests((r.data as any) ?? []);
+    setPlans((p.data as any) ?? []);
     setLoading(false);
   };
 
@@ -69,10 +72,19 @@ export default function SolicitarLinks() {
   const brandOptions = selectedClient?.brands ?? [];
   const countryOptions = useMemo(() => {
     if (!selectedClient) return countries;
+    // If a brand is selected, restrict by countries of that brand's commission plans
+    if (form.brand) {
+      const ids = new Set<string>();
+      plans
+        .filter((pl) => pl.client_id === selectedClient.id && pl.brand === form.brand)
+        .forEach((pl) => (pl.country_ids ?? []).forEach((id) => ids.add(id)));
+      const filtered = countries.filter((c) => ids.has(c.id));
+      if (filtered.length) return filtered;
+    }
     const ids = new Set(selectedClient.country_ids);
     const filtered = countries.filter((c) => ids.has(c.id));
     return filtered.length ? filtered : countries;
-  }, [countries, selectedClient]);
+  }, [countries, selectedClient, form.brand, plans]);
 
   const submit = async () => {
     if (!user?.id) return;

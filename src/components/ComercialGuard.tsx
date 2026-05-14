@@ -2,7 +2,7 @@ import { Navigate, useLocation } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { ReactNode } from "react";
 
-const ALLOWED_FOR_COMERCIAL = ["/calculadora-fijos", "/mi-cuenta", "/prospects/afiliados"];
+const ALLOWED_FOR_COMERCIAL = ["/calculadora-fijos", "/mi-cuenta", "/prospects/afiliados", "/solicitar-links"];
 
 export const ComercialGuard = ({ children }: { children: ReactNode }) => {
   const { isComercial, isAdmin } = useAuth();

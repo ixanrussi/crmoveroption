@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -13,6 +14,7 @@ import MarketingFunnel from "@/components/MarketingFunnel";
 import BrandGoals from "@/components/BrandGoals";
 
 const Dashboard = () => {
+  const { t } = useTranslation();
   const { user, isSuperAdmin, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0 });
@@ -37,17 +39,19 @@ const Dashboard = () => {
   useEffect(() => { loadStats(); }, []);
 
   const cards = [
-    { label: "Operadores", value: stats.clients, icon: Users, color: "text-primary", to: "/clientes" },
-    { label: "Afiliados", value: stats.affiliates, icon: UserPlus, color: "text-success", to: "/afiliados" },
-    { label: "Países", value: stats.countries, icon: Globe, color: "text-warning" },
+    { label: t("nav.operators"), value: stats.clients, icon: Users, color: "text-primary", to: "/clientes" },
+    { label: t("nav.affiliates"), value: stats.affiliates, icon: UserPlus, color: "text-success", to: "/afiliados" },
+    { label: t("common.countries"), value: stats.countries, icon: Globe, color: "text-warning" },
   ];
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Bienvenido, {displayName || user?.email}</h1>
+        <h1 className="text-2xl font-bold tracking-tight">
+          {t("dashboard.welcome", { name: displayName || user?.email })}
+        </h1>
         <p className="text-muted-foreground text-sm">
-          {isSuperAdmin ? "Super Admin" : isAdmin ? "Administrador" : "Usuario"}
+          {isSuperAdmin ? t("dashboard.superAdmin") : isAdmin ? t("dashboard.administrator") : t("dashboard.user")}
         </p>
       </div>
 
@@ -70,9 +74,9 @@ const Dashboard = () => {
         <Card>
           <CardContent className="p-6 flex items-center justify-between gap-2">
             <div className="min-w-0">
-              <p className="text-sm text-muted-foreground">Mapa de actividad</p>
+              <p className="text-sm text-muted-foreground">{t("dashboard.activityMap")}</p>
               <Button variant="link" className="h-auto p-0 text-base font-semibold" onClick={() => setShowMap((v) => !v)}>
-                {showMap ? "Ocultar" : "Ver mapa"}
+                {showMap ? t("dashboard.hideMap") : t("dashboard.showMap")}
               </Button>
             </div>
             <MapIcon className="h-8 w-8 text-primary shrink-0" />

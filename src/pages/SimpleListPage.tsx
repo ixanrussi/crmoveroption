@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -27,12 +28,22 @@ interface Props {
 }
 
 export default function SimpleListPage({ table, title, withCode }: Props) {
+  const { t } = useTranslation();
   const { isAdmin } = useAuth();
   const [items, setItems] = useState<any[]>([]);
   const [name, setName] = useState("");
   const [code, setCode] = useState("");
   const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+
+  // Map english title prop to translation key
+  const titleMap: Record<string, string> = {
+    "Países": t("pages.countries"),
+    "Software": t("pages.software"),
+    "Canales de afiliados": t("pages.channels"),
+    "Monedas": t("pages.currencies"),
+  };
+  const localizedTitle = titleMap[title] ?? title;
 
   const getFunctionError = async (error: unknown, data?: any) => {
     if (data?.error) return data.error;
@@ -41,7 +52,7 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
       const body = await context.clone().json().catch(() => null);
       if (body?.error) return body.error;
     }
-    return (error as Error | null)?.message ?? "No se pudo completar la operación";
+    return (error as Error | null)?.message ?? t("common.operationFailed");
   };
 
   const load = async () => {
@@ -67,7 +78,7 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
       toast.error(await getFunctionError(error, data));
       return;
     }
-    toast.success("Agregado");
+    toast.success(t("common.added"));
     setName("");
     setCode("");
     load();
@@ -83,24 +94,24 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
       toast.error(await getFunctionError(error, data));
       return;
     }
-    toast.success("Eliminado");
+    toast.success(t("common.deleted"));
     load();
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <p className="text-muted-foreground text-sm">Gestiona los valores disponibles en los formularios.</p>
+        <h1 className="text-2xl font-bold">{localizedTitle}</h1>
+        <p className="text-muted-foreground text-sm">{t("simpleList.subtitle")}</p>
       </div>
 
       {isAdmin && (
         <Card>
-          <CardHeader><CardTitle className="text-base">Agregar nuevo</CardTitle></CardHeader>
+          <CardHeader><CardTitle className="text-base">{t("common.addNew")}</CardTitle></CardHeader>
           <CardContent className="flex gap-2">
-            <Input placeholder="Nombre" value={name} onChange={(e) => setName(e.target.value)} />
-            {withCode && <Input placeholder="Código" value={code} onChange={(e) => setCode(e.target.value)} className="max-w-[120px]" />}
-            <Button onClick={add} disabled={saving}><Plus className="h-4 w-4 mr-1" /> {saving ? "Agregando..." : "Agregar"}</Button>
+            <Input placeholder={t("common.name")} value={name} onChange={(e) => setName(e.target.value)} />
+            {withCode && <Input placeholder={t("common.code")} value={code} onChange={(e) => setCode(e.target.value)} className="max-w-[120px]" />}
+            <Button onClick={add} disabled={saving}><Plus className="h-4 w-4 mr-1" /> {saving ? t("common.adding") : t("common.add")}</Button>
           </CardContent>
         </Card>
       )}
@@ -112,8 +123,8 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nombre</TableHead>
-                {withCode && <TableHead>Código</TableHead>}
+                <TableHead>{t("common.name")}</TableHead>
+                {withCode && <TableHead>{t("common.code")}</TableHead>}
                 {isAdmin && <TableHead className="w-20"></TableHead>}
               </TableRow>
             </TableHeader>
@@ -132,15 +143,15 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
                         </AlertDialogTrigger>
                         <AlertDialogContent>
                           <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar "{it.name}"?</AlertDialogTitle>
+                            <AlertDialogTitle>{t("common.confirmDelete", { name: it.name })}</AlertDialogTitle>
                             <AlertDialogDescription>
-                              Esta acción no se puede deshacer. El registro será eliminado permanentemente.
+                              {t("common.confirmDeleteDesc")}
                             </AlertDialogDescription>
                           </AlertDialogHeader>
                           <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                            <AlertDialogCancel>{t("common.cancel")}</AlertDialogCancel>
                             <AlertDialogAction onClick={() => remove(it.id)} disabled={deletingId === it.id}>
-                              {deletingId === it.id ? "Eliminando..." : "Eliminar"}
+                              {deletingId === it.id ? t("common.deleting") : t("common.delete")}
                             </AlertDialogAction>
                           </AlertDialogFooter>
                         </AlertDialogContent>
@@ -150,7 +161,7 @@ export default function SimpleListPage({ table, title, withCode }: Props) {
                 </TableRow>
               ))}
               {items.length === 0 && (
-                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-6">Sin registros</TableCell></TableRow>
+                <TableRow><TableCell colSpan={3} className="text-center text-muted-foreground py-6">{t("common.noRecords")}</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

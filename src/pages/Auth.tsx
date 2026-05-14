@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { z } from "zod";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
@@ -10,19 +11,21 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2, ShieldCheck, Eye, EyeOff } from "lucide-react";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import logo from "@/assets/overoption-logo.png";
-
-const emailSchema = z.string().trim().email("Email inválido").max(255);
-const passwordSchema = z.string().min(8, "Mínimo 8 caracteres").max(128);
 
 type Mode = "login" | "signup" | "forgot" | "reset" | "mfa";
 
 const Auth = () => {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { session } = useAuth();
   const [params] = useSearchParams();
   const [mode, setMode] = useState<Mode>("login");
   const [loading, setLoading] = useState(false);
+
+  const emailSchema = z.string().trim().email(t("auth.invalidEmail")).max(255);
+  const passwordSchema = z.string().min(8, t("auth.minPwd")).max(128);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,7 +35,6 @@ const Auth = () => {
   const [mfaFactorId, setMfaFactorId] = useState<string | null>(null);
   const [mfaChallengeId, setMfaChallengeId] = useState<string | null>(null);
 
-  // Detect recovery hash
   useEffect(() => {
     const hash = window.location.hash;
     if (hash.includes("type=recovery")) setMode("reset");
@@ -46,7 +48,7 @@ const Auth = () => {
     e.preventDefault();
     try {
       emailSchema.parse(email);
-      if (!password) throw new Error("Ingresa tu contraseña");
+      if (!password) throw new Error(t("auth.enterPassword"));
     } catch (err: any) {
       toast.error(err.errors?.[0]?.message ?? err.message);
       return;
@@ -55,7 +57,6 @@ const Auth = () => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) { toast.error(error.message); setLoading(false); return; }
 
-    // Check if MFA required
     const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
     if (aal?.nextLevel === "aal2" && aal.nextLevel !== aal.currentLevel) {
       const { data: factors } = await supabase.auth.mfa.listFactors();
@@ -69,7 +70,7 @@ const Auth = () => {
         return;
       }
     }
-    toast.success("Sesión iniciada");
+    toast.success(t("auth.signedIn"));
     setLoading(false);
   };
 
@@ -82,7 +83,7 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Verificado");
+    toast.success(t("auth.verified"));
     navigate("/", { replace: true });
   };
 
@@ -91,7 +92,7 @@ const Auth = () => {
     try {
       emailSchema.parse(email);
       passwordSchema.parse(password);
-      if (!fullName.trim()) throw new Error("Ingresa tu nombre");
+      if (!fullName.trim()) throw new Error(t("auth.enterName"));
     } catch (err: any) {
       toast.error(err.errors?.[0]?.message ?? err.message);
       return;
@@ -106,7 +107,7 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Cuenta creada. Ya puedes iniciar sesión.");
+    toast.success(t("auth.accountCreated"));
     setMode("login");
   };
 
@@ -119,7 +120,7 @@ const Auth = () => {
     });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Revisa tu email para el enlace de recuperación");
+    toast.success(t("auth.resetSent"));
     setMode("login");
   };
 
@@ -130,27 +131,30 @@ const Auth = () => {
     const { error } = await supabase.auth.updateUser({ password });
     setLoading(false);
     if (error) { toast.error(error.message); return; }
-    toast.success("Contraseña actualizada");
+    toast.success(t("auth.passwordUpdated"));
     window.location.hash = "";
     setMode("login");
     navigate("/", { replace: true });
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4"
+    <div className="min-h-screen flex items-center justify-center p-4 relative"
          style={{ background: "var(--gradient-brand)" }}>
+      <div className="absolute top-4 right-4">
+        <LanguageSwitcher />
+      </div>
       <Card className="w-full max-w-md shadow-elegant" style={{ boxShadow: "var(--shadow-elegant)" }}>
         <CardHeader className="space-y-4 items-center text-center">
           <div className="bg-white rounded-lg px-6 py-4 w-full flex justify-center">
             <img src={logo} alt="Overoption" className="h-10 w-auto" />
           </div>
           <div>
-            <CardTitle className="text-xl">CRM Overoption</CardTitle>
+            <CardTitle className="text-xl">{t("auth.title")}</CardTitle>
             <CardDescription>
-              {mode === "mfa" && "Ingresa tu código de verificación"}
-              {mode === "reset" && "Define tu nueva contraseña"}
-              {mode === "forgot" && "Recupera tu acceso"}
-              {(mode === "login" || mode === "signup") && "Accede a tu panel"}
+              {mode === "mfa" && t("auth.enterCode")}
+              {mode === "reset" && t("auth.setNewPassword")}
+              {mode === "forgot" && t("auth.recoverAccess")}
+              {(mode === "login" || mode === "signup") && t("auth.accessPanel")}
             </CardDescription>
           </div>
         </CardHeader>
@@ -160,11 +164,11 @@ const Auth = () => {
             <form onSubmit={handleVerifyMfa} className="space-y-4">
               <div className="flex justify-center text-primary"><ShieldCheck className="h-10 w-10" /></div>
               <div className="space-y-2">
-                <Label>Código 2FA</Label>
+                <Label>{t("auth.code2fa")}</Label>
                 <Input value={otp} onChange={(e) => setOtp(e.target.value)} placeholder="123456" maxLength={6} required />
               </div>
               <Button className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Verificar
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.verify")}
               </Button>
             </form>
           )}
@@ -172,7 +176,7 @@ const Auth = () => {
           {mode === "reset" && (
             <form onSubmit={handleReset} className="space-y-4">
               <div className="space-y-2">
-                <Label>Nueva contraseña</Label>
+                <Label>{t("auth.newPassword")}</Label>
                 <div className="relative">
                   <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="pr-10" />
                   <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -181,7 +185,7 @@ const Auth = () => {
                 </div>
               </div>
               <Button className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Actualizar
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.update")}
               </Button>
             </form>
           )}
@@ -189,14 +193,14 @@ const Auth = () => {
           {mode === "forgot" && (
             <form onSubmit={handleForgot} className="space-y-4">
               <div className="space-y-2">
-                <Label>Email</Label>
+                <Label>{t("auth.emailLabel")}</Label>
                 <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
               </div>
               <Button className="w-full" disabled={loading}>
-                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Enviar enlace
+                {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.sendLink")}
               </Button>
               <Button type="button" variant="link" className="w-full" onClick={() => setMode("login")}>
-                Volver
+                {t("auth.back")}
               </Button>
             </form>
           )}
@@ -204,18 +208,18 @@ const Auth = () => {
           {(mode === "login" || mode === "signup") && (
             <Tabs value={mode} onValueChange={(v) => setMode(v as Mode)}>
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="login">Entrar</TabsTrigger>
-                <TabsTrigger value="signup">Crear cuenta</TabsTrigger>
+                <TabsTrigger value="login">{t("auth.loginTab")}</TabsTrigger>
+                <TabsTrigger value="signup">{t("auth.signupTab")}</TabsTrigger>
               </TabsList>
 
               <TabsContent value="login">
                 <form onSubmit={handleLogin} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label>Email</Label>
+                    <Label>{t("auth.emailLabel")}</Label>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label>Contraseña</Label>
+                    <Label>{t("auth.passwordLabel")}</Label>
                     <div className="relative">
                       <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="pr-10" />
                       <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
@@ -224,10 +228,10 @@ const Auth = () => {
                     </div>
                   </div>
                   <Button className="w-full" disabled={loading}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Iniciar sesión
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.signIn")}
                   </Button>
                   <Button type="button" variant="link" className="w-full" onClick={() => setMode("forgot")}>
-                    ¿Olvidaste tu contraseña?
+                    {t("auth.forgot")}
                   </Button>
                 </form>
               </TabsContent>
@@ -235,25 +239,25 @@ const Auth = () => {
               <TabsContent value="signup">
                 <form onSubmit={handleSignup} className="space-y-4 mt-4">
                   <div className="space-y-2">
-                    <Label>Nombre completo</Label>
+                    <Label>{t("auth.fullName")}</Label>
                     <Input value={fullName} onChange={(e) => setFullName(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label>Email</Label>
+                    <Label>{t("auth.emailLabel")}</Label>
                     <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                   </div>
                   <div className="space-y-2">
-                    <Label>Contraseña</Label>
+                    <Label>{t("auth.passwordLabel")}</Label>
                     <div className="relative">
                       <Input type={showPassword ? "text" : "password"} value={password} onChange={(e) => setPassword(e.target.value)} required className="pr-10" />
                       <button type="button" onClick={() => setShowPassword((v) => !v)} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     </div>
-                    <p className="text-xs text-muted-foreground">Mínimo 8 caracteres</p>
+                    <p className="text-xs text-muted-foreground">{t("auth.minChars")}</p>
                   </div>
                   <Button className="w-full" disabled={loading}>
-                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} Crear cuenta
+                    {loading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />} {t("auth.createAccount")}
                   </Button>
                 </form>
               </TabsContent>

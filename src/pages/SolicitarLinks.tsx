@@ -266,9 +266,14 @@ export default function SolicitarLinks() {
                           <a href={r.tracking_link} target="_blank" rel="noreferrer" className="text-primary underline">{r.tracking_link}</a>
                         ) : "—"}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="flex gap-2">
                         {isAdmin && r.status === "pending" && (
                           <Button size="sm" variant="outline" onClick={() => openResolve(r)}>Resolver</Button>
+                        )}
+                        {(isAdmin || r.requested_by === user?.id) && (
+                          <Button size="sm" variant="ghost" onClick={() => removeRequest(r)} title="Eliminar">
+                            <Trash2 className="h-4 w-4 text-destructive" />
+                          </Button>
                         )}
                       </TableCell>
                     </TableRow>

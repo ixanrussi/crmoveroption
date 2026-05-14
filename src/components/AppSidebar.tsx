@@ -1,5 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, FileSpreadsheet, BarChart3, BookOpen, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, UserSearch, Link2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, UserSearch, Link2 } from "lucide-react";
 import { useMenuPermissions, type MenuKey } from "@/hooks/useMenuPermissions";
 import logo from "@/assets/overoption-logo.png";
 import {
@@ -9,31 +10,33 @@ import {
 import { useAuth } from "@/hooks/useAuth";
 import { Button } from "./ui/button";
 
-const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = [
-  { title: "Dashboard", url: "/", icon: LayoutDashboard, key: "dashboard" },
-  { title: "Operadores", url: "/clientes", icon: Users, key: "clientes" },
-  { title: "Operadores prospect", url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
-  { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
-  { title: "Afiliados prospect", url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
-  { title: "Solicitar links", url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
-  { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
-  { title: "Calculadora de Fijos", url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
-  { title: "API Report", url: "/tracker-report", icon: Activity, key: "tracker-report" },
-];
-const listItems: { title: string; url: string; key: MenuKey }[] = [
-  { title: "GEO´s", url: "/listas/paises", key: "listas-paises" },
-  { title: "Software", url: "/listas/software", key: "listas-software" },
-  { title: "Canales", url: "/listas/canales", key: "listas-canales" },
-  { title: "Monedas", url: "/listas/monedas", key: "listas-monedas" },
-];
-
 export function AppSidebar() {
+  const { t } = useTranslation();
   const { state } = useSidebar();
   const collapsed = state === "collapsed";
   const { pathname } = useLocation();
   const { isSuperAdmin, isComercial, isAdmin, signOut, user } = useAuth();
   const { can } = useMenuPermissions();
   const isActive = (p: string) => pathname === p;
+
+  const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = [
+    { title: t("nav.dashboard"), url: "/", icon: LayoutDashboard, key: "dashboard" },
+    { title: t("nav.operators"), url: "/clientes", icon: Users, key: "clientes" },
+    { title: t("nav.operatorsProspect"), url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
+    { title: t("nav.affiliates"), url: "/afiliados", icon: UserPlus, key: "afiliados" },
+    { title: t("nav.affiliatesProspect"), url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
+    { title: t("nav.requestLinks"), url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
+    { title: t("nav.commissionPlans"), url: "/planes-comision", icon: Wallet, key: "planes-comision" },
+    { title: t("nav.fixedCalculator"), url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
+    { title: t("nav.apiReport"), url: "/tracker-report", icon: Activity, key: "tracker-report" },
+  ];
+  const listItems: { title: string; url: string; key: MenuKey }[] = [
+    { title: t("nav.geos"), url: "/listas/paises", key: "listas-paises" },
+    { title: t("nav.software"), url: "/listas/software", key: "listas-software" },
+    { title: t("nav.channels"), url: "/listas/canales", key: "listas-canales" },
+    { title: t("nav.currencies"), url: "/listas/monedas", key: "listas-monedas" },
+  ];
+
   const mainItems = allMainItems.filter((i) => can(i.key)).filter((i) => !(isComercial && !isAdmin && !isSuperAdmin && i.key === "prospects-operadores"));
   const visibleListItems = listItems.filter((i) => can(i.key));
 
@@ -52,7 +55,7 @@ export function AppSidebar() {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel>Principal</SidebarGroupLabel>
+          <SidebarGroupLabel>{t("nav.main")}</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {mainItems.map((item) => (
@@ -71,7 +74,7 @@ export function AppSidebar() {
 
         {visibleListItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel>Listas maestras</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("nav.lists")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 {visibleListItems.map((item) => (
@@ -91,14 +94,14 @@ export function AppSidebar() {
 
         {isSuperAdmin && (
           <SidebarGroup>
-            <SidebarGroupLabel>Administración</SidebarGroupLabel>
+            <SidebarGroupLabel>{t("nav.admin")}</SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
                 <SidebarMenuItem>
                   <SidebarMenuButton asChild isActive={isActive("/usuarios")}>
                     <NavLink to="/usuarios">
                       <Shield className="h-4 w-4" />
-                      <span>Usuarios y Roles</span>
+                      <span>{t("nav.usersRoles")}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -106,7 +109,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive("/configuracion-roles")}>
                     <NavLink to="/configuracion-roles">
                       <KeyRound className="h-4 w-4" />
-                      <span>Configuración de Roles</span>
+                      <span>{t("nav.rolesConfig")}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -114,7 +117,7 @@ export function AppSidebar() {
                   <SidebarMenuButton asChild isActive={isActive("/logs")}>
                     <NavLink to="/logs">
                       <ScrollText className="h-4 w-4" />
-                      <span>Log de actividad</span>
+                      <span>{t("nav.activityLog")}</span>
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -130,7 +133,7 @@ export function AppSidebar() {
             <SidebarMenuButton asChild isActive={isActive("/mi-cuenta")}>
               <NavLink to="/mi-cuenta">
                 <UserCircle className="h-4 w-4" />
-                <span>Mi cuenta</span>
+                <span>{t("nav.myAccount")}</span>
               </NavLink>
             </SidebarMenuButton>
           </SidebarMenuItem>
@@ -143,7 +146,7 @@ export function AppSidebar() {
         <Button variant="ghost" size="sm" onClick={signOut}
           className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
           <LogOut className="h-4 w-4" />
-          {!collapsed && <span className="ml-2">Cerrar sesión</span>}
+          {!collapsed && <span className="ml-2">{t("nav.signOut")}</span>}
         </Button>
       </SidebarFooter>
     </Sidebar>

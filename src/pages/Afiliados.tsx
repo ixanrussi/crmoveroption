@@ -906,7 +906,8 @@ export default function Afiliados() {
                         </div>
                       </CollapsibleContent>
                     </Collapsible>
-                  ))}
+                    );
+                  })}
                 </div>
 
                 <div className="col-span-2 space-y-1"><Label>Notas</Label>

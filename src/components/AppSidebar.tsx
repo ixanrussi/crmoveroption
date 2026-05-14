@@ -13,6 +13,8 @@ const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = 
   { title: "Dashboard", url: "/", icon: LayoutDashboard, key: "dashboard" },
   { title: "Operadores", url: "/clientes", icon: Users, key: "clientes" },
   { title: "Afiliados", url: "/afiliados", icon: UserPlus, key: "afiliados" },
+  { title: "Operadores prospect", url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
+  { title: "Afiliados prospect", url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
   { title: "Planes Comisión Afiliado", url: "/planes-comision", icon: Wallet, key: "planes-comision" },
   
   

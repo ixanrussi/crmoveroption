@@ -255,6 +255,13 @@ export default function Afiliados() {
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
+    for (const cid of channelIds) {
+      const trimmed = (channelLinks[cid] ?? []).map((l) => l.trim()).filter(Boolean);
+      if (new Set(trimmed).size !== trimmed.length) {
+        toast.error("No se permiten links duplicados en el mismo canal");
+        return;
+      }
+    }
     const aliasesArr: string[] = Array.isArray(form.aliases) ? form.aliases.filter((x: string) => x && x.trim()) : [];
     const payload: any = {
       fixed_name: form.fixed_name,

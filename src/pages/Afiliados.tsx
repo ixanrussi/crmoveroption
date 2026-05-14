@@ -68,7 +68,7 @@ export default function Afiliados() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
-  const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
+  const [channelLinks, setChannelLinks] = useState<Record<string, string[]>>({});
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -188,10 +188,16 @@ export default function Afiliados() {
       : (row?.alias ? [row.alias] : []);
     setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
     setAliasInput("");
-    setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
-    const links: Record<string, string> = {};
-    row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
-    setChannelLinks(links);
+    const grouped: Record<string, string[]> = {};
+    (row.affiliate_channel_links ?? []).forEach((l: any) => {
+      if (!grouped[l.channel_id]) grouped[l.channel_id] = [];
+      grouped[l.channel_id].push(l.link ?? "");
+    });
+    Object.keys(grouped).forEach((k) => {
+      if (grouped[k].length === 0) grouped[k] = [""];
+    });
+    setChannelIds(Object.keys(grouped));
+    setChannelLinks(grouped);
     setPlans(
       (row.affiliate_commission_plans ?? []).map((p: any) => ({
         template_id: p.template_id ?? "",
@@ -269,7 +275,11 @@ export default function Afiliados() {
         id: editing?.id,
         affiliate: payload,
         channel_ids: channelIds,
-        channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
+        channel_links: channelIds.flatMap((cid) => {
+          const arr = (channelLinks[cid] ?? [""]).map((l) => l.trim()).filter((l, i, a) => a.indexOf(l) === i);
+          if (arr.length === 0 || (arr.length === 1 && !arr[0])) return [{ channel_id: cid, link: null }];
+          return arr.filter(Boolean).map((link) => ({ channel_id: cid, link }));
+        }),
         commission_plans: plans.map((p) => ({
           template_id: p.template_id || null,
           plan_start_date: p.plan_start_date || null,
@@ -311,7 +321,16 @@ export default function Afiliados() {
     load();
   };
 
-  const toggleCh = (id: string) => setChannelIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const toggleCh = (id: string) => setChannelIds((p) => {
+    if (p.includes(id)) {
+      const next = { ...channelLinks };
+      delete next[id];
+      setChannelLinks(next);
+      return p.filter((x) => x !== id);
+    }
+    setChannelLinks({ ...channelLinks, [id]: [""] });
+    return [...p, id];
+  });
 
   const canEditFixed = !editing || isSuperAdmin;
   const [fixedNameUnlocked, setFixedNameUnlocked] = useState(false);

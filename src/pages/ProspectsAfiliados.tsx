@@ -376,6 +376,26 @@ export default function ProspectsAfiliados() {
                   </div>
                 </PopoverContent>
               </Popover>
+              {form.channel_ids.length > 0 && (
+                <div className="grid gap-2 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">URL del canal del afiliado</p>
+                  {form.channel_ids.map((cid) => {
+                    const ch = channels.find((c) => c.id === cid);
+                    return (
+                      <div key={cid} className="grid grid-cols-[120px_1fr] items-center gap-2">
+                        <Label className="text-xs font-normal truncate">{ch?.name ?? "—"}</Label>
+                        <Input
+                          placeholder="https://..."
+                          value={form.channel_links[cid] ?? ""}
+                          onChange={(e) =>
+                            setForm({ ...form, channel_links: { ...form.channel_links, [cid]: e.target.value } })
+                          }
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
 
             <div className="grid gap-2">

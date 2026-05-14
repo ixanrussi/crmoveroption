@@ -230,23 +230,33 @@ Deno.serve(async (req) => {
         }
       }
 
-      const linksMap = new Map<string, string | null>();
+      // Build (channel_id, link) rows allowing multiple links per channel.
+      const linkRows: { affiliate_id: string; channel_id: string; link: string | null }[] = [];
+      const seen = new Set<string>();
+      const pushRow = (channel_id: string, link: string | null) => {
+        const key = `${channel_id}::${link ?? ""}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        linkRows.push({ affiliate_id: affiliateId!, channel_id, link });
+      };
       if (Array.isArray(body.channel_links)) {
         for (const cl of body.channel_links) {
           if (cl && typeof cl.channel_id === "string") {
-            linksMap.set(cl.channel_id, cl.link?.toString().trim() || null);
+            const link = cl.link?.toString().trim() || null;
+            pushRow(cl.channel_id, link);
           }
+        }
+      }
+      // Ensure channels selected without any link still create a row.
+      for (const cid of channelIds) {
+        if (![...seen].some((k) => k.startsWith(`${cid}::`))) {
+          pushRow(cid, null);
         }
       }
 
       await tx`delete from public.affiliate_channel_links where affiliate_id = ${affiliateId}`;
-      if (channelIds.length) {
-        const values = channelIds.map((cid) => ({
-          affiliate_id: affiliateId!,
-          channel_id: cid,
-          link: linksMap.get(cid) ?? null,
-        }));
-        await tx`insert into public.affiliate_channel_links ${tx(values, "affiliate_id", "channel_id", "link")}`;
+      if (linkRows.length) {
+        await tx`insert into public.affiliate_channel_links ${tx(linkRows, "affiliate_id", "channel_id", "link")}`;
       }
 
       // Replace commission plans

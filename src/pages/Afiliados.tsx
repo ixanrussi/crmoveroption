@@ -68,7 +68,7 @@ export default function Afiliados() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
   const [channelIds, setChannelIds] = useState<string[]>([]);
-  const [channelLinks, setChannelLinks] = useState<Record<string, string>>({});
+  const [channelLinks, setChannelLinks] = useState<Record<string, string[]>>({});
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
 
@@ -188,10 +188,16 @@ export default function Afiliados() {
       : (row?.alias ? [row.alias] : []);
     setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
     setAliasInput("");
-    setChannelIds(row.affiliate_channel_links?.map((l: any) => l.channel_id) ?? []);
-    const links: Record<string, string> = {};
-    row.affiliate_channel_links?.forEach((l: any) => { if (l.link) links[l.channel_id] = l.link; });
-    setChannelLinks(links);
+    const grouped: Record<string, string[]> = {};
+    (row.affiliate_channel_links ?? []).forEach((l: any) => {
+      if (!grouped[l.channel_id]) grouped[l.channel_id] = [];
+      grouped[l.channel_id].push(l.link ?? "");
+    });
+    Object.keys(grouped).forEach((k) => {
+      if (grouped[k].length === 0) grouped[k] = [""];
+    });
+    setChannelIds(Object.keys(grouped));
+    setChannelLinks(grouped);
     setPlans(
       (row.affiliate_commission_plans ?? []).map((p: any) => ({
         template_id: p.template_id ?? "",
@@ -249,6 +255,13 @@ export default function Afiliados() {
 
   const save = async () => {
     if (!form.fixed_name?.trim()) { toast.error("Nombre fijo es requerido"); return; }
+    for (const cid of channelIds) {
+      const trimmed = (channelLinks[cid] ?? []).map((l) => l.trim()).filter(Boolean);
+      if (new Set(trimmed).size !== trimmed.length) {
+        toast.error("No se permiten links duplicados en el mismo canal");
+        return;
+      }
+    }
     const aliasesArr: string[] = Array.isArray(form.aliases) ? form.aliases.filter((x: string) => x && x.trim()) : [];
     const payload: any = {
       fixed_name: form.fixed_name,
@@ -269,7 +282,11 @@ export default function Afiliados() {
         id: editing?.id,
         affiliate: payload,
         channel_ids: channelIds,
-        channel_links: channelIds.map((cid) => ({ channel_id: cid, link: channelLinks[cid] || null })),
+        channel_links: channelIds.flatMap((cid) => {
+          const arr = (channelLinks[cid] ?? [""]).map((l) => l.trim()).filter((l, i, a) => a.indexOf(l) === i);
+          if (arr.length === 0 || (arr.length === 1 && !arr[0])) return [{ channel_id: cid, link: null }];
+          return arr.filter(Boolean).map((link) => ({ channel_id: cid, link }));
+        }),
         commission_plans: plans.map((p) => ({
           template_id: p.template_id || null,
           plan_start_date: p.plan_start_date || null,
@@ -311,7 +328,16 @@ export default function Afiliados() {
     load();
   };
 
-  const toggleCh = (id: string) => setChannelIds((p) => p.includes(id) ? p.filter((x) => x !== id) : [...p, id]);
+  const toggleCh = (id: string) => setChannelIds((p) => {
+    if (p.includes(id)) {
+      const next = { ...channelLinks };
+      delete next[id];
+      setChannelLinks(next);
+      return p.filter((x) => x !== id);
+    }
+    setChannelLinks({ ...channelLinks, [id]: [""] });
+    return [...p, id];
+  });
 
   const canEditFixed = !editing || isSuperAdmin;
   const [fixedNameUnlocked, setFixedNameUnlocked] = useState(false);
@@ -548,15 +574,64 @@ export default function Afiliados() {
                     ) : (
                       channelIds.map((cid) => {
                         const ch = channels.find((c) => c.id === cid);
+                        const links = channelLinks[cid] ?? [""];
+                        const updateLinks = (next: string[]) =>
+                          setChannelLinks({ ...channelLinks, [cid]: next });
                         return (
-                          <div key={cid} className="grid grid-cols-[140px_1fr] gap-2 items-center">
-                            <Label className="text-sm">{ch?.name}</Label>
-                            <Input
-                              type="url"
-                              placeholder="https://..."
-                              value={channelLinks[cid] ?? ""}
-                              onChange={(e) => setChannelLinks({ ...channelLinks, [cid]: e.target.value })}
-                            />
+                          <div key={cid} className="grid gap-1">
+                            {links.map((val, idx) => {
+                              const trimmed = val.trim();
+                              const isDup =
+                                trimmed.length > 0 &&
+                                links.findIndex((l, i) => i !== idx && l.trim() === trimmed) !== -1;
+                              const isLast = idx === links.length - 1;
+                              return (
+                                <div key={idx} className="grid grid-cols-[140px_1fr_auto_auto] items-center gap-2">
+                                  <Label className="text-sm truncate">{idx === 0 ? ch?.name ?? "—" : ""}</Label>
+                                  <Input
+                                    type="url"
+                                    placeholder="https://..."
+                                    value={val}
+                                    aria-invalid={isDup}
+                                    className={isDup ? "border-destructive" : ""}
+                                    onChange={(e) => {
+                                      const next = [...links];
+                                      next[idx] = e.target.value;
+                                      updateLinks(next);
+                                    }}
+                                  />
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    disabled={links.length === 1}
+                                    onClick={() => updateLinks(links.filter((_, i) => i !== idx))}
+                                    title="Eliminar link"
+                                  >
+                                    <Trash2 className="h-3.5 w-3.5" />
+                                  </Button>
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="h-8 w-8"
+                                    disabled={!isLast}
+                                    onClick={() => {
+                                      const trimmedAll = links.map((l) => l.trim());
+                                      if (trimmedAll.some((l, i) => l && trimmedAll.indexOf(l) !== i)) {
+                                        toast.error("No se permiten links duplicados en el mismo canal");
+                                        return;
+                                      }
+                                      updateLinks([...links, ""]);
+                                    }}
+                                    title="Añadir otro link"
+                                  >
+                                    <Plus className="h-3.5 w-3.5" />
+                                  </Button>
+                                </div>
+                              );
+                            })}
                           </div>
                         );
                       })

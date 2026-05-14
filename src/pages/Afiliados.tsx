@@ -230,6 +230,20 @@ export default function Afiliados() {
   const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>
     setPlans((p) => p.map((pl, idx) => (idx === i ? { ...pl, ...patch } : pl)));
   const removePlan = (i: number) => setPlans((p) => p.filter((_, idx) => idx !== i));
+
+  // Returns margin pct between operator (overgroup) CPA and affiliate CPA, or null if not computable
+  const getPlanMargin = (pl: CommissionPlan): number | null => {
+    const affCpa = Number(pl.cpa);
+    if (!pl.client_id || !pl.cpa || !Number.isFinite(affCpa) || affCpa <= 0) return null;
+    const bl = (pl.brand || "").toLowerCase();
+    const cands = clientPlans
+      .filter((cp: any) => cp.client_id === pl.client_id && cp.cpa != null)
+      .filter((cp: any) => !pl.brand || !cp.brand || cp.brand.toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
+    if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
+    return ((opCpa - affCpa) / opCpa) * 100;
+  };
   const addPlanFromTemplate = (templateId: string) => {
     const t = templates.find((x) => x.id === templateId);
     if (!t) return;

@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
+import { useFxRates, convert } from "@/lib/fxRates";
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 

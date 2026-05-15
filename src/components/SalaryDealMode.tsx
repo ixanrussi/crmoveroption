@@ -420,7 +420,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                     const cpaNeto = cpaNetoOf(plan);
                     const planCountries = plan?.country_ids?.length
                       ? countries.filter(c => plan.country_ids!.includes(c.id))
-                      : countries;
+                      : [];
                     const suggested = suggestVolume(s);
                     const income = cpaNeto * (Number(s.targetFtd) || 0);
                     return (

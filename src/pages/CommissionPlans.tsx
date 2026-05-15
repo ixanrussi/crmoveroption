@@ -14,6 +14,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, ChevronDown } from "lucide-react";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
+import { useFxRates, convert } from "@/lib/fxRates";
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -62,12 +63,11 @@ export default function CommissionPlans() {
   const [form, setForm] = useState<Template>(empty);
   const [saving, setSaving] = useState(false);
 
-  const compareToCpa = (val: any, cpa: any) => {
-    const v = Number(val);
-    const c = Number(cpa);
-    if (!Number.isFinite(v) || !Number.isFinite(c)) return "";
-    if (v < c) return "text-green-600";
-    if (v === c) return "text-orange-500";
+  const compareToCpa = (val: number | null, cpa: number | null) => {
+    if (val == null || cpa == null) return "";
+    if (!Number.isFinite(val) || !Number.isFinite(cpa)) return "";
+    if (val < cpa) return "text-green-600";
+    if (val === cpa) return "text-orange-500";
     return "text-red-600";
   };
 
@@ -168,6 +168,45 @@ export default function CommissionPlans() {
       );
     });
 
+  // Fetch FX rates for every source currency present in BL/W so we can
+  // convert those values to the CPA currency before comparing/coloring.
+  const fxBases = Array.from(new Set(filtered.flatMap((r) => [r.baseline_currency, r.wager_currency])));
+  const ratesByBase = useFxRates(fxBases);
+
+  const fmt = (n: number) => {
+    const abs = Math.abs(n);
+    const digits = abs >= 100 ? 0 : 2;
+    return n.toLocaleString("es", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  };
+
+  const renderConverted = (
+    value: any,
+    fromCcy: string | null,
+    toCcy: string | null,
+    cpa: any,
+  ) => {
+    if (value == null || value === "") return { text: "—", cls: "" };
+    const v = Number(value);
+    if (!Number.isFinite(v)) return { text: "—", cls: "" };
+    const from = fromCcy || toCcy || "";
+    const to = toCcy || from;
+    if (!to) {
+      return { text: fmt(v), cls: compareToCpa(v, cpa != null ? Number(cpa) : null) };
+    }
+    if (from.toUpperCase() === to.toUpperCase()) {
+      return { text: `${fmt(v)} ${to}`, cls: compareToCpa(v, cpa != null ? Number(cpa) : null) };
+    }
+    const rates = ratesByBase[from.toUpperCase()];
+    const converted = convert(v, from, to, rates);
+    if (converted == null) {
+      return { text: `${fmt(v)} ${from} →…`, cls: "text-muted-foreground" };
+    }
+    return {
+      text: `${fmt(converted)} ${to}`,
+      cls: compareToCpa(converted, cpa != null ? Number(cpa) : null),
+      title: `${fmt(v)} ${from} @ ${rates?.[to.toUpperCase()]?.toFixed(4)}`,
+    };
+  };
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">
@@ -404,8 +443,16 @@ export default function CommissionPlans() {
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className="text-right">{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
-                  <TableCell className={`text-right font-medium ${compareToCpa(r.baseline, r.cpa)}`}>{r.baseline ?? "—"}</TableCell>
-                  <TableCell className={`text-right font-medium ${compareToCpa(r.wager, r.cpa)}`}>{r.wager ?? "—"}</TableCell>
+                  {(() => {
+                    const bl = renderConverted(r.baseline, r.baseline_currency, r.cpa_currency, r.cpa);
+                    const w = renderConverted(r.wager, r.wager_currency, r.cpa_currency, r.cpa);
+                    return (
+                      <>
+                        <TableCell className={`text-right font-medium ${bl.cls}`} title={(bl as any).title}>{bl.text}</TableCell>
+                        <TableCell className={`text-right font-medium ${w.cls}`} title={(w as any).title}>{w.text}</TableCell>
+                      </>
+                    );
+                  })()}
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

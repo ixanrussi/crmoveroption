@@ -70,7 +70,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
 
   const updateRow = (uid: string, patch: Partial<Row>) =>
     setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, ...patch } : r)));
-  const addRow = () => setRows((prev) => [...prev, newRow()]);
+  const addRow = () => setRows((prev) => [newRow(), ...prev]);
   const removeRow = (uid: string) =>
     setRows((prev) => (prev.length === 1 ? prev : prev.filter((r) => r.uid !== uid)));
 

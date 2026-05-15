@@ -261,15 +261,18 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   // === FORWARD: dado mix → propone salario + bonus ===
   const forward = useMemo(() => {
     let totalExpectedNet = 0;
+    let totalCpaGross = 0;
     let totalFtd = 0;
     const perRow = selections.map((s) => {
       const { plan } = planOf(s);
       const cpaNeto = cpaNetoOf(plan);
       const ftd = Number(s.targetFtd) || 0;
       const incomeNet = cpaNeto * ftd;
+      const cpaGross = (plan?.cpa ?? 0) * ftd;
       totalExpectedNet += incomeNet;
+      totalCpaGross += cpaGross;
       totalFtd += ftd;
-      return { s, plan, cpaNeto, ftd, incomeNet, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
+      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
     });
     const proposedSalary = totalExpectedNet * (safetyPct / 100);
     // Escenarios de riesgo
@@ -280,7 +283,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     });
     const distinctBrands = new Set(perRow.filter(r => r.plan?.brand).map(r => r.plan!.brand!.toLowerCase())).size;
     const distinctCountries = new Set(selections.filter(s => s.countryId).map(s => s.countryId)).size;
-    return { perRow, totalExpectedNet, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
+    return { perRow, totalExpectedNet, totalCpaGross, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
   }, [selections, operators, safetyPct, bonusPct]);
 
   // === INVERSE: dado salario → propone CPAs/mes y meses para recuperar ===
@@ -306,13 +309,14 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       ...r,
       ftdMonthly: Math.ceil(totalFtdNeeded * (r.weight / totalW)),
     }));
+    const totalCpaGross = distribution.reduce((a, r) => a + (r.plan?.cpa ?? 0) * r.ftdMonthly, 0);
     // Meses para recuperar lo invertido durante el periodo de prueba (salario × trial)
     const monthlySurplus = requiredMonthlyNet - sal; // = sal × (1 - safety)/safety
     const totalInvested = sal * Math.max(trial, 0);
     const monthsToRecoup = monthlySurplus > 0 && totalInvested > 0
       ? Math.ceil(totalInvested / monthlySurplus)
       : 0;
-    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, distribution, monthsToRecoup, totalInvested, monthlySurplus };
+    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, totalCpaGross, distribution, monthsToRecoup, totalInvested, monthlySurplus };
   }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
 
   // === Producción objetivo (mensual / diaria) para los triggers ===
@@ -597,6 +601,27 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
 
             {/* FORWARD */}
             <TabsContent value="forward" className="space-y-3 pt-3">
+              {/* Resumen propuesta para el afiliado */}
+              <div className="rounded-xl border-2 border-primary bg-gradient-to-br from-primary/10 to-primary/5 p-5 shadow-sm">
+                <div className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold">
+                  Propuesta total para el afiliado / mes
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  <div className="rounded-lg bg-background/60 p-3 border">
+                    <div className="text-[10px] uppercase text-muted-foreground">Salario fijo</div>
+                    <div className="font-bold text-2xl text-primary">{fmt(forward.proposedSalary, salaryCurrency)}</div>
+                  </div>
+                  <div className="rounded-lg bg-background/60 p-3 border">
+                    <div className="text-[10px] uppercase text-muted-foreground">Comisiones CPA ({forward.totalFtd} CPAs)</div>
+                    <div className="font-bold text-2xl text-emerald-600">{fmt(forward.totalCpaGross, salaryCurrency)}</div>
+                  </div>
+                  <div className="rounded-lg bg-primary/15 p-3 border-2 border-primary/40">
+                    <div className="text-[10px] uppercase text-muted-foreground font-semibold">Total ingreso afiliado</div>
+                    <div className="font-bold text-2xl text-primary">{fmt(forward.proposedSalary + forward.totalCpaGross, salaryCurrency)}</div>
+                  </div>
+                </div>
+              </div>
+
               <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                 <div>
                   <div className="text-[10px] uppercase text-muted-foreground">Ingreso neto esperado/mes</div>
@@ -670,6 +695,27 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
 
               {inverse && (
                 <>
+                  {/* Resumen propuesta para el afiliado */}
+                  <div className="rounded-xl border-2 border-primary bg-gradient-to-br from-primary/10 to-primary/5 p-5 shadow-sm">
+                    <div className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold">
+                      Propuesta total para el afiliado / mes
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <div className="rounded-lg bg-background/60 p-3 border">
+                        <div className="text-[10px] uppercase text-muted-foreground">Salario fijo</div>
+                        <div className="font-bold text-2xl text-primary">{fmt(parseFloat(inverseSalary) || 0, salaryCurrency)}</div>
+                      </div>
+                      <div className="rounded-lg bg-background/60 p-3 border">
+                        <div className="text-[10px] uppercase text-muted-foreground">Comisiones CPA ({inverse.totalFtdNeeded} CPAs)</div>
+                        <div className="font-bold text-2xl text-emerald-600">{fmt(inverse.totalCpaGross, salaryCurrency)}</div>
+                      </div>
+                      <div className="rounded-lg bg-primary/15 p-3 border-2 border-primary/40">
+                        <div className="text-[10px] uppercase text-muted-foreground font-semibold">Total ingreso afiliado</div>
+                        <div className="font-bold text-2xl text-primary">{fmt((parseFloat(inverseSalary) || 0) + inverse.totalCpaGross, salaryCurrency)}</div>
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                     <div>
                       <div className="text-[10px] uppercase text-muted-foreground">CPA neto medio ponderado</div>

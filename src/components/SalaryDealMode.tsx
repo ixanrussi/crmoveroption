@@ -362,7 +362,8 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               <Select value={salaryCurrency} onValueChange={setSalaryCurrency}>
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent>
-                  {currencies.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                  <SelectItem value="EUR">EUR</SelectItem>
+                  <SelectItem value="USD">USD</SelectItem>
                 </SelectContent>
               </Select>
             </div>

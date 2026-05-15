@@ -387,6 +387,8 @@ export default function CommissionPlans() {
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className="text-right">{r.cpa ?? "—"}</TableCell>
+                  <TableCell className={`text-right font-medium ${compareToCpa(r.baseline, r.cpa)}`}>{r.baseline ?? "—"}</TableCell>
+                  <TableCell className={`text-right font-medium ${compareToCpa(r.wager, r.cpa)}`}>{r.wager ?? "—"}</TableCell>
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

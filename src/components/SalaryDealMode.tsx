@@ -66,10 +66,11 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
       const retencion = plan?.overoption_retention ?? 0;
       const cpaNeto = Math.max(0, cpaBruto - retencion);
       const ftd = parseFloat(r.ftd) || 0;
-      const cpaAff = parseFloat(r.cpaAff) || 0;
+      const pct = Math.min(100, Math.max(0, r.pct ?? 0));
+      const cpaAff = (cpaNeto * pct) / 100;
       const ingreso = cpaNeto * ftd;
       const pagoVar = cpaAff * ftd;
-      return { r, op, plan, cpaNeto, cpaAff, ftd, ingreso, pagoVar };
+      return { r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar };
     });
   }, [rows, operators]);
 

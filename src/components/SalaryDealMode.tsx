@@ -186,16 +186,6 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     onChange={(e) => updateRow(r.uid, { ftd: e.target.value })}
                   />
                 </div>
-                <div className="col-span-6 md:col-span-2 space-y-1">
-                  <Label className="text-xs">FTDs/mes</Label>
-                  <Input
-                    type="number"
-                    inputMode="numeric"
-                    placeholder="0"
-                    value={r.ftd}
-                    onChange={(e) => updateRow(r.uid, { ftd: e.target.value })}
-                  />
-                </div>
                 <div className="col-span-12 md:col-span-2 flex justify-end">
                   <Button size="icon" variant="ghost" onClick={() => removeRow(r.uid)} disabled={rows.length === 1}>
                     <Trash2 className="h-4 w-4" />

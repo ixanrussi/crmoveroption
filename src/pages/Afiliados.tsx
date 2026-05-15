@@ -701,7 +701,8 @@ export default function Afiliados() {
                                 )}
                               </span>
                             </SelectItem>
-                          ))}
+                            ));
+                          })()}
                         </SelectContent>
                       </Select>
                       <Button type="button" size="sm" variant="outline" onClick={addPlan}>

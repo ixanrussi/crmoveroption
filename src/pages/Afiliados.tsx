@@ -938,6 +938,11 @@ export default function Afiliados() {
               </div>
                 </TabsContent>
                 {editing && (
+                  <TabsContent value="links">
+                    <AffiliateTrackingLinks affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+                {editing && (
                   <TabsContent value="ganadas">
                     <AffiliateEarnings affiliateId={editing.id} />
                   </TabsContent>

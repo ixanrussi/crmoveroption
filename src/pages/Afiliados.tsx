@@ -165,6 +165,28 @@ export default function Afiliados() {
       p.pct = p.target > 0 ? Math.min(100, Math.round((p.current / p.target) * 100)) : 0;
     });
     setGoalProgress(progress);
+
+    // Compute missing tracking links per affiliate (plans without a link for client+brand)
+    const { data: tlinks } = await supabase
+      .from("affiliate_tracking_links")
+      .select("affiliate_id, client_id, brand");
+    const linkSet = new Set<string>();
+    (tlinks ?? []).forEach((l: any) => {
+      linkSet.add(`${l.affiliate_id}::${l.client_id}::${(l.brand || "").toLowerCase()}`);
+    });
+    const missing: Record<string, number> = {};
+    (data ?? []).forEach((aff: any) => {
+      const seen = new Set<string>();
+      let cnt = 0;
+      (aff.affiliate_commission_plans ?? []).forEach((p: any) => {
+        const key = `${aff.id}::${p.client_id}::${(p.brand || "").toLowerCase()}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (!linkSet.has(key)) cnt++;
+      });
+      if (cnt > 0) missing[aff.id] = cnt;
+    });
+    setMissingLinks(missing);
   };
   const loadLookups = async () => {
     const [c, ch, cl, tpl, cp] = await Promise.all([

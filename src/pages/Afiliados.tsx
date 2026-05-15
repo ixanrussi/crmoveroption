@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
+import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
 import { toast } from "sonner";
 
 
@@ -83,6 +84,7 @@ export default function Afiliados() {
 
   const [commissionShares, setCommissionShares] = useState<Record<string, { earned: number; pct: number; currency: string | null }>>({});
   const [goalProgress, setGoalProgress] = useState<Record<string, { target: number; current: number; pct: number }>>({});
+  const [missingLinks, setMissingLinks] = useState<Record<string, number>>({});
 
   const load = async () => {
     const { data } = await supabase
@@ -163,6 +165,28 @@ export default function Afiliados() {
       p.pct = p.target > 0 ? Math.min(100, Math.round((p.current / p.target) * 100)) : 0;
     });
     setGoalProgress(progress);
+
+    // Compute missing tracking links per affiliate (plans without a link for client+brand)
+    const { data: tlinks } = await supabase
+      .from("affiliate_tracking_links")
+      .select("affiliate_id, client_id, brand");
+    const linkSet = new Set<string>();
+    (tlinks ?? []).forEach((l: any) => {
+      linkSet.add(`${l.affiliate_id}::${l.client_id}::${(l.brand || "").toLowerCase()}`);
+    });
+    const missing: Record<string, number> = {};
+    (data ?? []).forEach((aff: any) => {
+      const seen = new Set<string>();
+      let cnt = 0;
+      (aff.affiliate_commission_plans ?? []).forEach((p: any) => {
+        const key = `${aff.id}::${p.client_id}::${(p.brand || "").toLowerCase()}`;
+        if (seen.has(key)) return;
+        seen.add(key);
+        if (!linkSet.has(key)) cnt++;
+      });
+      if (cnt > 0) missing[aff.id] = cnt;
+    });
+    setMissingLinks(missing);
   };
   const loadLookups = async () => {
     const [c, ch, cl, tpl, cp] = await Promise.all([
@@ -406,8 +430,9 @@ export default function Afiliados() {
                 <DialogTitle>{editing ? `Editar afiliado ${editing.unique_id}` : "Nuevo afiliado"}</DialogTitle>
               </DialogHeader>
               <Tabs defaultValue="datos" className="w-full">
-                <TabsList className={editing ? "grid w-full grid-cols-3" : "grid w-full grid-cols-1"}>
+                <TabsList className={editing ? "grid w-full grid-cols-4" : "grid w-full grid-cols-1"}>
                   <TabsTrigger value="datos">Datos & Comisiones</TabsTrigger>
+                  {editing && <TabsTrigger value="links">Tracking Links</TabsTrigger>}
                   {editing && <TabsTrigger value="ganadas">Comisiones ganadas</TabsTrigger>}
                   {editing && <TabsTrigger value="objetivos">Objetivos</TabsTrigger>}
                 </TabsList>
@@ -936,6 +961,11 @@ export default function Afiliados() {
               </div>
                 </TabsContent>
                 {editing && (
+                  <TabsContent value="links">
+                    <AffiliateTrackingLinks affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+                {editing && (
                   <TabsContent value="ganadas">
                     <AffiliateEarnings affiliateId={editing.id} />
                   </TabsContent>
@@ -1019,6 +1049,16 @@ export default function Afiliados() {
                         </div>
                       );
                     })()}
+                    {missingLinks[r.id] > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openEdit(r)}
+                        className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-destructive hover:underline"
+                        title="Operadores con plan asignado pero sin tracking link"
+                      >
+                        ⚠ {missingLinks[r.id]} link{missingLinks[r.id] > 1 ? "s" : ""} pendiente{missingLinks[r.id] > 1 ? "s" : ""}
+                      </button>
+                    )}
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {(() => {

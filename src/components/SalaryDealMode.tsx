@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, AlertTriangle, Info } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
 import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
+import { supabase } from "@/integrations/supabase/client";
+
+type Affiliate = { id: string; fixed_name: string; unique_id: string; alias: string | null };
 
 type Plan = {
   id: string;
@@ -50,6 +53,18 @@ const fmt = (n: number) =>
 export default function SalaryDealMode({ operators }: { operators: Operator[] }) {
   const [salary, setSalary] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([newRow()]);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [affiliateId, setAffiliateId] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("affiliates")
+        .select("id, fixed_name, unique_id, alias")
+        .order("fixed_name");
+      setAffiliates((data ?? []) as Affiliate[]);
+    })();
+  }, []);
 
   const salaryNum = parseFloat(salary) || 0;
 
@@ -105,8 +120,26 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
         <CardHeader>
           <CardTitle className="text-lg">Propuesta Overoption</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-1 max-w-sm">
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Afiliado destinatario</Label>
+            <Select value={affiliateId} onValueChange={setAffiliateId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona afiliado" />
+              </SelectTrigger>
+              <SelectContent>
+                {affiliates.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.fixed_name}
+                    {a.alias ? ` · ${a.alias}` : ""}
+                    <span className="text-muted-foreground"> · {a.unique_id}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">A quién va dirigida la propuesta.</p>
+          </div>
+          <div className="space-y-1">
             <Label>Salario fijo mensual (USD)</Label>
             <Input
               type="number"

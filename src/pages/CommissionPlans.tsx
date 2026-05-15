@@ -80,7 +80,7 @@ export default function CommissionPlans() {
   };
   const loadLookups = async () => {
     const [cl, co] = await Promise.all([
-      supabase.from("clients").select("id, company_name, brands").order("company_name"),
+      supabase.from("clients").select("id, company_name, brands, login, client_type").order("company_name"),
       supabase.from("countries").select("*").order("name"),
     ]);
     setClients(cl.data ?? []);
@@ -262,7 +262,17 @@ export default function CommissionPlans() {
                     <SelectTrigger><SelectValue placeholder="Selecciona cliente" /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="__none__">— Sin cliente —</SelectItem>
-                      {clients.map((c) => <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>)}
+                      {clients.map((c) => {
+                        const desc = [c.login, c.client_type, Array.isArray(c.brands) && c.brands.length > 0 ? c.brands.join(", ") : null]
+                          .filter(Boolean)
+                          .join(" · ");
+                        return (
+                          <SelectItem key={c.id} value={c.id}>
+                            <span className="font-medium">{c.company_name}</span>
+                            {desc && <span className="ml-2 text-xs text-muted-foreground">— {desc}</span>}
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

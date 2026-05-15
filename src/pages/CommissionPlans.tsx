@@ -443,8 +443,16 @@ export default function CommissionPlans() {
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className="text-right">{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
-                  <TableCell className={`text-right font-medium ${compareToCpa(r.baseline, r.cpa)}`}>{r.baseline ?? "—"}</TableCell>
-                  <TableCell className={`text-right font-medium ${compareToCpa(r.wager, r.cpa)}`}>{r.wager ?? "—"}</TableCell>
+                  {(() => {
+                    const bl = renderConverted(r.baseline, r.baseline_currency, r.cpa_currency, r.cpa);
+                    const w = renderConverted(r.wager, r.wager_currency, r.cpa_currency, r.cpa);
+                    return (
+                      <>
+                        <TableCell className={`text-right font-medium ${bl.cls}`} title={(bl as any).title}>{bl.text}</TableCell>
+                        <TableCell className={`text-right font-medium ${w.cls}`} title={(w as any).title}>{w.text}</TableCell>
+                      </>
+                    );
+                  })()}
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">

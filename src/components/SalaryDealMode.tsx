@@ -43,7 +43,7 @@ type SalarySelection = {
   opId: string;
   planId: string;
   countryId: string;
-  targetFtd: number;     // FTDs/mes objetivo en este país/marca
+  targetFtd: number;     // CPAs/mes objetivo en este país/marca
   autoSuggested?: boolean;
 };
 
@@ -92,7 +92,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
 
   // Slider de seguridad: % del CPA neto esperado que se paga como salario fijo
   const [safetyPct, setSafetyPct] = useState<number>(75);
-  // % del CPA neto que se paga al afiliado como bonus por cada FTD por encima del objetivo
+  // % del CPA neto que se paga al afiliado como bonus por cada CPA por encima del objetivo
   const [bonusPct, setBonusPct] = useState<number>(70);
 
   const [trialMonths, setTrialMonths] = useState<string>("3");
@@ -281,7 +281,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     return { perRow, totalExpectedNet, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
   }, [selections, operators, safetyPct, bonusPct]);
 
-  // === INVERSE: dado salario → propone FTDs/mes y meses para recuperar ===
+  // === INVERSE: dado salario → propone CPAs/mes y meses para recuperar ===
   const inverse = useMemo(() => {
     const sal = parseFloat(inverseSalary) || 0;
     const trial = parseInt(trialMonths) || 0;
@@ -338,7 +338,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       notes: [
         notes,
         `Margen seguridad: ${safetyPct}% | Bonus por CPA extra: ${bonusPct}% del CPA neto`,
-        mode === "inverse" && inverse ? `Inverso: ${inverse.totalFtdNeeded} FTDs/mes · recuperación en ${inverse.monthsToRecoup}m` : "",
+        mode === "inverse" && inverse ? `Inverso: ${inverse.totalFtdNeeded} CPAs/mes · recuperación en ${inverse.monthsToRecoup}m` : "",
       ].filter(Boolean).join(" | "),
       created_by: user.id,
     } as any);
@@ -368,7 +368,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     const pctBe = beFtd > 0 ? (avgFtd / beFtd) * 100 : 0;
     const alerts: { level: "ok" | "warn" | "danger"; label: string }[] = [];
     if (d.trigger_min_ftd_monthly != null)
-      alerts.push({ level: avgFtd >= d.trigger_min_ftd_monthly ? "ok" : "danger", label: `FTD mín: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}` });
+      alerts.push({ level: avgFtd >= d.trigger_min_ftd_monthly ? "ok" : "danger", label: `CPA mín: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}` });
     if (d.trigger_breakeven_pct != null && beFtd > 0)
       alerts.push({ level: pctBe >= d.trigger_breakeven_pct ? "ok" : pctBe >= d.trigger_breakeven_pct * 0.8 ? "warn" : "danger", label: `Breakeven: ${pctBe.toFixed(0)}% / ${d.trigger_breakeven_pct}%` });
     if (d.trigger_min_activity_ratio != null)
@@ -439,7 +439,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               </div>
               <Slider value={[bonusPct]} onValueChange={(v) => setBonusPct(v[0])} min={30} max={95} step={5} />
               <p className="text-[10px] text-muted-foreground mt-1">
-                % del CPA neto del operador que recibe el afiliado por cada FTD por encima del objetivo.
+                % del CPA neto del operador que recibe el afiliado por cada CPA por encima del objetivo.
               </p>
             </div>
           </div>
@@ -460,7 +460,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                     <th className="p-2">Marca / Plan</th>
                     <th className="p-2">País</th>
                     <th className="p-2 text-right">CPA neto</th>
-                    <th className="p-2 text-right w-32">FTDs/mes objetivo</th>
+                    <th className="p-2 text-right w-32">CPAs/mes objetivo</th>
                     <th className="p-2 text-right">Ingreso neto</th>
                     <th className="p-2"></th>
                   </tr>
@@ -581,7 +581,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                   <div className="font-bold text-lg">{fmt(forward.totalExpectedNet, salaryCurrency)}</div>
                 </div>
                 <div>
-                  <div className="text-[10px] uppercase text-muted-foreground">FTDs objetivo total/mes</div>
+                  <div className="text-[10px] uppercase text-muted-foreground">CPAs objetivo total/mes</div>
                   <div className="font-bold text-lg">{forward.totalFtd}</div>
                 </div>
                 <div>
@@ -613,12 +613,12 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               {/* Bonus por operador */}
               {forward.perRow.some(r => r.plan) && (
                 <div className="rounded-lg border p-3 space-y-1">
-                  <Label className="text-xs flex items-center gap-1"><Sparkles className="h-3 w-3" /> Bonus por FTD por encima del objetivo</Label>
+                  <Label className="text-xs flex items-center gap-1"><Sparkles className="h-3 w-3" /> Bonus por CPA por encima del objetivo</Label>
                   <div className="space-y-1">
                     {forward.perRow.filter(r => r.plan).map((r) => (
                       <div key={r.s.uid} className="flex justify-between text-xs">
-                        <span>{r.plan!.brand || r.plan!.description} ({r.ftd} FTDs objetivo)</span>
-                        <span className="font-mono font-semibold">{fmt(r.bonusPerExtraFtd, r.plan!.currency || salaryCurrency)}/FTD extra</span>
+                        <span>{r.plan!.brand || r.plan!.description} ({r.ftd} CPAs objetivo)</span>
+                        <span className="font-mono font-semibold">{fmt(r.bonusPerExtraFtd, r.plan!.currency || salaryCurrency)}/CPA extra</span>
                       </div>
                     ))}
                   </div>
@@ -658,7 +658,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                       <div className="font-bold text-lg">{fmt(inverse.requiredMonthlyNet, salaryCurrency)}</div>
                     </div>
                     <div>
-                      <div className="text-[10px] uppercase text-muted-foreground">FTDs totales / mes</div>
+                      <div className="text-[10px] uppercase text-muted-foreground">CPAs totales / mes</div>
                       <div className="font-bold text-xl text-primary">{inverse.totalFtdNeeded}</div>
                     </div>
                     <div>
@@ -680,7 +680,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                               {country ? ` · ${country.name}` : ""}
                               <span className="text-muted-foreground ml-1">(CPA neto {fmt(r.cpaNeto, r.plan?.currency || salaryCurrency)})</span>
                             </span>
-                            <Badge variant="secondary" className="font-mono">{r.ftdMonthly} FTDs/mes</Badge>
+                            <Badge variant="secondary" className="font-mono">{r.ftdMonthly} CPAs/mes</Badge>
                           </div>
                         );
                       })}
@@ -708,7 +708,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="space-y-1">
-                <Label className="text-xs">FTDs mínimos / mes</Label>
+                <Label className="text-xs">CPAs mínimos / mes</Label>
                 <Input type="number" min="0" value={trgMinFtd} onChange={(e) => setTrgMinFtd(e.target.value)}
                   placeholder={mode === "inverse" && inverse ? `Sugerido: ${Math.round(inverse.totalFtdNeeded * 0.8)}` : forward.totalFtd ? `Sugerido: ${Math.round(forward.totalFtd * 0.8)}` : ""} />
               </div>
@@ -717,11 +717,11 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                 <Input type="number" min="0" max="200" value={trgBreakevenPct} onChange={(e) => setTrgBreakevenPct(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Ratio actividad mín. (% activos / FTD)</Label>
+                <Label className="text-xs">Ratio actividad mín. (% activos / CPA)</Label>
                 <Input type="number" min="0" max="200" value={trgActivityRatio} onChange={(e) => setTrgActivityRatio(e.target.value)} />
               </div>
               <div className="space-y-1">
-                <Label className="text-xs">Conversión mín. (% FTD / cuentas)</Label>
+                <Label className="text-xs">Conversión mín. (% CPA / cuentas)</Label>
                 <Input type="number" min="0" max="100" value={trgConversionPct} onChange={(e) => setTrgConversionPct(e.target.value)} placeholder="opcional" />
               </div>
               <div className="space-y-1">
@@ -757,7 +757,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                     <div>
                       <div className="font-semibold">{d.name}</div>
                       <div className="text-xs text-muted-foreground">
-                        {fmt(d.salary_amount, d.salary_currency)} / mes · breakeven {d.breakeven_ftd_monthly} FTDs
+                        {fmt(d.salary_amount, d.salary_currency)} / mes · breakeven {d.breakeven_ftd_monthly} CPAs
                         {d.trial_months ? ` · prueba ${d.trial_months}m` : ""}
                       </div>
                     </div>
@@ -772,7 +772,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                   {ev && ev.monthsAnalyzed > 0 && (
                     <>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
-                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">FTD/mes</div><div className="font-bold">{ev.avgFtd.toFixed(0)}</div></div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">CPA/mes</div><div className="font-bold">{ev.avgFtd.toFixed(0)}</div></div>
                         <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">% breakeven</div><div className="font-bold">{ev.pctBreakeven.toFixed(0)}%</div></div>
                         <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">Actividad</div><div className="font-bold">{ev.activityRatio.toFixed(0)}%</div></div>
                         <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">Conversión</div><div className="font-bold">{ev.conversionPct.toFixed(1)}%</div></div>

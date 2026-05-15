@@ -534,17 +534,6 @@ export default function CalculadoraFijos() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30 no-print">
-        <Switch checked={salaryMode} onCheckedChange={setSalaryMode} id="salary-mode" />
-        <div className="flex-1">
-          <Label htmlFor="salary-mode" className="cursor-pointer font-semibold">Modo fijo + CPA</Label>
-          <p className="text-xs text-muted-foreground">
-            Ofrece un salario fijo mensual al afiliado en lugar de un fijo cerrado por CPAs comprometidos.
-          </p>
-        </div>
-      </div>
-
-      {!salaryMode && (
       <div className="space-y-1 max-w-md">
         <Label>Nombre del afiliado prospecto (opcional)</Label>
         <Input
@@ -553,11 +542,6 @@ export default function CalculadoraFijos() {
           onChange={(e) => setProspectName(e.target.value)}
         />
       </div>
-      )}
-
-      {salaryMode ? (
-        <SalaryDealMode operators={operators as any} />
-      ) : (
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

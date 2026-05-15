@@ -27,6 +27,7 @@ type Row = {
   opId: string;
   planId: string;
   ftd: string;
+  cpaAff: string;
 };
 
 const newRow = (): Row => ({
@@ -34,6 +35,7 @@ const newRow = (): Row => ({
   opId: "",
   planId: "",
   ftd: "",
+  cpaAff: "",
 });
 
 const fmt = (n: number) =>
@@ -45,11 +47,9 @@ const fmt = (n: number) =>
 
 export default function SalaryDealMode({ operators }: { operators: Operator[] }) {
   const [salary, setSalary] = useState<string>("");
-  const [cpaAffiliate, setCpaAffiliate] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([newRow()]);
 
   const salaryNum = parseFloat(salary) || 0;
-  const cpaAff = parseFloat(cpaAffiliate) || 0;
 
   const updateRow = (uid: string, patch: Partial<Row>) =>
     setRows((prev) => prev.map((r) => (r.uid === uid ? { ...r, ...patch } : r)));
@@ -65,11 +65,12 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
       const retencion = plan?.overoption_retention ?? 0;
       const cpaNeto = Math.max(0, cpaBruto - retencion);
       const ftd = parseFloat(r.ftd) || 0;
+      const cpaAff = parseFloat(r.cpaAff) || 0;
       const ingreso = cpaNeto * ftd;
       const pagoVar = cpaAff * ftd;
-      return { r, op, plan, cpaNeto, ftd, ingreso, pagoVar };
+      return { r, op, plan, cpaNeto, cpaAff, ftd, ingreso, pagoVar };
     });
-  }, [rows, operators, cpaAff]);
+  }, [rows, operators]);
 
   const totalFtd = computed.reduce((s, x) => s + x.ftd, 0);
   const ingresoOvero = computed.reduce((s, x) => s + x.ingreso, 0);
@@ -78,12 +79,10 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
   const margen = ingresoOvero - pagoAfiliadoTotal;
   const margenPct = ingresoOvero > 0 ? (margen / ingresoOvero) * 100 : 0;
 
-  // Break-even: FTDs/mes mínimos para que margen = 0
-  // ingreso(FTDs) - (salario + cpaAff*FTDs) = 0  →  FTDs = salario / (cpaNetoPromedio - cpaAff)
-  const cpaNetoPromedio = totalFtd > 0 ? ingresoOvero / totalFtd : 0;
-  const spreadUnit = cpaNetoPromedio - cpaAff;
-  const breakEvenFtds = spreadUnit > 0 ? salaryNum / spreadUnit : Infinity;
-  const breakEvenViable = isFinite(breakEvenFtds) && spreadUnit > 0;
+  // Spread promedio ponderado por FTDs: (ingreso - pagoVar) / FTDs
+  const spreadProm = totalFtd > 0 ? (ingresoOvero - pagoVarTotal) / totalFtd : 0;
+  const breakEvenFtds = spreadProm > 0 ? salaryNum / spreadProm : Infinity;
+  const breakEvenViable = isFinite(breakEvenFtds) && spreadProm > 0;
 
   return (
     <div className="space-y-6">
@@ -91,8 +90,8 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
         <CardHeader>
           <CardTitle className="text-lg">Propuesta Overoption</CardTitle>
         </CardHeader>
-        <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1">
+        <CardContent>
+          <div className="space-y-1 max-w-sm">
             <Label>Salario fijo mensual (USD)</Label>
             <Input
               type="number"
@@ -103,35 +102,26 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
             />
             <p className="text-xs text-muted-foreground">Lo paga Overoption al afiliado todos los meses.</p>
           </div>
-          <div className="space-y-1">
-            <Label>CPA al afiliado por FTD (USD)</Label>
-            <Input
-              type="number"
-              inputMode="numeric"
-              placeholder="Ej. 80"
-              value={cpaAffiliate}
-              onChange={(e) => setCpaAffiliate(e.target.value)}
-            />
-            <p className="text-xs text-muted-foreground">Mismo monto para todos los operadores. Se paga por cada FTD generado.</p>
-          </div>
         </CardContent>
       </Card>
 
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-lg">Operadores y FTDs/mes esperados</CardTitle>
+          <CardTitle className="text-lg">Operadores · CPA por marca · FTDs/mes</CardTitle>
           <Button size="sm" variant="outline" onClick={addRow}>
-            <Plus className="h-4 w-4 mr-1" /> Añadir operador
+            <Plus className="h-4 w-4 mr-1" /> Añadir marca
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {computed.map(({ r, op, plan, cpaNeto, ftd, ingreso, pagoVar }) => {
-            const margenFila = ingreso - pagoVar; // sin contar el salario
+          {computed.map(({ r, op, plan, cpaNeto, cpaAff, ftd, ingreso, pagoVar }) => {
+            const margenFila = ingreso - pagoVar;
+            const cpaAffMax = cpaNeto;
+            const cpaAffOver = cpaAff > cpaNeto && cpaNeto > 0;
             return (
               <div key={r.uid} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3 bg-muted/20">
-                <div className="col-span-12 md:col-span-4 space-y-1">
+                <div className="col-span-12 md:col-span-3 space-y-1">
                   <Label className="text-xs">Operador</Label>
-                  <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "" })}>
+                  <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "", cpaAff: "" })}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                     <SelectContent>
                       {operators.map((o) => (
@@ -140,14 +130,14 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-12 md:col-span-4 space-y-1">
-                  <Label className="text-xs">Plan</Label>
+                <div className="col-span-12 md:col-span-3 space-y-1">
+                  <Label className="text-xs">Marca / Plan</Label>
                   <Select
                     value={r.planId}
                     onValueChange={(v) => updateRow(r.uid, { planId: v })}
                     disabled={!op}
                   >
-                    <SelectTrigger><SelectValue placeholder={op ? "Seleccionar plan" : "Elige operador"} /></SelectTrigger>
+                    <SelectTrigger><SelectValue placeholder={op ? "Seleccionar" : "Elige operador"} /></SelectTrigger>
                     <SelectContent>
                       {op?.client_commission_plans.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -156,6 +146,18 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                       ))}
                     </SelectContent>
                   </Select>
+                </div>
+                <div className="col-span-6 md:col-span-2 space-y-1">
+                  <Label className="text-xs">CPA al afiliado (USD)</Label>
+                  <Input
+                    type="number"
+                    inputMode="numeric"
+                    placeholder={plan ? `máx ${Math.round(cpaAffMax)}` : "0"}
+                    value={r.cpaAff}
+                    onChange={(e) => updateRow(r.uid, { cpaAff: e.target.value })}
+                    disabled={!plan}
+                    className={cpaAffOver ? "border-destructive" : ""}
+                  />
                 </div>
                 <div className="col-span-6 md:col-span-2 space-y-1">
                   <Label className="text-xs">FTDs/mes</Label>
@@ -167,7 +169,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     onChange={(e) => updateRow(r.uid, { ftd: e.target.value })}
                   />
                 </div>
-                <div className="col-span-6 md:col-span-2 flex justify-end">
+                <div className="col-span-12 md:col-span-2 flex justify-end">
                   <Button size="icon" variant="ghost" onClick={() => removeRow(r.uid)} disabled={rows.length === 1}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
@@ -190,6 +192,11 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                       <div className="text-muted-foreground">Spread (sin salario)</div>
                       <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
                     </div>
+                    {cpaAffOver && (
+                      <div className="col-span-2 md:col-span-4 text-destructive flex items-center gap-1">
+                        <AlertTriangle className="h-3 w-3" /> El CPA al afiliado supera el CPA neto del operador.
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -235,18 +242,16 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                 <div className="font-semibold">Break-even</div>
                 {breakEvenViable ? (
                   <p className="text-sm text-muted-foreground">
-                    Con un CPA neto promedio de <strong>{fmt(cpaNetoPromedio)}</strong> y un CPA al afiliado de <strong>{fmt(cpaAff)}</strong>,
-                    Overoption gana <strong>{fmt(spreadUnit)}</strong> por cada FTD.
-                    Necesita <strong>{Math.ceil(breakEvenFtds)}</strong> FTDs/mes para cubrir el salario de {fmt(salaryNum)}.
+                    Spread promedio ponderado: <strong>{fmt(spreadProm)}</strong> por FTD.
+                    Necesitas <strong>{Math.ceil(breakEvenFtds)}</strong> FTDs/mes (al mismo mix de marcas) para cubrir el salario de {fmt(salaryNum)}.
                     {totalFtd > 0 && (
-                      <> Actualmente proyectas <strong>{totalFtd}</strong> FTDs/mes
+                      <> Proyectas <strong>{totalFtd}</strong> FTDs/mes
                         ({totalFtd >= breakEvenFtds ? "por encima" : "por debajo"} del break-even).</>
                     )}
                   </p>
                 ) : (
                   <p className="text-sm text-destructive">
-                    El CPA al afiliado ({fmt(cpaAff)}) es mayor o igual al CPA neto promedio del operador ({fmt(cpaNetoPromedio)}).
-                    Cada FTD genera pérdida; nunca llega al break-even. Reduce el CPA al afiliado o cambia de operador/plan.
+                    El CPA al afiliado promedio iguala o supera el CPA neto del operador. Cada FTD genera pérdida; nunca llega al break-even.
                   </p>
                 )}
               </div>

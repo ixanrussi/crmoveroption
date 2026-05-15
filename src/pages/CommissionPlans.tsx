@@ -157,7 +157,7 @@ export default function CommissionPlans() {
   };
 
   const filtered = [...list]
-    .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+    .sort((a, b) => (a.client?.company_name || "").localeCompare(b.client?.company_name || "", "es"))
     .filter((r) => {
       const q = search.trim().toLowerCase();
       if (!q) return true;

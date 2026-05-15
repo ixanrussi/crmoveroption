@@ -315,6 +315,26 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, distribution, monthsToRecoup, totalInvested, monthlySurplus };
   }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
 
+  // === Producción objetivo (mensual / diaria) para los triggers ===
+  const targetMonthlyFtd = mode === "inverse" ? (inverse?.totalFtdNeeded ?? 0) : forward.totalFtd;
+  const targetDailyFtd = targetMonthlyFtd / 30;
+  const expectedMonthlyNet = mode === "inverse" ? (inverse?.requiredMonthlyNet ?? 0) : forward.totalExpectedNet;
+  const proposedSalaryAmt = mode === "inverse" ? (parseFloat(inverseSalary) || 0) : forward.proposedSalary;
+  const expectedMonthlyMargin = Math.max(0, expectedMonthlyNet - proposedSalaryAmt);
+
+  // Auto-rellenar triggers a partir de la meta mensual (si el usuario no los tocó manualmente)
+  useEffect(() => {
+    if (targetMonthlyFtd <= 0) return;
+    const minFtdSugg = Math.max(1, Math.round(targetMonthlyFtd * 0.8));
+    const netMarginSugg = Math.round(expectedMonthlyMargin * 0.5);
+    setTrgMinFtd((prev) => (trgTouched.minFtd ? prev : String(minFtdSugg)));
+    setTrgBreakevenPct((prev) => (trgTouched.breakevenPct ? prev : "80"));
+    setTrgActivityRatio((prev) => (trgTouched.activity ? prev : "50"));
+    setTrgNetMargin((prev) => (trgTouched.netMargin ? prev : String(netMarginSugg)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetMonthlyFtd, expectedMonthlyMargin]);
+
+
   const handleSave = async () => {
     if (!user) return toast.error("Inicia sesión");
     if (!affiliateId) return toast.error("Selecciona un afiliado");

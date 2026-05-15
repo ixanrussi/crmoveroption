@@ -469,34 +469,52 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                   {selections.map((s) => {
                     const { op, plan } = planOf(s);
                     const cpaNeto = cpaNetoOf(plan);
-                    const planCountries = plan?.country_ids?.length
-                      ? countries.filter(c => plan.country_ids!.includes(c.id))
-                      : [];
+                    const planCountries = availableCountriesFor(s);
                     const suggested = suggestVolume(s);
                     const income = cpaNeto * (Number(s.targetFtd) || 0);
                     return (
                       <tr key={s.uid} className="border-t">
-                        <td className="p-2 min-w-[160px]">
+                        <td className="p-2 min-w-[180px]">
                           <Select value={s.opId} onValueChange={(v) => updateSel(s.uid, { opId: v, planId: "", countryId: "" })}>
                             <SelectTrigger className="h-8"><SelectValue placeholder="Operador" /></SelectTrigger>
                             <SelectContent>
-                              {operators.map((o) => <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>)}
+                              {operators.map((o) => (
+                                <SelectItem key={o.id} value={o.id}>
+                                  <span className="font-medium">{o.company_name}</span>
+                                  {(o.brands?.length || o.login) && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      · {o.brands?.length ? o.brands.join(", ") : o.login}
+                                    </span>
+                                  )}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </td>
-                        <td className="p-2 min-w-[180px]">
+                        <td className="p-2 min-w-[200px]">
                           <Select value={s.planId} onValueChange={(v) => updateSel(s.uid, { planId: v, countryId: "" })} disabled={!op}>
                             <SelectTrigger className="h-8"><SelectValue placeholder="Plan" /></SelectTrigger>
                             <SelectContent>
-                              {(op?.client_commission_plans ?? []).map((p) => (
-                                <SelectItem key={p.id} value={p.id}>{p.brand ? `${p.brand} · ` : ""}{p.description || "—"}</SelectItem>
-                              ))}
+                              {(op?.client_commission_plans ?? []).map((p) => {
+                                const ids = expandCountryIds(p.country_ids?.length ? p.country_ids : op?.country_ids);
+                                const cNames = countries.filter(c => ids.includes(c.id)).map(c => c.code || c.name).slice(0, 4).join(", ");
+                                return (
+                                  <SelectItem key={p.id} value={p.id}>
+                                    <span className="font-medium">{planLabel(p)}</span>
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      · CPA {p.cpa ?? "—"}{p.currency ? ` ${p.currency}` : ""}{cNames ? ` · ${cNames}` : ""}
+                                    </span>
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         </td>
                         <td className="p-2 min-w-[140px]">
                           <Select value={s.countryId} onValueChange={(v) => updateSel(s.uid, { countryId: v })} disabled={!plan}>
-                            <SelectTrigger className="h-8"><SelectValue placeholder="País" /></SelectTrigger>
+                            <SelectTrigger className="h-8">
+                              <SelectValue placeholder={plan && planCountries.length === 0 ? "Sin países" : "País"} />
+                            </SelectTrigger>
                             <SelectContent>
                               {planCountries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                             </SelectContent>

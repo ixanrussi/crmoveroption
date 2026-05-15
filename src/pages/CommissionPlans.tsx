@@ -62,6 +62,15 @@ export default function CommissionPlans() {
   const [form, setForm] = useState<Template>(empty);
   const [saving, setSaving] = useState(false);
 
+  const compareToCpa = (val: any, cpa: any) => {
+    const v = Number(val);
+    const c = Number(cpa);
+    if (!Number.isFinite(v) || !Number.isFinite(c)) return "";
+    if (v < c) return "text-green-600";
+    if (v === c) return "text-orange-500";
+    return "text-red-600";
+  };
+
   const load = async () => {
     const { data } = await supabase
       .from("commission_plan_templates")

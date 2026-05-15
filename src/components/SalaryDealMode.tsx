@@ -28,7 +28,7 @@ type Row = {
   opId: string;
   planId: string;
   ftd: string;
-  cpaAff: string;
+  pct: number; // % del CPA neto del operador que recibe el afiliado
 };
 
 const newRow = (): Row => ({
@@ -36,7 +36,7 @@ const newRow = (): Row => ({
   opId: "",
   planId: "",
   ftd: "",
-  cpaAff: "",
+  pct: 100,
 });
 
 const fmt = (n: number) =>

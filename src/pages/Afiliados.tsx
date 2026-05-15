@@ -19,6 +19,7 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
+import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
 import { toast } from "sonner";
 
 

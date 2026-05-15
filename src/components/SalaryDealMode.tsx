@@ -106,6 +106,8 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   const [trgActivityRatio, setTrgActivityRatio] = useState<string>("50");
   const [trgConversionPct, setTrgConversionPct] = useState<string>("");
   const [trgNetMargin, setTrgNetMargin] = useState<string>("0");
+  // Touched flags: una vez que el usuario edita un trigger manualmente, dejamos de auto-rellenar
+  const [trgTouched, setTrgTouched] = useState<{ minFtd?: boolean; breakevenPct?: boolean; activity?: boolean; conversion?: boolean; netMargin?: boolean }>({});
 
   // Modo inverso: defines salario → propongo volumen y meses de recuperación
   const [mode, setMode] = useState<"forward" | "inverse">("forward");

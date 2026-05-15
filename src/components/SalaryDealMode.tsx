@@ -309,13 +309,14 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       ...r,
       ftdMonthly: Math.ceil(totalFtdNeeded * (r.weight / totalW)),
     }));
+    const totalCpaGross = distribution.reduce((a, r) => a + (r.plan?.cpa ?? 0) * r.ftdMonthly, 0);
     // Meses para recuperar lo invertido durante el periodo de prueba (salario × trial)
     const monthlySurplus = requiredMonthlyNet - sal; // = sal × (1 - safety)/safety
     const totalInvested = sal * Math.max(trial, 0);
     const monthsToRecoup = monthlySurplus > 0 && totalInvested > 0
       ? Math.ceil(totalInvested / monthlySurplus)
       : 0;
-    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, distribution, monthsToRecoup, totalInvested, monthlySurplus };
+    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, totalCpaGross, distribution, monthsToRecoup, totalInvested, monthlySurplus };
   }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
 
   // === Producción objetivo (mensual / diaria) para los triggers ===

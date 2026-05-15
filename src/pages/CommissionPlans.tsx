@@ -211,7 +211,7 @@ export default function CommissionPlans() {
     <div className="space-y-6">
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-2xl font-bold">Planes Comisión Afiliado</h1>
+          <h1 className="text-2xl font-bold">Comisión Afiliado</h1>
           <p className="text-muted-foreground text-sm">Catálogo reutilizable de planes para asignar a afiliados.</p>
         </div>
         {isAdmin && (

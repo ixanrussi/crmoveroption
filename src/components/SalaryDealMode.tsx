@@ -32,6 +32,9 @@ type PlanLite = {
 type OperatorLite = {
   id: string;
   company_name: string;
+  brands?: string[] | null;
+  login?: string | null;
+  country_ids?: string[] | null;
   client_commission_plans: PlanLite[];
 };
 

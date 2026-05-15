@@ -477,23 +477,42 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             const sal = mode === "inverse" ? (parseFloat(inverseSalary) || 0) : forward.proposedSalary;
             const cpas = mode === "inverse" ? (inverse?.totalFtdNeeded ?? 0) : forward.totalFtd;
             const cpaGross = mode === "inverse" ? (inverse?.totalCpaGross ?? 0) : forward.totalCpaGross;
+            const baselineCpa = mode === "inverse" ? (inverse?.baselineCpaNet ?? 0) : forward.totalExpectedNet;
+            const total = sal + cpaGross;
+            const cpaDiffPct = baselineCpa > 0 ? ((cpaGross - baselineCpa) / baselineCpa) * 100 : 0;
+            const savingPct = baselineCpa > 0 ? ((baselineCpa - total) / baselineCpa) * 100 : 0;
             return (
               <div className="rounded-xl border-2 border-primary bg-gradient-to-br from-primary/10 to-primary/5 p-5 shadow-sm">
                 <div className="text-xs uppercase tracking-wide text-muted-foreground mb-3 font-semibold">
                   Propuesta total para el afiliado / mes
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="rounded-lg bg-background/60 p-3 border">
                     <div className="text-[10px] uppercase text-muted-foreground">Salario fijo</div>
                     <div className="font-bold text-2xl text-primary">{fmt(sal, salaryCurrency)}</div>
                   </div>
                   <div className="rounded-lg bg-background/60 p-3 border">
                     <div className="text-[10px] uppercase text-muted-foreground">Comisiones CPA ({cpas} CPAs)</div>
-                    <div className="font-bold text-2xl text-emerald-600">{fmt(cpaGross, salaryCurrency)}</div>
+                    <div className="flex items-baseline gap-2 flex-wrap">
+                      <div className="font-bold text-2xl text-emerald-600">{fmt(cpaGross, salaryCurrency)}</div>
+                      {baselineCpa > 0 && (
+                        <span className={`text-xs font-semibold ${cpaDiffPct < 0 ? "text-destructive" : "text-emerald-600"}`}>
+                          {cpaDiffPct > 0 ? "+" : ""}{cpaDiffPct.toFixed(1)}% vs CPA sin salario
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">CPA neto sin salario: {fmt(baselineCpa, salaryCurrency)}</div>
                   </div>
                   <div className="rounded-lg bg-primary/15 p-3 border-2 border-primary/40">
                     <div className="text-[10px] uppercase text-muted-foreground font-semibold">Total ingreso afiliado</div>
-                    <div className="font-bold text-2xl text-primary">{fmt(sal + cpaGross, salaryCurrency)}</div>
+                    <div className="font-bold text-2xl text-primary">{fmt(total, salaryCurrency)}</div>
+                  </div>
+                  <div className={`rounded-lg p-3 border-2 ${savingPct >= 0 ? "bg-emerald-500/10 border-emerald-500/40" : "bg-destructive/10 border-destructive/40"}`}>
+                    <div className="text-[10px] uppercase text-muted-foreground font-semibold">Ahorro Overoption en CPA</div>
+                    <div className={`font-bold text-2xl ${savingPct >= 0 ? "text-emerald-600" : "text-destructive"}`}>
+                      {savingPct > 0 ? "+" : ""}{savingPct.toFixed(1)}%
+                    </div>
+                    <div className="text-[10px] text-muted-foreground mt-0.5">{fmt(baselineCpa - total, salaryCurrency)} {savingPct >= 0 ? "ahorrado" : "extra"}</div>
                   </div>
                 </div>
               </div>

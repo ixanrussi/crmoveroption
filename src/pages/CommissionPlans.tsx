@@ -399,7 +399,7 @@ export default function CommissionPlans() {
                 </TableRow>
               ))}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

@@ -71,7 +71,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
       const cpaAff = (cpaNeto * pct) / 100;
       const ingreso = cpaNeto * ftd;
       const pagoVar = cpaAff * ftd;
-      return { r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar };
+      return { r, op, plan, cpaBruto, retencion, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar };
     });
   }, [rows, operators]);
 

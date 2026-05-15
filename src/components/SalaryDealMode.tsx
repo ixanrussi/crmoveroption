@@ -322,5 +322,6 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }

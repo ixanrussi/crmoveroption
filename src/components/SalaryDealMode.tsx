@@ -106,6 +106,8 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   const [trgActivityRatio, setTrgActivityRatio] = useState<string>("50");
   const [trgConversionPct, setTrgConversionPct] = useState<string>("");
   const [trgNetMargin, setTrgNetMargin] = useState<string>("0");
+  // Touched flags: una vez que el usuario edita un trigger manualmente, dejamos de auto-rellenar
+  const [trgTouched, setTrgTouched] = useState<{ minFtd?: boolean; breakevenPct?: boolean; activity?: boolean; conversion?: boolean; netMargin?: boolean }>({});
 
   // Modo inverso: defines salario → propongo volumen y meses de recuperación
   const [mode, setMode] = useState<"forward" | "inverse">("forward");
@@ -312,6 +314,26 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       : 0;
     return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, distribution, monthsToRecoup, totalInvested, monthlySurplus };
   }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
+
+  // === Producción objetivo (mensual / diaria) para los triggers ===
+  const targetMonthlyFtd = mode === "inverse" ? (inverse?.totalFtdNeeded ?? 0) : forward.totalFtd;
+  const targetDailyFtd = targetMonthlyFtd / 30;
+  const expectedMonthlyNet = mode === "inverse" ? (inverse?.requiredMonthlyNet ?? 0) : forward.totalExpectedNet;
+  const proposedSalaryAmt = mode === "inverse" ? (parseFloat(inverseSalary) || 0) : forward.proposedSalary;
+  const expectedMonthlyMargin = Math.max(0, expectedMonthlyNet - proposedSalaryAmt);
+
+  // Auto-rellenar triggers a partir de la meta mensual (si el usuario no los tocó manualmente)
+  useEffect(() => {
+    if (targetMonthlyFtd <= 0) return;
+    const minFtdSugg = Math.max(1, Math.round(targetMonthlyFtd * 0.8));
+    const netMarginSugg = Math.round(expectedMonthlyMargin * 0.5);
+    setTrgMinFtd((prev) => (trgTouched.minFtd ? prev : String(minFtdSugg)));
+    setTrgBreakevenPct((prev) => (trgTouched.breakevenPct ? prev : "80"));
+    setTrgActivityRatio((prev) => (trgTouched.activity ? prev : "50"));
+    setTrgNetMargin((prev) => (trgTouched.netMargin ? prev : String(netMarginSugg)));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [targetMonthlyFtd, expectedMonthlyMargin]);
+
 
   const handleSave = async () => {
     if (!user) return toast.error("Inicia sesión");
@@ -702,31 +724,53 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
 
           {/* Triggers de seguridad */}
           <div className="space-y-2 border-t pt-3">
-            <div className="flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-amber-600" />
-              <span className="font-semibold text-sm">Triggers de seguridad post-firma</span>
+            <div className="flex items-center justify-between gap-2 flex-wrap">
+              <div className="flex items-center gap-2">
+                <ShieldAlert className="h-4 w-4 text-amber-600" />
+                <span className="font-semibold text-sm">Triggers de seguridad post-firma</span>
+              </div>
+              {targetMonthlyFtd > 0 && (
+                <div className="text-[11px] text-muted-foreground">
+                  Meta: <span className="font-semibold text-foreground">{targetMonthlyFtd} CPAs/mes</span> · ≈ <span className="font-semibold text-foreground">{targetDailyFtd.toFixed(1)} CPAs/día</span> · semanal ≈ <span className="font-semibold text-foreground">{(targetDailyFtd * 7).toFixed(0)}</span>
+                </div>
+              )}
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">CPAs mínimos / mes</Label>
-                <Input type="number" min="0" value={trgMinFtd} onChange={(e) => setTrgMinFtd(e.target.value)}
-                  placeholder={mode === "inverse" && inverse ? `Sugerido: ${Math.round(inverse.totalFtdNeeded * 0.8)}` : forward.totalFtd ? `Sugerido: ${Math.round(forward.totalFtd * 0.8)}` : ""} />
+                <Input type="number" min="0" value={trgMinFtd}
+                  onChange={(e) => { setTrgMinFtd(e.target.value); setTrgTouched((t) => ({ ...t, minFtd: true })); }}
+                  placeholder={targetMonthlyFtd ? `Sugerido: ${Math.round(targetMonthlyFtd * 0.8)}` : ""} />
+                {trgMinFtd && (
+                  <p className="text-[10px] text-muted-foreground">≈ {(parseFloat(trgMinFtd) / 30).toFixed(1)} CPAs/día · {(parseFloat(trgMinFtd) / 4.33).toFixed(1)}/semana</p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">% mín. vs breakeven</Label>
-                <Input type="number" min="0" max="200" value={trgBreakevenPct} onChange={(e) => setTrgBreakevenPct(e.target.value)} />
+                <Input type="number" min="0" max="200" value={trgBreakevenPct}
+                  onChange={(e) => { setTrgBreakevenPct(e.target.value); setTrgTouched((t) => ({ ...t, breakevenPct: true })); }} />
+                {trgBreakevenPct && targetMonthlyFtd > 0 && (
+                  <p className="text-[10px] text-muted-foreground">≈ {Math.round(targetMonthlyFtd * (parseFloat(trgBreakevenPct) / 100))} CPAs/mes mín.</p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Ratio actividad mín. (% activos / CPA)</Label>
-                <Input type="number" min="0" max="200" value={trgActivityRatio} onChange={(e) => setTrgActivityRatio(e.target.value)} />
+                <Input type="number" min="0" max="200" value={trgActivityRatio}
+                  onChange={(e) => { setTrgActivityRatio(e.target.value); setTrgTouched((t) => ({ ...t, activity: true })); }} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Conversión mín. (% CPA / cuentas)</Label>
-                <Input type="number" min="0" max="100" value={trgConversionPct} onChange={(e) => setTrgConversionPct(e.target.value)} placeholder="opcional" />
+                <Input type="number" min="0" max="100" value={trgConversionPct}
+                  onChange={(e) => { setTrgConversionPct(e.target.value); setTrgTouched((t) => ({ ...t, conversion: true })); }}
+                  placeholder="opcional" />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Margen neto mín. / mes</Label>
-                <Input type="number" value={trgNetMargin} onChange={(e) => setTrgNetMargin(e.target.value)} />
+                <Input type="number" value={trgNetMargin}
+                  onChange={(e) => { setTrgNetMargin(e.target.value); setTrgTouched((t) => ({ ...t, netMargin: true })); }} />
+                {expectedMonthlyMargin > 0 && (
+                  <p className="text-[10px] text-muted-foreground">Margen esperado: {Math.round(expectedMonthlyMargin)} / mes</p>
+                )}
               </div>
             </div>
             <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas / cláusulas extra" />

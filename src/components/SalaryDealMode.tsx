@@ -311,6 +311,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       ftdMonthly: Math.ceil(totalFtdNeeded * (r.weight / totalW)),
     }));
     const totalCpaGross = distribution.reduce((a, r) => a + r.cpaNeto * (bonusPct / 100) * r.ftdMonthly, 0);
+    const baselineCpaNet = distribution.reduce((a, r) => a + r.cpaNeto * r.ftdMonthly, 0);
     // Meses para recuperar lo invertido durante el periodo de prueba (salario × trial)
     const monthlySurplus = requiredMonthlyNet - sal; // = sal × (1 - safety)/safety
     const totalInvested = sal * Math.max(trial, 0);

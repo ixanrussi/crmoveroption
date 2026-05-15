@@ -53,6 +53,18 @@ const fmt = (n: number) =>
 export default function SalaryDealMode({ operators }: { operators: Operator[] }) {
   const [salary, setSalary] = useState<string>("");
   const [rows, setRows] = useState<Row[]>([newRow()]);
+  const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [affiliateId, setAffiliateId] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("affiliates")
+        .select("id, fixed_name, unique_id, alias")
+        .order("fixed_name");
+      setAffiliates((data ?? []) as Affiliate[]);
+    })();
+  }, []);
 
   const salaryNum = parseFloat(salary) || 0;
 

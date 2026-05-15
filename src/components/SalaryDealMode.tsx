@@ -131,11 +131,11 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
           {computed.map(({ r, op, plan, cpaBruto, retencion, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
             const margenFila = ingreso - pagoVar;
             return (
-              <div key={r.uid} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3 bg-muted/20">
+              <div key={r.uid} className="grid grid-cols-12 gap-2 items-center border rounded-lg px-3 py-2 bg-muted/20">
                 <div className="col-span-12 md:col-span-3 space-y-1">
                   <Label className="text-xs">Operador</Label>
                   <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "" })}>
-                    <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
+                    <SelectTrigger className="h-8"><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                     <SelectContent>
                       {operators.map((o) => {
                         const brands = Array.from(new Set((o.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))) as string[];
@@ -156,7 +156,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     onValueChange={(v) => updateRow(r.uid, { planId: v })}
                     disabled={!op}
                   >
-                    <SelectTrigger><SelectValue placeholder={op ? "Seleccionar" : "Elige operador"} /></SelectTrigger>
+                    <SelectTrigger className="h-8"><SelectValue placeholder={op ? "Seleccionar" : "Elige operador"} /></SelectTrigger>
                     <SelectContent>
                       {op?.client_commission_plans.map((p) => (
                         <SelectItem key={p.id} value={p.id}>
@@ -169,9 +169,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                 <div className="col-span-12 md:col-span-4 space-y-1">
                   <div className="flex items-baseline justify-between gap-2">
                     <Label className="text-xs">CPA al afiliado</Label>
-                    <span className="text-xs text-muted-foreground">
-                      máx {fmt(cpaNeto)}
-                    </span>
+                    <span className="text-xs text-muted-foreground">máx {fmt(cpaNeto)}</span>
                   </div>
                   <div className="flex items-center gap-3">
                     <Slider
@@ -183,13 +181,13 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                       disabled={!plan}
                       className="flex-1"
                     />
-                    <div className="text-right min-w-[88px]">
-                      <div className="text-sm font-bold leading-none">{fmt(cpaAff)}</div>
+                    <div className="text-right min-w-[80px] leading-tight">
+                      <div className="text-sm font-bold">{fmt(cpaAff)}</div>
                       <div className="text-[11px] text-muted-foreground">{pct}% del CPA</div>
                     </div>
                   </div>
                 </div>
-                <div className="col-span-6 md:col-span-1 space-y-1">
+                <div className="col-span-8 md:col-span-1 space-y-1">
                   <Label className="text-xs">FTDs/mes</Label>
                   <Input
                     type="number"
@@ -197,10 +195,11 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     placeholder="0"
                     value={r.ftd}
                     onChange={(e) => updateRow(r.uid, { ftd: e.target.value })}
+                    className="h-8"
                   />
                 </div>
-                <div className="col-span-12 md:col-span-2 flex justify-end">
-                  <Button size="icon" variant="ghost" onClick={() => removeRow(r.uid)} disabled={rows.length === 1}>
+                <div className="col-span-4 md:col-span-1 flex justify-end items-end h-full">
+                  <Button size="icon" variant="ghost" className="h-8 w-8" onClick={() => removeRow(r.uid)} disabled={rows.length === 1}>
                     <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>

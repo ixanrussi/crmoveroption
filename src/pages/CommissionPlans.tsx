@@ -168,6 +168,45 @@ export default function CommissionPlans() {
       );
     });
 
+  // Fetch FX rates for every source currency present in BL/W so we can
+  // convert those values to the CPA currency before comparing/coloring.
+  const fxBases = Array.from(new Set(filtered.flatMap((r) => [r.baseline_currency, r.wager_currency])));
+  const ratesByBase = useFxRates(fxBases);
+
+  const fmt = (n: number) => {
+    const abs = Math.abs(n);
+    const digits = abs >= 100 ? 0 : 2;
+    return n.toLocaleString("es", { minimumFractionDigits: digits, maximumFractionDigits: digits });
+  };
+
+  const renderConverted = (
+    value: any,
+    fromCcy: string | null,
+    toCcy: string | null,
+    cpa: any,
+  ) => {
+    if (value == null || value === "") return { text: "—", cls: "" };
+    const v = Number(value);
+    if (!Number.isFinite(v)) return { text: "—", cls: "" };
+    const from = fromCcy || toCcy || "";
+    const to = toCcy || from;
+    if (!to) {
+      return { text: fmt(v), cls: compareToCpa(v, cpa != null ? Number(cpa) : null) };
+    }
+    if (from.toUpperCase() === to.toUpperCase()) {
+      return { text: `${fmt(v)} ${to}`, cls: compareToCpa(v, cpa != null ? Number(cpa) : null) };
+    }
+    const rates = ratesByBase[from.toUpperCase()];
+    const converted = convert(v, from, to, rates);
+    if (converted == null) {
+      return { text: `${fmt(v)} ${from} →…`, cls: "text-muted-foreground" };
+    }
+    return {
+      text: `${fmt(converted)} ${to}`,
+      cls: compareToCpa(converted, cpa != null ? Number(cpa) : null),
+      title: `${fmt(v)} ${from} @ ${rates?.[to.toUpperCase()]?.toFixed(4)}`,
+    };
+  };
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-start">

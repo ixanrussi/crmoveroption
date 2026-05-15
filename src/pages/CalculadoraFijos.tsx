@@ -535,6 +535,20 @@ export default function CalculadoraFijos() {
         </div>
       </div>
 
+      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30 no-print">
+        <Switch checked={salaryMode} onCheckedChange={setSalaryMode} id="salary-mode" />
+        <div className="flex-1">
+          <Label htmlFor="salary-mode" className="cursor-pointer font-semibold">Modo salario fijo + CPA</Label>
+          <p className="text-xs text-muted-foreground">
+            Overoption paga un salario mensual + un CPA por cada FTD que el afiliado genere (sin objetivo).
+          </p>
+        </div>
+      </div>
+
+      {salaryMode ? (
+        <SalaryDealMode operators={operators as any} />
+      ) : (
+      <>
       <div className="space-y-1 max-w-md">
         <Label>Nombre del afiliado prospecto (opcional)</Label>
         <Input

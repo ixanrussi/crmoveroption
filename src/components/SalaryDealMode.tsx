@@ -690,12 +690,20 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                 <div className="rounded-lg border p-3 space-y-1">
                   <Label className="text-xs flex items-center gap-1"><Sparkles className="h-3 w-3" /> Bonus por CPA por encima del objetivo</Label>
                   <div className="space-y-1">
-                    {forward.perRow.filter(r => r.plan).map((r) => (
-                      <div key={r.s.uid} className="flex justify-between text-xs">
-                        <span>{r.plan!.brand || r.plan!.description} ({r.ftd} CPAs objetivo)</span>
-                        <span className="font-mono font-semibold">{fmt(r.bonusPerExtraFtd, r.plan!.currency || salaryCurrency)}/CPA extra</span>
-                      </div>
-                    ))}
+                    {forward.perRow.filter(r => r.plan).map((r) => {
+                      const diffPct = r.cpaNeto > 0 ? ((r.bonusPerExtraFtd - r.cpaNeto) / r.cpaNeto) * 100 : 0;
+                      return (
+                        <div key={r.s.uid} className="flex justify-between text-xs items-center gap-2">
+                          <span>{r.plan!.brand || r.plan!.description} ({r.ftd} CPAs objetivo)</span>
+                          <span className="flex items-baseline gap-2">
+                            <span className="font-mono font-semibold">{fmt(r.bonusPerExtraFtd, r.plan!.currency || salaryCurrency)}/CPA extra</span>
+                            <span className={`text-[10px] font-semibold ${diffPct < 0 ? "text-destructive" : "text-emerald-600"}`}>
+                              {diffPct > 0 ? "+" : ""}{diffPct.toFixed(1)}% vs CPA sin salario ({fmt(r.cpaNeto, r.plan!.currency || salaryCurrency)})
+                            </span>
+                          </span>
+                        </div>
+                      );
+                    })}
                   </div>
                 </div>
               )}

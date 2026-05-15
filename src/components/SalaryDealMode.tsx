@@ -219,11 +219,6 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                       <div className="text-muted-foreground">Spread (sin salario)</div>
                       <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
                     </div>
-                    {cpaAffOver && (
-                      <div className="col-span-2 md:col-span-4 text-destructive flex items-center gap-1">
-                        <AlertTriangle className="h-3 w-3" /> El CPA al afiliado supera el CPA neto del operador.
-                      </div>
-                    )}
                   </div>
                 )}
               </div>

@@ -205,22 +205,59 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                   </Button>
                 </div>
                 {plan && (
-                  <div className="col-span-12 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs pt-2 border-t">
-                    <div>
-                      <div className="text-muted-foreground">CPA neto operador</div>
-                      <div className="font-semibold">{fmt(cpaNeto)}</div>
+                  <div className="col-span-12 space-y-2 pt-2 border-t">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA bruto plan
+                          <InfoTip text="CPA total acordado con el operador por cada FTD, antes de cualquier retención." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaBruto)}</div>
+                      </div>
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Retención Overoption
+                          <InfoTip text="Importe que Overoption retiene del CPA bruto antes de calcular lo disponible para el afiliado (overoption_retention del plan)." />
+                        </div>
+                        <div className="font-semibold">{fmt(retencion)}</div>
+                      </div>
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA neto usado
+                          <InfoTip text="CPA bruto menos la retención de Overoption. Es el monto efectivo que cobra Overoption del operador y la base sobre la que se calcula el % al afiliado." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaNeto)}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-muted-foreground">Ingreso Overoption</div>
-                      <div className="font-semibold">{fmt(ingreso)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">CPA pagado al afiliado</div>
-                      <div className="font-semibold">{fmt(pagoVar)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Spread (sin salario)</div>
-                      <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Ingreso Overoption
+                          <InfoTip text="CPA neto × FTDs/mes. Lo que Overoption cobra del operador este mes por esta marca." />
+                        </div>
+                        <div className="font-semibold">{fmt(ingreso)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA pagado al afiliado
+                          <InfoTip text="(% del CPA × CPA neto) × FTDs/mes. Parte variable que Overoption paga al afiliado." />
+                        </div>
+                        <div className="font-semibold">{fmt(pagoVar)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Spread por FTD
+                          <InfoTip text="CPA neto − CPA al afiliado. Margen unitario antes del salario fijo." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaNeto - cpaAff)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Spread mes (sin salario)
+                          <InfoTip text="Ingreso Overoption − CPA pagado al afiliado, sin descontar el salario fijo mensual." />
+                        </div>
+                        <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
+                      </div>
                     </div>
                   </div>
                 )}

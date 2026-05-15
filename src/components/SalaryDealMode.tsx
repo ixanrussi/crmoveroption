@@ -268,11 +268,12 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       const cpaNeto = cpaNetoOf(plan);
       const ftd = Number(s.targetFtd) || 0;
       const incomeNet = cpaNeto * ftd;
-      const cpaGross = (plan?.cpa ?? 0) * ftd;
+      const bonusPerExtra = cpaNeto * (bonusPct / 100);
+      const cpaGross = bonusPerExtra * ftd;
       totalExpectedNet += incomeNet;
       totalCpaGross += cpaGross;
       totalFtd += ftd;
-      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
+      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: bonusPerExtra };
     });
     const proposedSalary = totalExpectedNet * (safetyPct / 100);
     // Escenarios de riesgo
@@ -309,7 +310,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       ...r,
       ftdMonthly: Math.ceil(totalFtdNeeded * (r.weight / totalW)),
     }));
-    const totalCpaGross = distribution.reduce((a, r) => a + (r.plan?.cpa ?? 0) * r.ftdMonthly, 0);
+    const totalCpaGross = distribution.reduce((a, r) => a + r.cpaNeto * (bonusPct / 100) * r.ftdMonthly, 0);
     // Meses para recuperar lo invertido durante el periodo de prueba (salario × trial)
     const monthlySurplus = requiredMonthlyNet - sal; // = sal × (1 - safety)/safety
     const totalInvested = sal * Math.max(trial, 0);
@@ -317,7 +318,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       ? Math.ceil(totalInvested / monthlySurplus)
       : 0;
     return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, totalCpaGross, distribution, monthsToRecoup, totalInvested, monthlySurplus };
-  }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
+  }, [inverseSalary, selections, operators, safetyPct, trialMonths, bonusPct]);
 
   // === Producción objetivo (mensual / diaria) para los triggers ===
   const targetMonthlyFtd = mode === "inverse" ? (inverse?.totalFtdNeeded ?? 0) : forward.totalFtd;

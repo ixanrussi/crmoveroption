@@ -263,9 +263,7 @@ export default function CommissionPlans() {
                     <SelectContent>
                       <SelectItem value="__none__">— Sin cliente —</SelectItem>
                       {clients.map((c) => {
-                        const desc = [c.login, c.client_type, Array.isArray(c.brands) && c.brands.length > 0 ? c.brands.join(", ") : null]
-                          .filter(Boolean)
-                          .join(" · ");
+                        const desc = Array.isArray(c.brands) && c.brands.length > 0 ? c.brands.join(", ") : null;
                         return (
                           <SelectItem key={c.id} value={c.id}>
                             <span className="font-medium">{c.company_name}</span>

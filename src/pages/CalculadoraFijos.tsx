@@ -87,7 +87,7 @@ export default function CalculadoraFijos() {
   const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");
   const [proposalPct, setProposalPct] = useState<number>(0); // 0 = recomendado, 100 = máximo
-  const [salaryMode, setSalaryMode] = useState<boolean>(false);
+  
 
   const handlePrint = async () => {
     const result = await buildPdf();

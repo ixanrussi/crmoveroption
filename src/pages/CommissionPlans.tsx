@@ -403,7 +403,7 @@ export default function CommissionPlans() {
                     </button>
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
-                  <TableCell className="text-right">{r.cpa ?? "—"}</TableCell>
+                  <TableCell className="text-right">{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
                   <TableCell className={`text-right font-medium ${compareToCpa(r.baseline, r.cpa)}`}>{r.baseline ?? "—"}</TableCell>
                   <TableCell className={`text-right font-medium ${compareToCpa(r.wager, r.cpa)}`}>{r.wager ?? "—"}</TableCell>
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>

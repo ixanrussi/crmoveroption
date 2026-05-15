@@ -29,7 +29,7 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
       { key: "prospects-operadores", label: "Operadores prospect" },
       { key: "prospects-afiliados", label: "Afiliados prospect" },
       { key: "solicitar-links", label: "Solicitar links" },
-      { key: "planes-comision", label: "Planes Comisión Afiliado" },
+      { key: "planes-comision", label: "Comisión Afiliado" },
       { key: "calculadora-fijos", label: "Calculadora de Fijos" },
       { key: "tracker-report", label: "API Report" },
     ],

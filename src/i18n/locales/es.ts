@@ -91,7 +91,7 @@ const es = {
     affiliates: "Afiliados",
     affiliatesProspect: "Afiliados prospect",
     requestLinks: "Solicitar links",
-    commissionPlans: "Planes Comisión Afiliado",
+    commissionPlans: "Comisión Afiliado",
     fixedCalculator: "Calculadora de Fijos",
     apiReport: "API Report",
     geos: "GEO´s",

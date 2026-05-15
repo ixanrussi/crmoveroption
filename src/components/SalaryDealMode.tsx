@@ -87,7 +87,19 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
   const breakEvenFtds = spreadProm > 0 ? salaryNum / spreadProm : Infinity;
   const breakEvenViable = isFinite(breakEvenFtds) && spreadProm > 0;
 
+  const InfoTip = ({ text }: { text: string }) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="inline-flex text-muted-foreground hover:text-foreground">
+          <Info className="h-3 w-3" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs text-xs">{text}</TooltipContent>
+    </Tooltip>
+  );
+
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="space-y-6">
       <Card>
         <CardHeader>

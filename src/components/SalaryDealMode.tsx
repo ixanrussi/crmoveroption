@@ -115,15 +115,13 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {computed.map(({ r, op, plan, cpaNeto, cpaAff, ftd, ingreso, pagoVar }) => {
+          {computed.map(({ r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
             const margenFila = ingreso - pagoVar;
-            const cpaAffMax = cpaNeto;
-            const cpaAffOver = cpaAff > cpaNeto && cpaNeto > 0;
             return (
               <div key={r.uid} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3 bg-muted/20">
                 <div className="col-span-12 md:col-span-3 space-y-1">
                   <Label className="text-xs">Operador</Label>
-                  <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "", cpaAff: "" })}>
+                  <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "" })}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                     <SelectContent>
                       {operators.map((o) => {
@@ -155,16 +153,37 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="col-span-6 md:col-span-2 space-y-1">
-                  <Label className="text-xs">CPA al afiliado (USD)</Label>
+                <div className="col-span-12 md:col-span-4 space-y-1">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <Label className="text-xs">CPA al afiliado</Label>
+                    <span className="text-xs text-muted-foreground">
+                      máx {fmt(cpaNeto)}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Slider
+                      value={[pct]}
+                      min={0}
+                      max={100}
+                      step={1}
+                      onValueChange={(v) => updateRow(r.uid, { pct: v[0] ?? 0 })}
+                      disabled={!plan}
+                      className="flex-1"
+                    />
+                    <div className="text-right min-w-[88px]">
+                      <div className="text-sm font-bold leading-none">{fmt(cpaAff)}</div>
+                      <div className="text-[11px] text-muted-foreground">{pct}% del CPA</div>
+                    </div>
+                  </div>
+                </div>
+                <div className="col-span-6 md:col-span-1 space-y-1">
+                  <Label className="text-xs">FTDs/mes</Label>
                   <Input
                     type="number"
                     inputMode="numeric"
-                    placeholder={plan ? `máx ${Math.round(cpaAffMax)}` : "0"}
-                    value={r.cpaAff}
-                    onChange={(e) => updateRow(r.uid, { cpaAff: e.target.value })}
-                    disabled={!plan}
-                    className={cpaAffOver ? "border-destructive" : ""}
+                    placeholder="0"
+                    value={r.ftd}
+                    onChange={(e) => updateRow(r.uid, { ftd: e.target.value })}
                   />
                 </div>
                 <div className="col-span-6 md:col-span-2 space-y-1">

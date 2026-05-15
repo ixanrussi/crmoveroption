@@ -283,7 +283,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     });
     const distinctBrands = new Set(perRow.filter(r => r.plan?.brand).map(r => r.plan!.brand!.toLowerCase())).size;
     const distinctCountries = new Set(selections.filter(s => s.countryId).map(s => s.countryId)).size;
-    return { perRow, totalExpectedNet, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
+    return { perRow, totalExpectedNet, totalCpaGross, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
   }, [selections, operators, safetyPct, bonusPct]);
 
   // === INVERSE: dado salario → propone CPAs/mes y meses para recuperar ===

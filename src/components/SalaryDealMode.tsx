@@ -124,9 +124,15 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                   <Select value={r.opId} onValueChange={(v) => updateRow(r.uid, { opId: v, planId: "", cpaAff: "" })}>
                     <SelectTrigger><SelectValue placeholder="Seleccionar" /></SelectTrigger>
                     <SelectContent>
-                      {operators.map((o) => (
-                        <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>
-                      ))}
+                      {operators.map((o) => {
+                        const brands = Array.from(new Set((o.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))) as string[];
+                        const brandLabel = brands.length ? ` — ${brands.join(", ")}` : "";
+                        return (
+                          <SelectItem key={o.id} value={o.id}>
+                            {o.company_name}<span className="text-muted-foreground">{brandLabel}</span>
+                          </SelectItem>
+                        );
+                      })}
                     </SelectContent>
                   </Select>
                 </div>

@@ -190,6 +190,54 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     return { op, plan: op?.client_commission_plans.find((p) => p.id === s.planId) };
   };
 
+  // Expansión WW / LATAM (igual que CalculadoraFijos)
+  const wwId = useMemo(
+    () => countries.find((c) => c.code === "WW" || c.name.toLowerCase().includes("world"))?.id,
+    [countries],
+  );
+  const latamId = useMemo(
+    () => countries.find((c) => c.name.toLowerCase() === "latam")?.id,
+    [countries],
+  );
+  const latamCountryIds = useMemo(
+    () => countries.filter((c) => c.id !== wwId && c.id !== latamId && c.name.toLowerCase() !== "españa").map((c) => c.id),
+    [countries, wwId, latamId],
+  );
+  const expandCountryIds = (ids?: string[] | null): string[] => {
+    const arr = ids ?? [];
+    if (!arr.length) return [];
+    if (wwId && arr.includes(wwId)) return countries.map((c) => c.id);
+    const set = new Set<string>(arr);
+    if (latamId && arr.includes(latamId)) latamCountryIds.forEach((id) => set.add(id));
+    return Array.from(set);
+  };
+
+  // Países disponibles para una selección: usa los del plan; si está vacío, hereda los del operador
+  const availableCountriesFor = (s: SalarySelection): Country[] => {
+    const { op, plan } = planOf(s);
+    const planExpanded = expandCountryIds(plan?.country_ids);
+    const opExpanded = expandCountryIds(op?.country_ids);
+    const ids = planExpanded.length ? planExpanded : opExpanded;
+    if (!ids.length) return [];
+    return countries.filter((c) => ids.includes(c.id));
+  };
+
+  // Etiqueta legible para un plan
+  const planLabel = (p: PlanLite): string => {
+    const brand = p.brand?.trim();
+    const desc = p.description?.trim();
+    if (brand && desc && brand.toLowerCase() !== desc.toLowerCase()) return `${brand} · ${desc}`;
+    return brand || desc || "Plan sin nombre";
+  };
+
+  // Etiqueta legible para un operador (diferencia duplicados por marca/login)
+  const operatorLabel = (o: OperatorLite): string => {
+    const brands = (o.brands ?? []).filter(Boolean);
+    if (brands.length) return `${o.company_name} · ${brands.join(", ")}`;
+    if (o.login) return `${o.company_name} (${o.login})`;
+    return o.company_name;
+  };
+
   const cpaNetoOf = (plan?: PlanLite) =>
     plan ? Math.max(0, (plan.cpa ?? 0) - (plan.overoption_retention ?? 0)) : 0;
 

@@ -318,7 +318,7 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
     const monthsToRecoup = monthlySurplus > 0 && totalInvested > 0
       ? Math.ceil(totalInvested / monthlySurplus)
       : 0;
-    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, totalCpaGross, distribution, monthsToRecoup, totalInvested, monthlySurplus };
+    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, totalCpaGross, baselineCpaNet, distribution, monthsToRecoup, totalInvested, monthlySurplus };
   }, [inverseSalary, selections, operators, safetyPct, trialMonths, bonusPct]);
 
   // === Producción objetivo (mensual / diaria) para los triggers ===

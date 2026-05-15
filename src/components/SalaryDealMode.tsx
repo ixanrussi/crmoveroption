@@ -261,15 +261,18 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   // === FORWARD: dado mix → propone salario + bonus ===
   const forward = useMemo(() => {
     let totalExpectedNet = 0;
+    let totalCpaGross = 0;
     let totalFtd = 0;
     const perRow = selections.map((s) => {
       const { plan } = planOf(s);
       const cpaNeto = cpaNetoOf(plan);
       const ftd = Number(s.targetFtd) || 0;
       const incomeNet = cpaNeto * ftd;
+      const cpaGross = (plan?.cpa ?? 0) * ftd;
       totalExpectedNet += incomeNet;
+      totalCpaGross += cpaGross;
       totalFtd += ftd;
-      return { s, plan, cpaNeto, ftd, incomeNet, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
+      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
     });
     const proposedSalary = totalExpectedNet * (safetyPct / 100);
     // Escenarios de riesgo

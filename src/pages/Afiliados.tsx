@@ -1049,6 +1049,16 @@ export default function Afiliados() {
                         </div>
                       );
                     })()}
+                    {missingLinks[r.id] > 0 && (
+                      <button
+                        type="button"
+                        onClick={() => openEdit(r)}
+                        className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-destructive hover:underline"
+                        title="Operadores con plan asignado pero sin tracking link"
+                      >
+                        ⚠ {missingLinks[r.id]} link{missingLinks[r.id] > 1 ? "s" : ""} pendiente{missingLinks[r.id] > 1 ? "s" : ""}
+                      </button>
+                    )}
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {(() => {

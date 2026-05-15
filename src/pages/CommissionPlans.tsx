@@ -222,14 +222,14 @@ export default function CommissionPlans() {
               setOpen(v);
             }}
           >
-            <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Nuevo plan</Button></DialogTrigger>
+            <DialogTrigger asChild><Button onClick={openNew}><Plus className="h-4 w-4 mr-1" /> Comisión Afiliado</Button></DialogTrigger>
             <DialogContent
               className="max-w-2xl max-h-[90vh] overflow-y-auto"
               onPointerDownOutside={(e) => e.preventDefault()}
               onInteractOutside={(e) => e.preventDefault()}
             >
               <DialogHeader>
-                <DialogTitle>{editing ? "Editar plan" : "Nuevo plan"}</DialogTitle>
+                <DialogTitle>{editing ? "Comisión Afiliado" : "Comisión Afiliado"}</DialogTitle>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">

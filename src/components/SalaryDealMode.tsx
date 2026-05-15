@@ -120,8 +120,26 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
         <CardHeader>
           <CardTitle className="text-lg">Propuesta Overoption</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="space-y-1 max-w-sm">
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Afiliado destinatario</Label>
+            <Select value={affiliateId} onValueChange={setAffiliateId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona afiliado" />
+              </SelectTrigger>
+              <SelectContent>
+                {affiliates.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.fixed_name}
+                    {a.alias ? ` · ${a.alias}` : ""}
+                    <span className="text-muted-foreground"> · {a.unique_id}</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">A quién va dirigida la propuesta.</p>
+          </div>
+          <div className="space-y-1">
             <Label>Salario fijo mensual (USD)</Label>
             <Input
               type="number"

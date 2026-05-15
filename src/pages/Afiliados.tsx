@@ -679,9 +679,16 @@ export default function Afiliados() {
                           <SelectValue placeholder="Asignar desde catálogo…" />
                         </SelectTrigger>
                         <SelectContent>
-                          {templates.length === 0 ? (
-                            <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>
-                          ) : templates.map((t) => (
+                          {(() => {
+                            const usedIds = new Set(plans.map((p) => p.template_id).filter(Boolean));
+                            const available = templates.filter((t) => !usedIds.has(t.id));
+                            if (templates.length === 0) {
+                              return <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>;
+                            }
+                            if (available.length === 0) {
+                              return <div className="px-2 py-1.5 text-xs text-muted-foreground">Todos los planes ya fueron asignados</div>;
+                            }
+                            return available.map((t) => (
                             <SelectItem key={t.id} value={t.id}>
                               <span className="flex w-full min-w-0 items-center gap-2">
                                 <span className="truncate">

@@ -62,6 +62,15 @@ export default function CommissionPlans() {
   const [form, setForm] = useState<Template>(empty);
   const [saving, setSaving] = useState(false);
 
+  const compareToCpa = (val: any, cpa: any) => {
+    const v = Number(val);
+    const c = Number(cpa);
+    if (!Number.isFinite(v) || !Number.isFinite(c)) return "";
+    if (v < c) return "text-green-600";
+    if (v === c) return "text-orange-500";
+    return "text-red-600";
+  };
+
   const load = async () => {
     const { data } = await supabase
       .from("commission_plan_templates")
@@ -370,6 +379,8 @@ export default function CommissionPlans() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead className="text-right">CPA</TableHead>
+                <TableHead className="text-right">BL</TableHead>
+                <TableHead className="text-right">W</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
@@ -385,6 +396,8 @@ export default function CommissionPlans() {
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className="text-right">{r.cpa ?? "—"}</TableCell>
+                  <TableCell className={`text-right font-medium ${compareToCpa(r.baseline, r.cpa)}`}>{r.baseline ?? "—"}</TableCell>
+                  <TableCell className={`text-right font-medium ${compareToCpa(r.wager, r.cpa)}`}>{r.wager ?? "—"}</TableCell>
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
@@ -395,7 +408,7 @@ export default function CommissionPlans() {
                 </TableRow>
               ))}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

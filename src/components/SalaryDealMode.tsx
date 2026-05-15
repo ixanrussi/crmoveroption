@@ -5,8 +5,9 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, Info } from "lucide-react";
 import { Slider } from "@/components/ui/slider";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 
 type Plan = {
   id: string;
@@ -70,7 +71,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
       const cpaAff = (cpaNeto * pct) / 100;
       const ingreso = cpaNeto * ftd;
       const pagoVar = cpaAff * ftd;
-      return { r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar };
+      return { r, op, plan, cpaBruto, retencion, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar };
     });
   }, [rows, operators]);
 
@@ -86,7 +87,19 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
   const breakEvenFtds = spreadProm > 0 ? salaryNum / spreadProm : Infinity;
   const breakEvenViable = isFinite(breakEvenFtds) && spreadProm > 0;
 
+  const InfoTip = ({ text }: { text: string }) => (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <button type="button" className="inline-flex text-muted-foreground hover:text-foreground">
+          <Info className="h-3 w-3" />
+        </button>
+      </TooltipTrigger>
+      <TooltipContent className="max-w-xs text-xs">{text}</TooltipContent>
+    </Tooltip>
+  );
+
   return (
+    <TooltipProvider delayDuration={150}>
     <div className="space-y-6">
       <Card>
         <CardHeader>
@@ -115,7 +128,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {computed.map(({ r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
+          {computed.map(({ r, op, plan, cpaBruto, retencion, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
             const margenFila = ingreso - pagoVar;
             return (
               <div key={r.uid} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3 bg-muted/20">
@@ -192,22 +205,59 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
                   </Button>
                 </div>
                 {plan && (
-                  <div className="col-span-12 grid grid-cols-2 md:grid-cols-4 gap-2 text-xs pt-2 border-t">
-                    <div>
-                      <div className="text-muted-foreground">CPA neto operador</div>
-                      <div className="font-semibold">{fmt(cpaNeto)}</div>
+                  <div className="col-span-12 space-y-2 pt-2 border-t">
+                    <div className="grid grid-cols-2 md:grid-cols-3 gap-2 text-xs">
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA bruto plan
+                          <InfoTip text="CPA total acordado con el operador por cada FTD, antes de cualquier retención." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaBruto)}</div>
+                      </div>
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Retención Overoption
+                          <InfoTip text="Importe que Overoption retiene del CPA bruto antes de calcular lo disponible para el afiliado (overoption_retention del plan)." />
+                        </div>
+                        <div className="font-semibold">{fmt(retencion)}</div>
+                      </div>
+                      <div className="rounded border bg-background/40 p-2">
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA neto usado
+                          <InfoTip text="CPA bruto menos la retención de Overoption. Es el monto efectivo que cobra Overoption del operador y la base sobre la que se calcula el % al afiliado." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaNeto)}</div>
+                      </div>
                     </div>
-                    <div>
-                      <div className="text-muted-foreground">Ingreso Overoption</div>
-                      <div className="font-semibold">{fmt(ingreso)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">CPA pagado al afiliado</div>
-                      <div className="font-semibold">{fmt(pagoVar)}</div>
-                    </div>
-                    <div>
-                      <div className="text-muted-foreground">Spread (sin salario)</div>
-                      <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Ingreso Overoption
+                          <InfoTip text="CPA neto × FTDs/mes. Lo que Overoption cobra del operador este mes por esta marca." />
+                        </div>
+                        <div className="font-semibold">{fmt(ingreso)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          CPA pagado al afiliado
+                          <InfoTip text="(% del CPA × CPA neto) × FTDs/mes. Parte variable que Overoption paga al afiliado." />
+                        </div>
+                        <div className="font-semibold">{fmt(pagoVar)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Spread por FTD
+                          <InfoTip text="CPA neto − CPA al afiliado. Margen unitario antes del salario fijo." />
+                        </div>
+                        <div className="font-semibold">{fmt(cpaNeto - cpaAff)}</div>
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-1 text-muted-foreground">
+                          Spread mes (sin salario)
+                          <InfoTip text="Ingreso Overoption − CPA pagado al afiliado, sin descontar el salario fijo mensual." />
+                        </div>
+                        <div className={`font-semibold ${margenFila >= 0 ? "text-emerald-600" : "text-destructive"}`}>{fmt(margenFila)}</div>
+                      </div>
                     </div>
                   </div>
                 )}
@@ -272,5 +322,6 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
         </CardContent>
       </Card>
     </div>
+    </TooltipProvider>
   );
 }

@@ -268,11 +268,12 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       const cpaNeto = cpaNetoOf(plan);
       const ftd = Number(s.targetFtd) || 0;
       const incomeNet = cpaNeto * ftd;
-      const cpaGross = (plan?.cpa ?? 0) * ftd;
+      const bonusPerExtra = cpaNeto * (bonusPct / 100);
+      const cpaGross = bonusPerExtra * ftd;
       totalExpectedNet += incomeNet;
       totalCpaGross += cpaGross;
       totalFtd += ftd;
-      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
+      return { s, plan, cpaNeto, ftd, incomeNet, cpaGross, bonusPerExtraFtd: bonusPerExtra };
     });
     const proposedSalary = totalExpectedNet * (safetyPct / 100);
     // Escenarios de riesgo

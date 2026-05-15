@@ -6,12 +6,18 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Save, ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, Activity } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import {
+  Save, ShieldAlert, ShieldCheck, AlertTriangle, TrendingUp, Activity,
+  Plus, Trash2, Sparkles, Calculator, Clock, Target, Wand2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import { useCurrencies } from "@/lib/currencies";
 
 type Affiliate = { id: string; fixed_name: string; unique_id: string };
+type Country = { id: string; name: string; code: string | null };
 
 type PlanLite = {
   id: string;
@@ -20,6 +26,7 @@ type PlanLite = {
   currency: string | null;
   cpa: number | null;
   overoption_retention: number | null;
+  country_ids?: string[] | null;
 };
 
 type OperatorLite = {
@@ -32,7 +39,9 @@ type SalarySelection = {
   uid: string;
   opId: string;
   planId: string;
-  weight: number;
+  countryId: string;
+  targetFtd: number;     // FTDs/mes objetivo en este país/marca
+  autoSuggested?: boolean;
 };
 
 type Deal = {
@@ -46,7 +55,7 @@ type Deal = {
   salary_currency: string;
   cpa_bonus_amount: number | null;
   cpa_bonus_threshold: number | null;
-  selections: SalarySelection[];
+  selections: any;
   breakeven_ftd_monthly: number | null;
   trigger_min_ftd_monthly: number | null;
   trigger_breakeven_pct: number | null;
@@ -58,59 +67,68 @@ type Deal = {
   created_at: string;
 };
 
-const newSel = (): SalarySelection => ({ uid: Math.random().toString(36).slice(2), opId: "", planId: "", weight: 100 });
+const newSel = (): SalarySelection => ({
+  uid: Math.random().toString(36).slice(2),
+  opId: "", planId: "", countryId: "", targetFtd: 0,
+});
 
 const fmt = (n: number, cur?: string) =>
-  new Intl.NumberFormat("es-ES", { style: cur ? "currency" : "decimal", currency: cur, maximumFractionDigits: 0 }).format(Math.round(n));
+  new Intl.NumberFormat("es-ES", { style: cur ? "currency" : "decimal", currency: cur, maximumFractionDigits: 0 }).format(
+    isFinite(n) ? Math.round(n) : 0
+  );
 
 export default function SalaryDealMode({ operators }: { operators: OperatorLite[] }) {
   const { user } = useAuth();
   const currencies = useCurrencies();
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [countries, setCountries] = useState<Country[]>([]);
   const [affiliateId, setAffiliateId] = useState<string>("");
   const [name, setName] = useState("");
-  const [salary, setSalary] = useState<string>("");
   const [salaryCurrency, setSalaryCurrency] = useState<string>("EUR");
-  const [bonusAmount, setBonusAmount] = useState<string>("");
-  const [bonusThreshold, setBonusThreshold] = useState<string>("");
-  const [trialMonths, setTrialMonths] = useState<string>("0");
+
+  // Slider de seguridad: % del CPA neto esperado que se paga como salario fijo
+  const [safetyPct, setSafetyPct] = useState<number>(75);
+  // % del CPA neto que se paga al afiliado como bonus por cada FTD por encima del objetivo
+  const [bonusPct, setBonusPct] = useState<number>(70);
+
+  const [trialMonths, setTrialMonths] = useState<string>("3");
+  const [notes, setNotes] = useState("");
+  const [selections, setSelections] = useState<SalarySelection[]>([newSel()]);
+  const [saving, setSaving] = useState(false);
+
+  // Triggers de seguridad (post-firma)
   const [trgMinFtd, setTrgMinFtd] = useState<string>("");
   const [trgBreakevenPct, setTrgBreakevenPct] = useState<string>("80");
   const [trgActivityRatio, setTrgActivityRatio] = useState<string>("50");
   const [trgConversionPct, setTrgConversionPct] = useState<string>("");
   const [trgNetMargin, setTrgNetMargin] = useState<string>("0");
-  const [notes, setNotes] = useState("");
-  const [selections, setSelections] = useState<SalarySelection[]>([newSel()]);
-  const [saving, setSaving] = useState(false);
+
+  // Modo inverso: defines salario → propongo volumen y meses de recuperación
+  const [mode, setMode] = useState<"forward" | "inverse">("forward");
+  const [inverseSalary, setInverseSalary] = useState<string>("");
+
+  // Histórico para sugerencias automáticas
+  const [historyByBrandCountry, setHistoryByBrandCountry] = useState<Record<string, number>>({});
 
   const [deals, setDeals] = useState<Deal[]>([]);
   const [analysis, setAnalysis] = useState<{
-    months: {
-      period: string;
-      ftd: number;
-      activeAccounts: number;
-      newAccounts: number;
-      cpaIncome: number;
-      revshareIncome: number;
-    }[];
+    months: { period: string; ftd: number; activeAccounts: number; newAccounts: number; cpaIncome: number; revshareIncome: number }[];
   } | null>(null);
 
   useEffect(() => {
     (async () => {
-      const { data } = await supabase
-        .from("affiliates")
-        .select("id, fixed_name, unique_id")
-        .order("fixed_name");
-      setAffiliates((data ?? []) as any);
+      const [a, c] = await Promise.all([
+        supabase.from("affiliates").select("id, fixed_name, unique_id").order("fixed_name"),
+        supabase.from("countries").select("id, name, code").order("name"),
+      ]);
+      setAffiliates((a.data ?? []) as any);
+      setCountries((c.data ?? []) as any);
     })();
   }, []);
 
   const loadDeals = async (affId: string) => {
-    const { data } = await supabase
-      .from("affiliate_salary_deals")
-      .select("*")
-      .eq("affiliate_id", affId)
+    const { data } = await supabase.from("affiliate_salary_deals").select("*").eq("affiliate_id", affId)
       .order("created_at", { ascending: false });
     setDeals((data ?? []) as any);
   };
@@ -118,18 +136,16 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   const loadAnalysis = async (affId: string) => {
     const { data: items } = await supabase
       .from("commission_closure_items")
-      .select("closure_id, qualified_players, active_accounts, new_accounts, cpa_amount, revshare_amount")
+      .select("closure_id, qualified_players, active_accounts, new_accounts, cpa_amount, revshare_amount, brand")
       .eq("affiliate_id", affId);
-    if (!items?.length) { setAnalysis({ months: [] }); return; }
+    if (!items?.length) { setAnalysis({ months: [] }); setHistoryByBrandCountry({}); return; }
     const closureIds = Array.from(new Set(items.map((i: any) => i.closure_id)));
-    const { data: closures } = await supabase
-      .from("commission_closures")
-      .select("id, period")
-      .in("id", closureIds);
+    const { data: closures } = await supabase.from("commission_closures").select("id, period").in("id", closureIds);
     const periodMap = new Map<string, string>();
     (closures ?? []).forEach((c: any) => periodMap.set(c.id, c.period));
 
     const acc = new Map<string, { ftd: number; activeAccounts: number; newAccounts: number; cpaIncome: number; revshareIncome: number }>();
+    const brandFtdByPeriod = new Map<string, Map<string, number>>(); // brand -> period -> ftd
     items.forEach((i: any) => {
       const p = periodMap.get(i.closure_id) || "?";
       const cur = acc.get(p) || { ftd: 0, activeAccounts: 0, newAccounts: 0, cpaIncome: 0, revshareIncome: 0 };
@@ -139,125 +155,178 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       cur.cpaIncome += Number(i.cpa_amount) || 0;
       cur.revshareIncome += Number(i.revshare_amount) || 0;
       acc.set(p, cur);
+      const b = i.brand || "—";
+      const m = brandFtdByPeriod.get(b) || new Map();
+      m.set(p, (m.get(p) || 0) + (i.qualified_players || 0));
+      brandFtdByPeriod.set(b, m);
     });
-    const months = Array.from(acc.entries())
-      .map(([period, v]) => ({ period, ...v }))
+    const months = Array.from(acc.entries()).map(([period, v]) => ({ period, ...v }))
       .sort((a, b) => a.period.localeCompare(b.period));
     setAnalysis({ months });
+
+    // promedio mensual FTDs por brand (últimos 6 meses)
+    const map: Record<string, number> = {};
+    brandFtdByPeriod.forEach((perPeriod, brand) => {
+      const vals = Array.from(perPeriod.values()).slice(-6);
+      if (vals.length) map[brand.toLowerCase()] = Math.round(vals.reduce((s, x) => s + x, 0) / vals.length);
+    });
+    setHistoryByBrandCountry(map);
   };
 
   useEffect(() => {
     if (affiliateId) { loadDeals(affiliateId); loadAnalysis(affiliateId); }
-    else { setDeals([]); setAnalysis(null); }
+    else { setDeals([]); setAnalysis(null); setHistoryByBrandCountry({}); }
   }, [affiliateId]);
-
-  const breakeven = useMemo(() => {
-    const sal = parseFloat(salary) || 0;
-    if (!sal) return { weightedCpa: 0, ftdNeeded: 0 };
-    const totalW = selections.reduce((s, x) => s + (Number(x.weight) || 0), 0);
-    if (totalW <= 0) return { weightedCpa: 0, ftdNeeded: 0 };
-    let weighted = 0;
-    selections.forEach((s) => {
-      const op = operators.find((o) => o.id === s.opId);
-      const plan = op?.client_commission_plans.find((p) => p.id === s.planId);
-      if (!plan) return;
-      const cpaNeto = Math.max(0, (plan.cpa ?? 0) - (plan.overoption_retention ?? 0));
-      weighted += cpaNeto * ((Number(s.weight) || 0) / totalW);
-    });
-    if (weighted <= 0) return { weightedCpa: 0, ftdNeeded: 0 };
-    return { weightedCpa: weighted, ftdNeeded: Math.ceil(sal / weighted) };
-  }, [salary, selections, operators]);
 
   const updateSel = (uid: string, patch: Partial<SalarySelection>) =>
     setSelections((p) => p.map((s) => (s.uid === uid ? { ...s, ...patch } : s)));
+  const removeSel = (uid: string) => setSelections((p) => p.filter((s) => s.uid !== uid));
+
+  const planOf = (s: SalarySelection) => {
+    const op = operators.find((o) => o.id === s.opId);
+    return { op, plan: op?.client_commission_plans.find((p) => p.id === s.planId) };
+  };
+
+  const cpaNetoOf = (plan?: PlanLite) =>
+    plan ? Math.max(0, (plan.cpa ?? 0) - (plan.overoption_retention ?? 0)) : 0;
+
+  // Sugerir volumen automático cuando se elige plan+país (basado en histórico de marca)
+  const suggestVolume = (s: SalarySelection): number => {
+    const { plan } = planOf(s);
+    if (!plan?.brand) return 0;
+    return historyByBrandCountry[plan.brand.toLowerCase()] || 0;
+  };
+
+  const applySuggestion = (uid: string) => {
+    setSelections((p) => p.map((s) => {
+      if (s.uid !== uid) return s;
+      const v = suggestVolume(s);
+      return v > 0 ? { ...s, targetFtd: v, autoSuggested: true } : s;
+    }));
+  };
+
+  // === FORWARD: dado mix → propone salario + bonus ===
+  const forward = useMemo(() => {
+    let totalExpectedNet = 0;
+    let totalFtd = 0;
+    const perRow = selections.map((s) => {
+      const { plan } = planOf(s);
+      const cpaNeto = cpaNetoOf(plan);
+      const ftd = Number(s.targetFtd) || 0;
+      const incomeNet = cpaNeto * ftd;
+      totalExpectedNet += incomeNet;
+      totalFtd += ftd;
+      return { s, plan, cpaNeto, ftd, incomeNet, bonusPerExtraFtd: cpaNeto * (bonusPct / 100) };
+    });
+    const proposedSalary = totalExpectedNet * (safetyPct / 100);
+    // Escenarios de riesgo
+    const scenarios = [100, 90, 80, 70, 60].map((pct) => {
+      const inc = totalExpectedNet * (pct / 100);
+      const margin = inc - proposedSalary;
+      return { pct, income: inc, margin, ok: margin >= 0 };
+    });
+    const distinctBrands = new Set(perRow.filter(r => r.plan?.brand).map(r => r.plan!.brand!.toLowerCase())).size;
+    const distinctCountries = new Set(selections.filter(s => s.countryId).map(s => s.countryId)).size;
+    return { perRow, totalExpectedNet, totalFtd, proposedSalary, scenarios, distinctBrands, distinctCountries };
+  }, [selections, operators, safetyPct, bonusPct]);
+
+  // === INVERSE: dado salario → propone FTDs/mes y meses para recuperar ===
+  const inverse = useMemo(() => {
+    const sal = parseFloat(inverseSalary) || 0;
+    const trial = parseInt(trialMonths) || 0;
+    if (!sal) return null;
+    const rowsWithCpa = selections.map((s) => {
+      const { plan } = planOf(s);
+      const cpaNeto = cpaNetoOf(plan);
+      const weight = Number(s.targetFtd) || 1; // si no hay objetivo, peso 1
+      return { s, plan, cpaNeto, weight };
+    }).filter(r => r.cpaNeto > 0);
+    if (!rowsWithCpa.length) return null;
+    const totalW = rowsWithCpa.reduce((a, r) => a + r.weight, 0);
+    const weightedCpa = rowsWithCpa.reduce((a, r) => a + r.cpaNeto * (r.weight / totalW), 0);
+    if (weightedCpa <= 0) return null;
+    // Para cubrir salario con margen de seguridad: salario debe ser safetyPct% del ingreso neto mensual
+    // ⇒ ingreso neto mensual requerido = salario / (safetyPct/100)
+    const requiredMonthlyNet = sal / (safetyPct / 100);
+    const totalFtdNeeded = Math.ceil(requiredMonthlyNet / weightedCpa);
+    const distribution = rowsWithCpa.map((r) => ({
+      ...r,
+      ftdMonthly: Math.ceil(totalFtdNeeded * (r.weight / totalW)),
+    }));
+    // Meses para recuperar lo invertido durante el periodo de prueba (salario × trial)
+    const monthlySurplus = requiredMonthlyNet - sal; // = sal × (1 - safety)/safety
+    const totalInvested = sal * Math.max(trial, 0);
+    const monthsToRecoup = monthlySurplus > 0 && totalInvested > 0
+      ? Math.ceil(totalInvested / monthlySurplus)
+      : 0;
+    return { weightedCpa, requiredMonthlyNet, totalFtdNeeded, distribution, monthsToRecoup, totalInvested, monthlySurplus };
+  }, [inverseSalary, selections, operators, safetyPct, trialMonths]);
 
   const handleSave = async () => {
     if (!user) return toast.error("Inicia sesión");
     if (!affiliateId) return toast.error("Selecciona un afiliado");
     if (!name.trim()) return toast.error("Nombra el deal");
-    if (!parseFloat(salary)) return toast.error("Indica la remuneración fija");
+    const finalSalary = mode === "inverse" ? (parseFloat(inverseSalary) || 0) : forward.proposedSalary;
+    if (!finalSalary) return toast.error("No hay salario calculado");
     setSaving(true);
     const { error } = await supabase.from("affiliate_salary_deals").insert({
       affiliate_id: affiliateId,
       name: name.trim(),
-      salary_amount: parseFloat(salary) || 0,
+      salary_amount: Math.round(finalSalary),
       salary_currency: salaryCurrency,
-      cpa_bonus_amount: parseFloat(bonusAmount) || 0,
-      cpa_bonus_threshold: parseInt(bonusThreshold) || 0,
+      cpa_bonus_amount: bonusPct, // guardamos el % aplicado
+      cpa_bonus_threshold: forward.totalFtd,
       selections: selections as any,
-      breakeven_ftd_monthly: breakeven.ftdNeeded,
+      breakeven_ftd_monthly: mode === "inverse" ? (inverse?.totalFtdNeeded ?? 0) : forward.totalFtd,
       trigger_min_ftd_monthly: trgMinFtd ? parseInt(trgMinFtd) : null,
       trigger_breakeven_pct: trgBreakevenPct ? parseFloat(trgBreakevenPct) : null,
       trigger_min_activity_ratio: trgActivityRatio ? parseFloat(trgActivityRatio) : null,
       trigger_min_conversion_pct: trgConversionPct ? parseFloat(trgConversionPct) : null,
       trigger_min_net_margin: trgNetMargin !== "" ? parseFloat(trgNetMargin) : null,
       trial_months: parseInt(trialMonths) || 0,
-      notes: notes || null,
+      notes: [
+        notes,
+        `Margen seguridad: ${safetyPct}% | Bonus por CPA extra: ${bonusPct}% del CPA neto`,
+        mode === "inverse" && inverse ? `Inverso: ${inverse.totalFtdNeeded} FTDs/mes · recuperación en ${inverse.monthsToRecoup}m` : "",
+      ].filter(Boolean).join(" | "),
       created_by: user.id,
     } as any);
     setSaving(false);
     if (error) return toast.error("No se pudo guardar el deal");
-    toast.success("Deal fijo guardado y atribuido al afiliado");
+    toast.success("Deal fijo guardado");
     loadDeals(affiliateId);
   };
 
   const evaluateDeal = (d: Deal) => {
     if (!analysis) return null;
-    const months = analysis.months;
-    const lastMonths = months.slice(-6);
+    const lastMonths = analysis.months.slice(-6);
     const n = lastMonths.length;
     const sum = lastMonths.reduce(
       (s, m) => ({
-        ftd: s.ftd + m.ftd,
-        activeAccounts: s.activeAccounts + m.activeAccounts,
+        ftd: s.ftd + m.ftd, activeAccounts: s.activeAccounts + m.activeAccounts,
         newAccounts: s.newAccounts + m.newAccounts,
-        cpaIncome: s.cpaIncome + m.cpaIncome,
-        revshareIncome: s.revshareIncome + m.revshareIncome,
-      }),
-      { ftd: 0, activeAccounts: 0, newAccounts: 0, cpaIncome: 0, revshareIncome: 0 }
+        cpaIncome: s.cpaIncome + m.cpaIncome, revshareIncome: s.revshareIncome + m.revshareIncome,
+      }), { ftd: 0, activeAccounts: 0, newAccounts: 0, cpaIncome: 0, revshareIncome: 0 }
     );
     const avgFtd = n ? sum.ftd / n : 0;
     const avgIncome = n ? (sum.cpaIncome + sum.revshareIncome) / n : 0;
     const avgNetMargin = avgIncome - (d.salary_amount || 0);
     const activityRatio = sum.ftd > 0 ? (sum.activeAccounts / sum.ftd) * 100 : 0;
     const conversionPct = sum.newAccounts > 0 ? (sum.ftd / sum.newAccounts) * 100 : 0;
-    const breakevenFtd = d.breakeven_ftd_monthly || 0;
-    const pctBreakeven = breakevenFtd > 0 ? (avgFtd / breakevenFtd) * 100 : 0;
-
+    const beFtd = d.breakeven_ftd_monthly || 0;
+    const pctBe = beFtd > 0 ? (avgFtd / beFtd) * 100 : 0;
     const alerts: { level: "ok" | "warn" | "danger"; label: string }[] = [];
-    if (d.trigger_min_ftd_monthly != null) {
-      const ok = avgFtd >= d.trigger_min_ftd_monthly;
-      alerts.push({ level: ok ? "ok" : "danger", label: `FTD mín mensual: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}` });
-    }
-    if (d.trigger_breakeven_pct != null && breakevenFtd > 0) {
-      const ok = pctBreakeven >= d.trigger_breakeven_pct;
-      alerts.push({
-        level: ok ? "ok" : pctBreakeven >= d.trigger_breakeven_pct * 0.8 ? "warn" : "danger",
-        label: `Breakeven: ${pctBreakeven.toFixed(0)}% / ${d.trigger_breakeven_pct}%`,
-      });
-    }
-    if (d.trigger_min_activity_ratio != null) {
-      const ok = activityRatio >= d.trigger_min_activity_ratio;
-      alerts.push({
-        level: ok ? "ok" : activityRatio >= d.trigger_min_activity_ratio * 0.8 ? "warn" : "danger",
-        label: `Ratio actividad: ${activityRatio.toFixed(0)}% / ${d.trigger_min_activity_ratio}%`,
-      });
-    }
-    if (d.trigger_min_conversion_pct != null) {
-      const ok = conversionPct >= d.trigger_min_conversion_pct;
-      alerts.push({
-        level: ok ? "ok" : "warn",
-        label: `Conversión visitas→FTD: ${conversionPct.toFixed(1)}% / ${d.trigger_min_conversion_pct}%`,
-      });
-    }
-    if (d.trigger_min_net_margin != null) {
-      const ok = avgNetMargin >= d.trigger_min_net_margin;
-      alerts.push({
-        level: ok ? "ok" : avgNetMargin >= 0 ? "warn" : "danger",
-        label: `Margen neto/mes: ${fmt(avgNetMargin, d.salary_currency)} / ${fmt(d.trigger_min_net_margin, d.salary_currency)}`,
-      });
-    }
-    return { avgFtd, avgIncome, avgNetMargin, activityRatio, conversionPct, pctBreakeven, alerts, monthsAnalyzed: n };
+    if (d.trigger_min_ftd_monthly != null)
+      alerts.push({ level: avgFtd >= d.trigger_min_ftd_monthly ? "ok" : "danger", label: `FTD mín: ${avgFtd.toFixed(0)} / ${d.trigger_min_ftd_monthly}` });
+    if (d.trigger_breakeven_pct != null && beFtd > 0)
+      alerts.push({ level: pctBe >= d.trigger_breakeven_pct ? "ok" : pctBe >= d.trigger_breakeven_pct * 0.8 ? "warn" : "danger", label: `Breakeven: ${pctBe.toFixed(0)}% / ${d.trigger_breakeven_pct}%` });
+    if (d.trigger_min_activity_ratio != null)
+      alerts.push({ level: activityRatio >= d.trigger_min_activity_ratio ? "ok" : activityRatio >= d.trigger_min_activity_ratio * 0.8 ? "warn" : "danger", label: `Actividad: ${activityRatio.toFixed(0)}% / ${d.trigger_min_activity_ratio}%` });
+    if (d.trigger_min_conversion_pct != null)
+      alerts.push({ level: conversionPct >= d.trigger_min_conversion_pct ? "ok" : "warn", label: `Conversión: ${conversionPct.toFixed(1)}% / ${d.trigger_min_conversion_pct}%` });
+    if (d.trigger_min_net_margin != null)
+      alerts.push({ level: avgNetMargin >= d.trigger_min_net_margin ? "ok" : avgNetMargin >= 0 ? "warn" : "danger", label: `Margen/mes: ${fmt(avgNetMargin, d.salary_currency)} / ${fmt(d.trigger_min_net_margin, d.salary_currency)}` });
+    return { avgFtd, avgIncome, avgNetMargin, activityRatio, conversionPct, pctBreakeven: pctBe, alerts, monthsAnalyzed: n };
   };
 
   return (
@@ -265,36 +334,28 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
       <Card>
         <CardHeader>
           <CardTitle className="text-lg flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" /> Oferta fijo + CPA
+            <TrendingUp className="h-5 w-5" /> Oferta fijo + CPA · Calculadora inteligente
           </CardTitle>
           <p className="text-xs text-muted-foreground">
-            El afiliado siente seguridad de una remuneración fija mensual. Vigilamos la salud con métricas reales que llegan
-            por API (FTDs cualificados, cuentas activas, conversión y comisión cobrada al operador).
+            Combina varias marcas y mercados para minimizar el riesgo. La calculadora propone el salario óptimo
+            y el bonus por CPA según el margen de seguridad que elijas.
           </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <CardContent className="space-y-5">
+          {/* Datos del deal */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="space-y-1">
               <Label>Afiliado</Label>
               <Select value={affiliateId} onValueChange={setAffiliateId}>
                 <SelectTrigger><SelectValue placeholder="Selecciona afiliado" /></SelectTrigger>
                 <SelectContent>
-                  {affiliates.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>{a.fixed_name} · {a.unique_id}</SelectItem>
-                  ))}
+                  {affiliates.map((a) => <SelectItem key={a.id} value={a.id}>{a.fixed_name} · {a.unique_id}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
             <div className="space-y-1">
               <Label>Nombre del deal</Label>
               <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Ej. Fijo Q1 2026" />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            <div className="space-y-1">
-              <Label>Remuneración fija mensual</Label>
-              <Input type="number" min="0" value={salary} onChange={(e) => setSalary(e.target.value)} />
             </div>
             <div className="space-y-1">
               <Label>Moneda</Label>
@@ -305,83 +366,281 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                 </SelectContent>
               </Select>
             </div>
-            <div className="space-y-1">
-              <Label>Meses de prueba</Label>
-              <Input type="number" min="0" value={trialMonths} onChange={(e) => setTrialMonths(e.target.value)} />
+          </div>
+
+          {/* Sliders */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 rounded-lg border bg-muted/30 p-3">
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs flex items-center gap-1"><ShieldAlert className="h-3 w-3" /> Margen de seguridad</Label>
+                <Badge variant="secondary">{safetyPct}%</Badge>
+              </div>
+              <Slider value={[safetyPct]} onValueChange={(v) => setSafetyPct(v[0])} min={40} max={95} step={5} />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                % del CPA neto esperado que pagamos como salario. Más bajo = más seguro para Overoption.
+              </p>
+            </div>
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label className="text-xs flex items-center gap-1"><Sparkles className="h-3 w-3" /> Bonus por CPA extra</Label>
+                <Badge variant="secondary">{bonusPct}%</Badge>
+              </div>
+              <Slider value={[bonusPct]} onValueChange={(v) => setBonusPct(v[0])} min={30} max={95} step={5} />
+              <p className="text-[10px] text-muted-foreground mt-1">
+                % del CPA neto del operador que recibe el afiliado por cada FTD por encima del objetivo.
+              </p>
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="space-y-1">
-              <Label>Bono por CPA adicional</Label>
-              <Input type="number" min="0" value={bonusAmount} onChange={(e) => setBonusAmount(e.target.value)}
-                placeholder="Pago por cada FTD sobre el umbral" />
-            </div>
-            <div className="space-y-1">
-              <Label>Umbral de FTDs cubierto por remuneración fija</Label>
-              <Input type="number" min="0" value={bonusThreshold} onChange={(e) => setBonusThreshold(e.target.value)}
-                placeholder={breakeven.ftdNeeded ? `Sugerido: ${breakeven.ftdNeeded}` : ""} />
-            </div>
-          </div>
-
+          {/* Mix de operadores / marcas / países */}
           <div className="space-y-2">
-            <Label>Mix esperado de operadores (para calcular breakeven)</Label>
-            {selections.map((s) => {
-              const op = operators.find((o) => o.id === s.opId);
-              return (
-                <div key={s.uid} className="grid grid-cols-12 gap-2 items-end">
-                  <div className="col-span-5">
-                    <Select value={s.opId} onValueChange={(v) => updateSel(s.uid, { opId: v, planId: "" })}>
-                      <SelectTrigger><SelectValue placeholder="Operador" /></SelectTrigger>
-                      <SelectContent>
-                        {operators.map((o) => <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>)}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-5">
-                    <Select value={s.planId} onValueChange={(v) => updateSel(s.uid, { planId: v })} disabled={!op}>
-                      <SelectTrigger><SelectValue placeholder="Plan" /></SelectTrigger>
-                      <SelectContent>
-                        {(op?.client_commission_plans ?? []).map((p) => (
-                          <SelectItem key={p.id} value={p.id}>{p.brand ? `${p.brand} · ` : ""}{p.description || "—"}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="col-span-2">
-                    <Input type="number" min="0" max="100" value={s.weight}
-                      onChange={(e) => updateSel(s.uid, { weight: parseFloat(e.target.value) || 0 })} placeholder="%" />
+            <div className="flex items-center justify-between">
+              <Label className="flex items-center gap-2"><Target className="h-4 w-4" /> Mix de marcas y mercados</Label>
+              <Button variant="outline" size="sm" onClick={() => setSelections((p) => [...p, newSel()])}>
+                <Plus className="h-3 w-3 mr-1" /> Añadir línea
+              </Button>
+            </div>
+            <div className="rounded-lg border overflow-x-auto">
+              <table className="w-full text-xs">
+                <thead className="bg-muted/50">
+                  <tr className="text-left">
+                    <th className="p-2">Operador</th>
+                    <th className="p-2">Marca / Plan</th>
+                    <th className="p-2">País</th>
+                    <th className="p-2 text-right">CPA neto</th>
+                    <th className="p-2 text-right w-32">FTDs/mes objetivo</th>
+                    <th className="p-2 text-right">Ingreso neto</th>
+                    <th className="p-2"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selections.map((s) => {
+                    const { op, plan } = planOf(s);
+                    const cpaNeto = cpaNetoOf(plan);
+                    const planCountries = plan?.country_ids?.length
+                      ? countries.filter(c => plan.country_ids!.includes(c.id))
+                      : countries;
+                    const suggested = suggestVolume(s);
+                    const income = cpaNeto * (Number(s.targetFtd) || 0);
+                    return (
+                      <tr key={s.uid} className="border-t">
+                        <td className="p-2 min-w-[160px]">
+                          <Select value={s.opId} onValueChange={(v) => updateSel(s.uid, { opId: v, planId: "", countryId: "" })}>
+                            <SelectTrigger className="h-8"><SelectValue placeholder="Operador" /></SelectTrigger>
+                            <SelectContent>
+                              {operators.map((o) => <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-2 min-w-[180px]">
+                          <Select value={s.planId} onValueChange={(v) => updateSel(s.uid, { planId: v, countryId: "" })} disabled={!op}>
+                            <SelectTrigger className="h-8"><SelectValue placeholder="Plan" /></SelectTrigger>
+                            <SelectContent>
+                              {(op?.client_commission_plans ?? []).map((p) => (
+                                <SelectItem key={p.id} value={p.id}>{p.brand ? `${p.brand} · ` : ""}{p.description || "—"}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-2 min-w-[140px]">
+                          <Select value={s.countryId} onValueChange={(v) => updateSel(s.uid, { countryId: v })} disabled={!plan}>
+                            <SelectTrigger className="h-8"><SelectValue placeholder="País" /></SelectTrigger>
+                            <SelectContent>
+                              {planCountries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
+                            </SelectContent>
+                          </Select>
+                        </td>
+                        <td className="p-2 text-right font-mono">{fmt(cpaNeto, plan?.currency || salaryCurrency)}</td>
+                        <td className="p-2">
+                          <div className="flex items-center gap-1">
+                            <Input
+                              type="number" min={0}
+                              className="h-8 text-right"
+                              value={s.targetFtd || ""}
+                              onChange={(e) => updateSel(s.uid, { targetFtd: parseInt(e.target.value) || 0, autoSuggested: false })}
+                            />
+                            {suggested > 0 && (
+                              <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0"
+                                title={`Sugerido por histórico: ${suggested}/mes`}
+                                onClick={() => applySuggestion(s.uid)}>
+                                <Wand2 className="h-3 w-3" />
+                              </Button>
+                            )}
+                          </div>
+                          {suggested > 0 && (
+                            <div className="text-[10px] text-muted-foreground text-right">hist: {suggested}/m</div>
+                          )}
+                        </td>
+                        <td className="p-2 text-right font-mono">{fmt(income, plan?.currency || salaryCurrency)}</td>
+                        <td className="p-2">
+                          <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeSel(s.uid)}>
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+            <div className="flex flex-wrap gap-2 text-xs">
+              <Badge variant={forward.distinctBrands >= 2 ? "default" : "secondary"}>
+                {forward.distinctBrands} marca{forward.distinctBrands !== 1 ? "s" : ""}
+              </Badge>
+              <Badge variant={forward.distinctCountries >= 2 ? "default" : "secondary"}>
+                {forward.distinctCountries} mercado{forward.distinctCountries !== 1 ? "s" : ""}
+              </Badge>
+              {forward.distinctBrands < 2 && (
+                <Badge variant="destructive" className="gap-1"><AlertTriangle className="h-3 w-3" />Diversifica con +1 marca</Badge>
+              )}
+            </div>
+          </div>
+
+          {/* Modo */}
+          <Tabs value={mode} onValueChange={(v) => setMode(v as any)}>
+            <TabsList className="grid grid-cols-2">
+              <TabsTrigger value="forward"><Calculator className="h-3 w-3 mr-1" /> Calcular salario propuesto</TabsTrigger>
+              <TabsTrigger value="inverse"><Clock className="h-3 w-3 mr-1" /> Modo inverso (defino salario)</TabsTrigger>
+            </TabsList>
+
+            {/* FORWARD */}
+            <TabsContent value="forward" className="space-y-3 pt-3">
+              <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground">Ingreso neto esperado/mes</div>
+                  <div className="font-bold text-lg">{fmt(forward.totalExpectedNet, salaryCurrency)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground">FTDs objetivo total/mes</div>
+                  <div className="font-bold text-lg">{forward.totalFtd}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground">Salario propuesto</div>
+                  <div className="font-bold text-xl text-primary">{fmt(forward.proposedSalary, salaryCurrency)}</div>
+                </div>
+                <div>
+                  <div className="text-[10px] uppercase text-muted-foreground">Margen Overoption esperado</div>
+                  <div className="font-bold text-lg">{fmt(forward.totalExpectedNet - forward.proposedSalary, salaryCurrency)}</div>
+                </div>
+              </div>
+
+              {/* Escenarios de riesgo */}
+              <div>
+                <Label className="text-xs">Análisis de riesgo (entrega real vs objetivo)</Label>
+                <div className="grid grid-cols-5 gap-2 mt-1">
+                  {forward.scenarios.map((sc) => (
+                    <div key={sc.pct} className={`rounded border p-2 text-center text-xs ${
+                      sc.ok ? "bg-emerald-500/10 border-emerald-500/30" : "bg-destructive/10 border-destructive/30"
+                    }`}>
+                      <div className="text-[10px] uppercase text-muted-foreground">{sc.pct}% entrega</div>
+                      <div className={`font-bold ${sc.ok ? "" : "text-destructive"}`}>{fmt(sc.margin, salaryCurrency)}</div>
+                      <div className="text-[10px]">{sc.ok ? "ganancia" : "pérdida"}</div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bonus por operador */}
+              {forward.perRow.some(r => r.plan) && (
+                <div className="rounded-lg border p-3 space-y-1">
+                  <Label className="text-xs flex items-center gap-1"><Sparkles className="h-3 w-3" /> Bonus por FTD por encima del objetivo</Label>
+                  <div className="space-y-1">
+                    {forward.perRow.filter(r => r.plan).map((r) => (
+                      <div key={r.s.uid} className="flex justify-between text-xs">
+                        <span>{r.plan!.brand || r.plan!.description} ({r.ftd} FTDs objetivo)</span>
+                        <span className="font-mono font-semibold">{fmt(r.bonusPerExtraFtd, r.plan!.currency || salaryCurrency)}/FTD extra</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
-              );
-            })}
-            <Button variant="outline" size="sm" onClick={() => setSelections((p) => [...p, newSel()])}>
-              + Añadir operador al mix
-            </Button>
-          </div>
+              )}
+            </TabsContent>
 
-          {breakeven.ftdNeeded > 0 && (
-            <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-3 grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <div className="text-xs uppercase text-muted-foreground">CPA neto medio</div>
-                <div className="font-bold text-lg">{fmt(breakeven.weightedCpa, salaryCurrency)}</div>
+            {/* INVERSE */}
+            <TabsContent value="inverse" className="space-y-3 pt-3">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label>Salario fijo deseado / mes</Label>
+                  <Input type="number" min="0" value={inverseSalary} onChange={(e) => setInverseSalary(e.target.value)}
+                    placeholder="Ej. 5000" />
+                </div>
+                <div className="space-y-1">
+                  <Label>Meses de prueba (inversión a recuperar)</Label>
+                  <Input type="number" min="0" value={trialMonths} onChange={(e) => setTrialMonths(e.target.value)} />
+                </div>
               </div>
-              <div>
-                <div className="text-xs uppercase text-muted-foreground">Breakeven FTDs/mes</div>
-                <div className="font-bold text-lg">{breakeven.ftdNeeded}</div>
-              </div>
-            </div>
-          )}
 
+              {!inverse && (
+                <p className="text-xs text-muted-foreground">
+                  Define el salario y al menos un operador/plan en el mix para ver la propuesta.
+                </p>
+              )}
+
+              {inverse && (
+                <>
+                  <div className="rounded-lg border-2 border-primary/40 bg-primary/5 p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                      <div className="text-[10px] uppercase text-muted-foreground">CPA neto medio ponderado</div>
+                      <div className="font-bold text-lg">{fmt(inverse.weightedCpa, salaryCurrency)}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase text-muted-foreground">Ingreso neto requerido/mes</div>
+                      <div className="font-bold text-lg">{fmt(inverse.requiredMonthlyNet, salaryCurrency)}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase text-muted-foreground">FTDs totales / mes</div>
+                      <div className="font-bold text-xl text-primary">{inverse.totalFtdNeeded}</div>
+                    </div>
+                    <div>
+                      <div className="text-[10px] uppercase text-muted-foreground">Recuperación inversión</div>
+                      <div className="font-bold text-lg">{inverse.monthsToRecoup} mes{inverse.monthsToRecoup !== 1 ? "es" : ""}</div>
+                      <div className="text-[10px] text-muted-foreground">tras período de prueba</div>
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border p-3">
+                    <Label className="text-xs">Distribución sugerida por marca/mercado</Label>
+                    <div className="mt-2 space-y-1">
+                      {inverse.distribution.map((r) => {
+                        const country = countries.find(c => c.id === r.s.countryId);
+                        return (
+                          <div key={r.s.uid} className="flex justify-between text-xs items-center">
+                            <span>
+                              {r.plan?.brand || r.plan?.description}
+                              {country ? ` · ${country.name}` : ""}
+                              <span className="text-muted-foreground ml-1">(CPA neto {fmt(r.cpaNeto, r.plan?.currency || salaryCurrency)})</span>
+                            </span>
+                            <Badge variant="secondary" className="font-mono">{r.ftdMonthly} FTDs/mes</Badge>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  <div className="rounded-lg border bg-muted/30 p-3 text-xs space-y-1">
+                    <div className="flex justify-between"><span>Inversión total durante prueba ({trialMonths || 0}m):</span>
+                      <span className="font-mono font-semibold">{fmt(inverse.totalInvested, salaryCurrency)}</span></div>
+                    <div className="flex justify-between"><span>Margen mensual una vez en régimen:</span>
+                      <span className="font-mono font-semibold text-emerald-600">{fmt(inverse.monthlySurplus, salaryCurrency)}</span></div>
+                    <div className="flex justify-between border-t pt-1 mt-1"><span>Tiempo total online para recuperar 100%:</span>
+                      <span className="font-mono font-bold">{(parseInt(trialMonths) || 0) + inverse.monthsToRecoup} meses</span></div>
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          </Tabs>
+
+          {/* Triggers de seguridad */}
           <div className="space-y-2 border-t pt-3">
             <div className="flex items-center gap-2">
               <ShieldAlert className="h-4 w-4 text-amber-600" />
-              <span className="font-semibold text-sm">Triggers de seguridad (datos reales de API Reports)</span>
+              <span className="font-semibold text-sm">Triggers de seguridad post-firma</span>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               <div className="space-y-1">
                 <Label className="text-xs">FTDs mínimos / mes</Label>
-                <Input type="number" min="0" value={trgMinFtd} onChange={(e) => setTrgMinFtd(e.target.value)} />
+                <Input type="number" min="0" value={trgMinFtd} onChange={(e) => setTrgMinFtd(e.target.value)}
+                  placeholder={mode === "inverse" && inverse ? `Sugerido: ${Math.round(inverse.totalFtdNeeded * 0.8)}` : forward.totalFtd ? `Sugerido: ${Math.round(forward.totalFtd * 0.8)}` : ""} />
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">% mín. vs breakeven</Label>
@@ -397,11 +656,10 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
               </div>
               <div className="space-y-1">
                 <Label className="text-xs">Margen neto mín. / mes</Label>
-                <Input type="number" value={trgNetMargin} onChange={(e) => setTrgNetMargin(e.target.value)}
-                  placeholder="(CPA + RS cobrados) − remuneración fija" />
+                <Input type="number" value={trgNetMargin} onChange={(e) => setTrgNetMargin(e.target.value)} />
               </div>
             </div>
-            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas / cláusulas extra de la negociación" />
+            <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Notas / cláusulas extra" />
           </div>
 
           <Button onClick={handleSave} disabled={saving || !affiliateId} className="w-full">
@@ -416,9 +674,6 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
             <CardTitle className="text-lg flex items-center gap-2">
               <Activity className="h-5 w-5" /> Análisis de salud de los deals
             </CardTitle>
-            <p className="text-xs text-muted-foreground">
-              Cruzamos los cierres reales (FTDs cualificados, cuentas activas/nuevas y comisión cobrada al operador) con los triggers definidos.
-            </p>
           </CardHeader>
           <CardContent className="space-y-4">
             {deals.map((d) => {
@@ -441,36 +696,17 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                       {overall === "ok" ? "Saludable" : overall === "warn" ? "Atención" : "Riesgo"}
                     </Badge>
                   </div>
-
                   {ev && ev.monthsAnalyzed === 0 && (
-                    <p className="text-xs text-muted-foreground">Sin cierres de comisión todavía para este afiliado.</p>
+                    <p className="text-xs text-muted-foreground">Sin cierres de comisión todavía.</p>
                   )}
-
                   {ev && ev.monthsAnalyzed > 0 && (
                     <>
                       <div className="grid grid-cols-2 md:grid-cols-5 gap-2 text-center text-sm">
-                        <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">FTD/mes</div>
-                          <div className="font-bold">{ev.avgFtd.toFixed(0)}</div>
-                        </div>
-                        <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">% breakeven</div>
-                          <div className="font-bold">{ev.pctBreakeven.toFixed(0)}%</div>
-                        </div>
-                        <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">Actividad</div>
-                          <div className="font-bold">{ev.activityRatio.toFixed(0)}%</div>
-                        </div>
-                        <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">Conversión</div>
-                          <div className="font-bold">{ev.conversionPct.toFixed(1)}%</div>
-                        </div>
-                        <div className="rounded border p-2 bg-muted/40">
-                          <div className="text-[10px] uppercase text-muted-foreground">Margen/mes</div>
-                          <div className={`font-bold ${ev.avgNetMargin < 0 ? "text-destructive" : ""}`}>
-                            {fmt(ev.avgNetMargin, d.salary_currency)}
-                          </div>
-                        </div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">FTD/mes</div><div className="font-bold">{ev.avgFtd.toFixed(0)}</div></div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">% breakeven</div><div className="font-bold">{ev.pctBreakeven.toFixed(0)}%</div></div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">Actividad</div><div className="font-bold">{ev.activityRatio.toFixed(0)}%</div></div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">Conversión</div><div className="font-bold">{ev.conversionPct.toFixed(1)}%</div></div>
+                        <div className="rounded border p-2 bg-muted/40"><div className="text-[10px] uppercase text-muted-foreground">Margen/mes</div><div className={`font-bold ${ev.avgNetMargin < 0 ? "text-destructive" : ""}`}>{fmt(ev.avgNetMargin, d.salary_currency)}</div></div>
                       </div>
                       <div className="space-y-1">
                         {ev.alerts.map((a, i) => (

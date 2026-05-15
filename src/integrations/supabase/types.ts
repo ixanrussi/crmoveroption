@@ -357,6 +357,54 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_tracking_links: {
+        Row: {
+          affiliate_id: string
+          brand: string | null
+          client_id: string
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          operator_campaign_id: string | null
+          source: string
+          source_request_id: string | null
+          tracking_link: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          brand?: string | null
+          client_id: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          operator_campaign_id?: string | null
+          source?: string
+          source_request_id?: string | null
+          tracking_link: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          brand?: string | null
+          client_id?: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          operator_campaign_id?: string | null
+          source?: string
+          source_request_id?: string | null
+          tracking_link?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliates: {
         Row: {
           alias: string | null

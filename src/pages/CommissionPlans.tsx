@@ -229,7 +229,7 @@ export default function CommissionPlans() {
               onInteractOutside={(e) => e.preventDefault()}
             >
               <DialogHeader>
-                <DialogTitle>{editing ? "Editar plan" : "Nuevo plan"}</DialogTitle>
+                <DialogTitle>{editing ? "Comisión Afiliado" : "Comisión Afiliado"}</DialogTitle>
               </DialogHeader>
               <div className="grid grid-cols-2 gap-3">
                 <div className="col-span-2 space-y-1">

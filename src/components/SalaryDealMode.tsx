@@ -128,7 +128,7 @@ export default function SalaryDealMode({ operators }: { operators: Operator[] })
           </Button>
         </CardHeader>
         <CardContent className="space-y-3">
-          {computed.map(({ r, op, plan, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
+          {computed.map(({ r, op, plan, cpaBruto, retencion, cpaNeto, cpaAff, pct, ftd, ingreso, pagoVar }) => {
             const margenFila = ingreso - pagoVar;
             return (
               <div key={r.uid} className="grid grid-cols-12 gap-2 items-end border rounded-lg p-3 bg-muted/20">

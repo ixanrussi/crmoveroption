@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
 
 type Plan = {
   id: string;

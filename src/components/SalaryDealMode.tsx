@@ -32,6 +32,9 @@ type PlanLite = {
 type OperatorLite = {
   id: string;
   company_name: string;
+  brands?: string[] | null;
+  login?: string | null;
+  country_ids?: string[] | null;
   client_commission_plans: PlanLite[];
 };
 
@@ -185,6 +188,54 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
   const planOf = (s: SalarySelection) => {
     const op = operators.find((o) => o.id === s.opId);
     return { op, plan: op?.client_commission_plans.find((p) => p.id === s.planId) };
+  };
+
+  // Expansión WW / LATAM (igual que CalculadoraFijos)
+  const wwId = useMemo(
+    () => countries.find((c) => c.code === "WW" || c.name.toLowerCase().includes("world"))?.id,
+    [countries],
+  );
+  const latamId = useMemo(
+    () => countries.find((c) => c.name.toLowerCase() === "latam")?.id,
+    [countries],
+  );
+  const latamCountryIds = useMemo(
+    () => countries.filter((c) => c.id !== wwId && c.id !== latamId && c.name.toLowerCase() !== "españa").map((c) => c.id),
+    [countries, wwId, latamId],
+  );
+  const expandCountryIds = (ids?: string[] | null): string[] => {
+    const arr = ids ?? [];
+    if (!arr.length) return [];
+    if (wwId && arr.includes(wwId)) return countries.map((c) => c.id);
+    const set = new Set<string>(arr);
+    if (latamId && arr.includes(latamId)) latamCountryIds.forEach((id) => set.add(id));
+    return Array.from(set);
+  };
+
+  // Países disponibles para una selección: usa los del plan; si está vacío, hereda los del operador
+  const availableCountriesFor = (s: SalarySelection): Country[] => {
+    const { op, plan } = planOf(s);
+    const planExpanded = expandCountryIds(plan?.country_ids);
+    const opExpanded = expandCountryIds(op?.country_ids);
+    const ids = planExpanded.length ? planExpanded : opExpanded;
+    if (!ids.length) return [];
+    return countries.filter((c) => ids.includes(c.id));
+  };
+
+  // Etiqueta legible para un plan
+  const planLabel = (p: PlanLite): string => {
+    const brand = p.brand?.trim();
+    const desc = p.description?.trim();
+    if (brand && desc && brand.toLowerCase() !== desc.toLowerCase()) return `${brand} · ${desc}`;
+    return brand || desc || "Plan sin nombre";
+  };
+
+  // Etiqueta legible para un operador (diferencia duplicados por marca/login)
+  const operatorLabel = (o: OperatorLite): string => {
+    const brands = (o.brands ?? []).filter(Boolean);
+    if (brands.length) return `${o.company_name} · ${brands.join(", ")}`;
+    if (o.login) return `${o.company_name} (${o.login})`;
+    return o.company_name;
   };
 
   const cpaNetoOf = (plan?: PlanLite) =>
@@ -418,34 +469,52 @@ export default function SalaryDealMode({ operators }: { operators: OperatorLite[
                   {selections.map((s) => {
                     const { op, plan } = planOf(s);
                     const cpaNeto = cpaNetoOf(plan);
-                    const planCountries = plan?.country_ids?.length
-                      ? countries.filter(c => plan.country_ids!.includes(c.id))
-                      : [];
+                    const planCountries = availableCountriesFor(s);
                     const suggested = suggestVolume(s);
                     const income = cpaNeto * (Number(s.targetFtd) || 0);
                     return (
                       <tr key={s.uid} className="border-t">
-                        <td className="p-2 min-w-[160px]">
+                        <td className="p-2 min-w-[180px]">
                           <Select value={s.opId} onValueChange={(v) => updateSel(s.uid, { opId: v, planId: "", countryId: "" })}>
                             <SelectTrigger className="h-8"><SelectValue placeholder="Operador" /></SelectTrigger>
                             <SelectContent>
-                              {operators.map((o) => <SelectItem key={o.id} value={o.id}>{o.company_name}</SelectItem>)}
+                              {operators.map((o) => (
+                                <SelectItem key={o.id} value={o.id}>
+                                  <span className="font-medium">{o.company_name}</span>
+                                  {(o.brands?.length || o.login) && (
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      · {o.brands?.length ? o.brands.join(", ") : o.login}
+                                    </span>
+                                  )}
+                                </SelectItem>
+                              ))}
                             </SelectContent>
                           </Select>
                         </td>
-                        <td className="p-2 min-w-[180px]">
+                        <td className="p-2 min-w-[200px]">
                           <Select value={s.planId} onValueChange={(v) => updateSel(s.uid, { planId: v, countryId: "" })} disabled={!op}>
                             <SelectTrigger className="h-8"><SelectValue placeholder="Plan" /></SelectTrigger>
                             <SelectContent>
-                              {(op?.client_commission_plans ?? []).map((p) => (
-                                <SelectItem key={p.id} value={p.id}>{p.brand ? `${p.brand} · ` : ""}{p.description || "—"}</SelectItem>
-                              ))}
+                              {(op?.client_commission_plans ?? []).map((p) => {
+                                const ids = expandCountryIds(p.country_ids?.length ? p.country_ids : op?.country_ids);
+                                const cNames = countries.filter(c => ids.includes(c.id)).map(c => c.code || c.name).slice(0, 4).join(", ");
+                                return (
+                                  <SelectItem key={p.id} value={p.id}>
+                                    <span className="font-medium">{planLabel(p)}</span>
+                                    <span className="ml-2 text-xs text-muted-foreground">
+                                      · CPA {p.cpa ?? "—"}{p.currency ? ` ${p.currency}` : ""}{cNames ? ` · ${cNames}` : ""}
+                                    </span>
+                                  </SelectItem>
+                                );
+                              })}
                             </SelectContent>
                           </Select>
                         </td>
                         <td className="p-2 min-w-[140px]">
                           <Select value={s.countryId} onValueChange={(v) => updateSel(s.uid, { countryId: v })} disabled={!plan}>
-                            <SelectTrigger className="h-8"><SelectValue placeholder="País" /></SelectTrigger>
+                            <SelectTrigger className="h-8">
+                              <SelectValue placeholder={plan && planCountries.length === 0 ? "Sin países" : "País"} />
+                            </SelectTrigger>
                             <SelectContent>
                               {planCountries.map((c) => <SelectItem key={c.id} value={c.id}>{c.name}</SelectItem>)}
                             </SelectContent>

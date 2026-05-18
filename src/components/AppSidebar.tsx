@@ -29,6 +29,7 @@ export function AppSidebar() {
     { title: t("nav.commissionPlans"), url: "/planes-comision", icon: Wallet, key: "planes-comision" },
     { title: t("nav.fixedCalculator"), url: "/calculadora-fijos", icon: Calculator, key: "calculadora-fijos" },
     { title: t("nav.apiReport"), url: "/tracker-report", icon: Activity, key: "tracker-report" },
+    { title: "Landing Pages", url: "/landing-pages", icon: Globe, key: "landing-pages" },
   ];
   const listItems: { title: string; url: string; key: MenuKey }[] = [
     { title: t("nav.geos"), url: "/listas/paises", key: "listas-paises" },

@@ -65,6 +65,9 @@ export default function CommissionPlans() {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState<Template>(empty);
   const [saving, setSaving] = useState(false);
+  const [operatorPlans, setOperatorPlans] = useState<any[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const marginFilter = searchParams.get("margin"); // "high" | "low" | null
 
   const compareToCpa = (val: number | null, cpa: number | null) => {
     if (val == null || cpa == null) return "";

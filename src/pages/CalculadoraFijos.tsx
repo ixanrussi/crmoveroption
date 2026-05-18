@@ -9,14 +9,14 @@ import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
-import { Switch } from "@/components/ui/switch";
+
 
 import jsPDF from "jspdf";
 
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import overoptionLogo from "@/assets/overoption-logo.png";
-import SalaryDealMode from "@/components/SalaryDealMode";
+
 
 type Plan = {
   id: string;
@@ -88,7 +88,7 @@ export default function CalculadoraFijos() {
   const [selections, setSelections] = useState<Selection[]>([newSelection()]);
   const [prospectName, setProspectName] = useState<string>("");
   const [proposalPct, setProposalPct] = useState<number>(0); // 0 = recomendado, 100 = máximo
-  const [salaryMode, setSalaryMode] = useState<boolean>(false);
+  
 
   const handlePrint = async () => {
     const result = await buildPdf();
@@ -535,20 +535,6 @@ export default function CalculadoraFijos() {
         </div>
       </div>
 
-      <div className="flex items-center gap-3 rounded-lg border p-3 bg-muted/30 no-print">
-        <Switch checked={salaryMode} onCheckedChange={setSalaryMode} id="salary-mode" />
-        <div className="flex-1">
-          <Label htmlFor="salary-mode" className="cursor-pointer font-semibold">Modo salario fijo + CPA</Label>
-          <p className="text-xs text-muted-foreground">
-            Overoption paga un salario mensual + un CPA por cada FTD que el afiliado genere (sin objetivo).
-          </p>
-        </div>
-      </div>
-
-      {salaryMode ? (
-        <SalaryDealMode operators={operators as any} />
-      ) : (
-      <>
       <div className="space-y-1 max-w-md">
         <Label>Nombre del afiliado prospecto (opcional)</Label>
         <Input
@@ -807,8 +793,6 @@ export default function CalculadoraFijos() {
           )}
         </div>
       </div>
-      </>
-      )}
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>

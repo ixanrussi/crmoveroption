@@ -38,6 +38,7 @@ type Template = {
   wager_currency: string;
   conversion_type: string;
   cap: string;
+  comentarios: string;
 };
 
 const empty: Template = {

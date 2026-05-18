@@ -40,6 +40,7 @@ const App = () => (
           <MenuPermissionsProvider>
           <Routes>
             <Route path="/auth" element={<Auth />} />
+            <Route path="/lp/preview/:lpId" element={<PublicLandingPage />} />
             <Route path="/lp/:affiliateSlug/:countryCode" element={<PublicLandingPage />} />
             <Route element={<ProtectedRoute><ComercialGuard><AppLayout /></ComercialGuard></ProtectedRoute>}>
               <Route path="/landing-pages" element={<LandingPages />} />

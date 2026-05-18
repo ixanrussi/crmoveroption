@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Edit, ExternalLink, Copy, Globe } from "lucide-react";
+import { Plus, Trash2, Edit, ExternalLink, Copy, Globe, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 type LP = {
@@ -211,16 +211,21 @@ export default function LandingPages() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {isAdmin && (
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" title="Previsualizar" onClick={() => window.open(`/lp/preview/${r.id}`, "_blank")}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {isAdmin && (
+                            <>
+                              <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

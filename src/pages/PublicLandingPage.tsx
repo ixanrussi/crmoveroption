@@ -104,52 +104,56 @@ export default function PublicLandingPage() {
         </div>
       </section>
 
-      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12">
-        <h2 className="text-xl md:text-2xl font-bold mb-4">Top Operadores {data.country ? `– ${data.country.name}` : ""}</h2>
-        <ol className="space-y-3">
-          {data.operators.map((op, idx) => {
-            const link = linkFor(op.id);
-            const initial = op.company_name?.[0]?.toUpperCase() || "?";
-            return (
-              <li key={op.id} className="rounded-lg border bg-card p-4 md:p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
-                <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
-                  {idx + 1}
-                </span>
-                <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-foreground/90 text-background flex items-center justify-center text-xl font-bold flex-shrink-0">
-                  {initial}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="font-semibold text-base md:text-lg truncate">{op.company_name}</div>
-                  {op.brands && op.brands.length > 0 && (
-                    <div className="text-xs text-muted-foreground truncate">{op.brands.join(" · ")}</div>
-                  )}
-                </div>
-                <div className="flex-shrink-0">
-                  {link ? (
-                    <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
-                      <a href={link} target="_blank" rel="nofollow sponsored noopener">
-                        Crear Cuenta <ChevronRight className="h-4 w-4 ml-1" />
-                      </a>
-                    </Button>
-                  ) : (
-                    <Button size="lg" variant="secondary" disabled>
-                      Próximamente
-                    </Button>
-                  )}
-                </div>
-              </li>
-            );
-          })}
-          {data.operators.length === 0 && (
-            <li className="text-center text-muted-foreground py-8">No hay operadores destacados.</li>
-          )}
-        </ol>
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12 flex gap-6 justify-center">
+        <BannerSlot side="left" />
+        <main className="flex-1 max-w-3xl">
+          <h2 className="text-xl md:text-2xl font-bold mb-4">Top Operadores {data.country ? `– ${data.country.name}` : ""}</h2>
+          <ol className="space-y-3">
+            {data.operators.map((op, idx) => {
+              const link = linkFor(op.id);
+              const initial = op.company_name?.[0]?.toUpperCase() || "?";
+              return (
+                <li key={op.id} className="rounded-lg border bg-card p-4 md:p-5 flex items-center gap-4 hover:shadow-md transition-shadow">
+                  <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
+                    {idx + 1}
+                  </span>
+                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-foreground/90 text-background flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    {initial}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="font-semibold text-base md:text-lg truncate">{op.company_name}</div>
+                    {op.brands && op.brands.length > 0 && (
+                      <div className="text-xs text-muted-foreground truncate">{op.brands.join(" · ")}</div>
+                    )}
+                  </div>
+                  <div className="flex-shrink-0">
+                    {link ? (
+                      <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                        <a href={link} target="_blank" rel="nofollow sponsored noopener">
+                          Crear Cuenta <ChevronRight className="h-4 w-4 ml-1" />
+                        </a>
+                      </Button>
+                    ) : (
+                      <Button size="lg" variant="secondary" disabled>
+                        Próximamente
+                      </Button>
+                    )}
+                  </div>
+                </li>
+              );
+            })}
+            {data.operators.length === 0 && (
+              <li className="text-center text-muted-foreground py-8">No hay operadores destacados.</li>
+            )}
+          </ol>
 
-        <div className="mt-10 text-xs text-muted-foreground flex items-start gap-2">
-          <ShieldCheck className="h-4 w-4 flex-shrink-0 mt-0.5" />
-          <p>Juega con responsabilidad. Apuestas disponibles solo para mayores de 18 años.</p>
-        </div>
-      </main>
+          <div className="mt-10 text-xs text-muted-foreground flex items-start gap-2">
+            <ShieldCheck className="h-4 w-4 flex-shrink-0 mt-0.5" />
+            <p>Juega con responsabilidad. Apuestas disponibles solo para mayores de 18 años.</p>
+          </div>
+        </main>
+        <BannerSlot side="right" />
+      </div>
 
       <footer className="border-t mt-8">
         <div className="max-w-5xl mx-auto px-4 py-6 text-xs text-muted-foreground text-center">

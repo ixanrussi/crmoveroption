@@ -85,14 +85,29 @@ export default function CommissionPlans() {
     setList(data ?? []);
   };
   const loadLookups = async () => {
-    const [cl, co] = await Promise.all([
+    const [cl, co, op] = await Promise.all([
       supabase.from("clients").select("id, company_name, brands, login, client_type").order("company_name"),
       supabase.from("countries").select("*").order("name"),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
     ]);
     setClients(cl.data ?? []);
     setCountries(co.data ?? []);
+    setOperatorPlans(op.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
+
+  const getMargin = (r: any): number | null => {
+    const affCpa = r.cpa != null ? Number(r.cpa) : null;
+    if (!r.client_id || affCpa == null || !Number.isFinite(affCpa) || affCpa <= 0) return null;
+    const bl = (r.brand || "").toLowerCase();
+    const cands = operatorPlans
+      .filter((cp: any) => cp.client_id === r.client_id && cp.cpa != null)
+      .filter((cp: any) => !r.brand || !cp.brand || (cp.brand || "").toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
+    if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
+    return ((opCpa - affCpa) / opCpa) * 100;
+  };
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (row: any) => {

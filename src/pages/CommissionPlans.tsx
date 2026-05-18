@@ -138,6 +138,7 @@ export default function CommissionPlans() {
       wager_currency: form.wager_currency || null,
       conversion_type: form.conversion_type || null,
       cap: form.cap === "" ? null : Math.trunc(Number(form.cap)),
+      comentarios: form.comentarios || null,
     };
     setSaving(true);
     const res = editing

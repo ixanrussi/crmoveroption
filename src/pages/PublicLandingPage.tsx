@@ -24,32 +24,62 @@ type LP = {
 };
 
 export default function PublicLandingPage() {
-  const { affiliateSlug, countryCode } = useParams();
+  const { affiliateSlug, countryCode, lpId } = useParams();
+  const isPreview = !!lpId;
   const [data, setData] = useState<LP | null>(null);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    if (!affiliateSlug || !countryCode) return;
     (async () => {
-      const { data: result } = await supabase.rpc("get_public_landing_page", {
-        _affiliate_slug: affiliateSlug,
-        _country_code: countryCode,
-      });
+      let result: any = null;
+      if (isPreview && lpId) {
+        const { data: lp } = await supabase.from("landing_pages").select("*").eq("id", lpId).maybeSingle();
+        if (lp) {
+          const [{ data: aff }, coRes, { data: ops }, { data: links }] = await Promise.all([
+            supabase.from("affiliates").select("id, fixed_name, slug").eq("id", lp.affiliate_id).maybeSingle(),
+            lp.country_id
+              ? supabase.from("countries").select("id, code, name").eq("id", lp.country_id).maybeSingle()
+              : Promise.resolve({ data: null } as any),
+            supabase.from("clients").select("id, company_name, website, brands").in("id", lp.operator_ids ?? []),
+            supabase.from("affiliate_tracking_links").select("client_id, brand, tracking_link, country_id")
+              .eq("affiliate_id", lp.affiliate_id).in("client_id", lp.operator_ids ?? []),
+          ]);
+          const co = (coRes as any)?.data ?? null;
+          const ordered = (lp.operator_ids ?? []).map((id: string, ord: number) => {
+            const o = (ops ?? []).find((x: any) => x.id === id);
+            return o ? { ...o, ord } : null;
+          }).filter(Boolean);
+          if (aff) {
+            result = {
+              affiliate: { id: aff.id, name: aff.fixed_name, slug: aff.slug },
+              country: co ? { id: co.id, code: co.code, name: co.name } : null,
+              page: { id: lp.id, title: lp.title, subtitle: lp.subtitle, intro: lp.intro, hero_image_url: lp.hero_image_url, seo_title: lp.seo_title, seo_description: lp.seo_description },
+              operators: ordered,
+              tracking_links: links ?? [],
+            };
+          }
+        }
+      } else if (affiliateSlug && countryCode) {
+        const { data: r } = await supabase.rpc("get_public_landing_page", {
+          _affiliate_slug: affiliateSlug,
+          _country_code: countryCode,
+        });
+        result = r;
+      }
       if (!result) {
         setNotFound(true);
       } else {
         setData(result as any);
-        const lp = result as any;
-        document.title = lp.page.seo_title || lp.page.title;
+        document.title = (result.page.seo_title || result.page.title) + (isPreview ? " · Preview" : "");
         const meta = document.querySelector('meta[name="description"]') || document.createElement("meta");
         meta.setAttribute("name", "description");
-        meta.setAttribute("content", lp.page.seo_description || lp.page.subtitle || "");
+        meta.setAttribute("content", result.page.seo_description || result.page.subtitle || "");
         if (!meta.parentNode) document.head.appendChild(meta);
       }
       setLoading(false);
     })();
-  }, [affiliateSlug, countryCode]);
+  }, [affiliateSlug, countryCode, lpId, isPreview]);
 
   const linkFor = useMemo(() => {
     if (!data) return () => null as string | null;

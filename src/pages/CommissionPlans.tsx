@@ -189,6 +189,12 @@ export default function CommissionPlans() {
         r.client?.company_name?.toLowerCase().includes(q) ||
         r.brand?.toLowerCase().includes(q)
       );
+    })
+    .filter((r) => {
+      if (!marginFilter) return true;
+      const m = getMargin(r);
+      if (m == null) return false;
+      return marginFilter === "high" ? m >= 30 : m < 30;
     });
 
   // Fetch FX rates for every source currency present in BL/W so we can

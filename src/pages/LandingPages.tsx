@@ -211,16 +211,21 @@ export default function LandingPages() {
                         )}
                       </TableCell>
                       <TableCell>
-                        {isAdmin && (
-                          <div className="flex gap-1">
-                            <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        )}
+                        <div className="flex gap-1">
+                          <Button size="icon" variant="ghost" title="Previsualizar" onClick={() => window.open(`/lp/preview/${r.id}`, "_blank")}>
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          {isAdmin && (
+                            <>
+                              <Button size="icon" variant="ghost" onClick={() => { setEditing(r); setOpen(true); }}>
+                                <Edit className="h-4 w-4" />
+                              </Button>
+                              <Button size="icon" variant="ghost" onClick={() => remove(r.id)}>
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            </>
+                          )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   );

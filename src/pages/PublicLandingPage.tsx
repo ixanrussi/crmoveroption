@@ -130,11 +130,13 @@ export default function PublicLandingPage() {
           <div className="flex items-center gap-4">
             {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
             {data.operators[0]?.logo_url && (
-              <img
-                src={data.operators[0].logo_url}
-                alt={`${data.operators[0].company_name} logo`}
-                className="h-10 md:h-12 w-auto max-w-[180px] object-contain"
-              />
+              <div className="h-12 md:h-14 aspect-video overflow-hidden rounded-md border border-border bg-card flex-shrink-0">
+                <img
+                  src={data.operators[0].logo_url}
+                  alt={`${data.operators[0].company_name} logo`}
+                  className="h-full w-full object-cover"
+                />
+              </div>
             )}
           </div>
         </div>
@@ -143,12 +145,14 @@ export default function PublicLandingPage() {
       <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
           {data.operators[0]?.logo_url && (
-            <img
-              src={data.operators[0].logo_url}
-              alt=""
-              aria-hidden="true"
-              className="hidden md:block absolute top-6 right-6 h-16 w-auto max-w-[220px] object-contain bg-white/90 rounded-md p-2 shadow-md"
-            />
+            <div className="hidden md:block absolute top-6 right-6 h-20 aspect-video overflow-hidden rounded-md border border-primary-foreground/20 bg-card shadow-md">
+              <img
+                src={data.operators[0].logo_url}
+                alt=""
+                aria-hidden="true"
+                className="h-full w-full object-cover"
+              />
+            </div>
           )}
           <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
           {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
@@ -169,9 +173,9 @@ export default function PublicLandingPage() {
                   <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <div className="w-14 h-14 md:w-20 md:h-14 rounded-lg bg-white border flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-12 md:w-24 md:h-14 rounded-lg bg-card border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
                     {op.logo_url ? (
-                      <img src={op.logo_url} alt={`${op.company_name} logo`} className="max-h-full max-w-full object-contain p-1" />
+                      <img src={op.logo_url} alt={`${op.company_name} logo`} className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-xl font-bold text-foreground/80">{initial}</span>
                     )}

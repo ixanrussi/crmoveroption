@@ -124,23 +124,6 @@ export default function PublicLandingPage() {
           MODO PREVIEW — esta landing page aún no está publicada
         </div>
       )}
-      <header className="border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
-          <div className="font-bold text-lg">{data.affiliate.name}</div>
-          <div className="flex items-center gap-4">
-            {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
-            {data.operators[0]?.logo_url && (
-              <div className="h-12 md:h-14 aspect-video overflow-hidden rounded-md border border-border bg-card flex-shrink-0">
-                <img
-                  src={data.operators[0].logo_url}
-                  alt={`${data.operators[0].company_name} logo`}
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            )}
-          </div>
-        </div>
-      </header>
 
       <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">

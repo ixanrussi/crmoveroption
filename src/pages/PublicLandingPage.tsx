@@ -125,14 +125,31 @@ export default function PublicLandingPage() {
         </div>
       )}
       <header className="border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="font-bold text-lg">{data.affiliate.name}</div>
-          {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
+          <div className="flex items-center gap-4">
+            {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
+            {data.operators[0]?.logo_url && (
+              <img
+                src={data.operators[0].logo_url}
+                alt={`${data.operators[0].company_name} logo`}
+                className="h-10 md:h-12 w-auto max-w-[180px] object-contain"
+              />
+            )}
+          </div>
         </div>
       </header>
 
-      <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
-        <div className="max-w-5xl mx-auto px-4 py-12 md:py-16">
+      <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
+          {data.operators[0]?.logo_url && (
+            <img
+              src={data.operators[0].logo_url}
+              alt=""
+              aria-hidden="true"
+              className="hidden md:block absolute top-6 right-6 h-16 w-auto max-w-[220px] object-contain bg-white/90 rounded-md p-2 shadow-md"
+            />
+          )}
           <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
           {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
           {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}

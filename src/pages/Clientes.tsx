@@ -338,6 +338,35 @@ export default function Clientes() {
                   <Input value={form.login ?? ""} onChange={(e) => setForm({ ...form, login: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Seña</Label>
                   <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
+                <div className="col-span-2 space-y-1">
+                  <Label>Logo del operador (PNG, JPG, SVG, WEBP)</Label>
+                  <div className="flex items-center gap-3">
+                    {form.logo_url ? (
+                      <img src={form.logo_url} alt="Logo" className="h-12 w-24 object-contain rounded border bg-white p-1" />
+                    ) : (
+                      <div className="h-12 w-24 rounded border border-dashed flex items-center justify-center text-[10px] text-muted-foreground">Sin logo</div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/svg+xml,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+                        const path = `${(form.company_name || "operator").toLowerCase().replace(/[^a-z0-9]+/g, "-")}-${Date.now()}.${ext}`;
+                        const { error: upErr } = await supabase.storage.from("operator-logos").upload(path, file, { upsert: true, contentType: file.type });
+                        if (upErr) { toast.error(upErr.message); return; }
+                        const { data: pub } = supabase.storage.from("operator-logos").getPublicUrl(path);
+                        setForm((f: any) => ({ ...f, logo_url: pub.publicUrl }));
+                        toast.success("Logo subido");
+                      }}
+                    />
+                    {form.logo_url && (
+                      <Button type="button" variant="outline" size="sm" onClick={() => setForm((f: any) => ({ ...f, logo_url: "" }))}>Quitar</Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">Se usará en formato rectangular en el header/hero de las landing pages.</p>
+                </div>
                 <div className="space-y-1">
                   <Label>GEO's (países)</Label>
                   <Popover>

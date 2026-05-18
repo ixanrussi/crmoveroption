@@ -111,6 +111,7 @@ export default function CommissionPlans() {
       wager_currency: row.wager_currency ?? "",
       conversion_type: row.conversion_type ?? "",
       cap: row.cap?.toString() ?? "",
+      comentarios: row.comentarios ?? "",
     });
     setOpen(true);
   };

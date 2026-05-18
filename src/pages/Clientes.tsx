@@ -244,6 +244,7 @@ export default function Clientes() {
           client_type: form.client_type || null,
           brands: Array.isArray(form.brands) ? form.brands : [],
           net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
+          logo_url: form.logo_url || null,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,

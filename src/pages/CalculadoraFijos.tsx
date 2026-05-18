@@ -16,7 +16,7 @@ import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import overoptionLogo from "@/assets/overoption-logo.png";
-import SalaryDealMode from "@/components/SalaryDealMode";
+
 
 type Plan = {
   id: string;

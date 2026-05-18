@@ -49,7 +49,7 @@ const empty: Template = {
   rev_share_pct: "",
   cpl: "", cpl_currency: "",
   wager: "", wager_currency: "",
-  conversion_type: "", cap: "",
+  conversion_type: "", cap: "", comentarios: "",
 };
 
 export default function CommissionPlans() {

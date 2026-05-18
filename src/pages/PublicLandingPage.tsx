@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight, ShieldCheck } from "lucide-react";
 
-type Operator = { id: string; company_name: string; website: string | null; brands: string[] | null; ord: number };
+type Operator = { id: string; company_name: string; website: string | null; brands: string[] | null; logo_url?: string | null; ord: number };
 type LinkRow = { client_id: string; brand: string | null; tracking_link: string; country_id: string | null };
 
 type LP = {

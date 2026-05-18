@@ -1006,6 +1006,7 @@ export type Database = {
           brand: string | null
           cap: number | null
           client_id: string | null
+          comentarios: string | null
           conversion_type: string | null
           country_ids: string[]
           cpa: number | null
@@ -1030,6 +1031,7 @@ export type Database = {
           brand?: string | null
           cap?: number | null
           client_id?: string | null
+          comentarios?: string | null
           conversion_type?: string | null
           country_ids?: string[]
           cpa?: number | null
@@ -1054,6 +1056,7 @@ export type Database = {
           brand?: string | null
           cap?: number | null
           client_id?: string | null
+          comentarios?: string | null
           conversion_type?: string | null
           country_ids?: string[]
           cpa?: number | null

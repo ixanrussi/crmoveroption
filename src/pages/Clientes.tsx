@@ -130,6 +130,11 @@ export default function Clientes() {
   };
 
   const filteredList = list.filter((r) => {
+    if (noRsFilter) {
+      const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
+      const hasRs = plans.some((p: any) => p.rev_share_pct != null && Number(p.rev_share_pct) > 0);
+      if (hasRs) return false;
+    }
     const q = search.trim().toLowerCase();
     if (!q) return true;
     if (r.company_name?.toLowerCase().includes(q)) return true;

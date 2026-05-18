@@ -23,6 +23,7 @@ import RoleMenuPermissions from "./pages/RoleMenuPermissions";
 import ProspectsOperadores from "./pages/ProspectsOperadores";
 import ProspectsAfiliados from "./pages/ProspectsAfiliados";
 import SolicitarLinks from "./pages/SolicitarLinks";
+import PortalAfiliado from "./pages/PortalAfiliado";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

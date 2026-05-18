@@ -454,8 +454,20 @@ export default function CommissionPlans() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="p-3 border-b">
+          <div className="p-3 border-b flex flex-wrap items-center gap-2">
             <Input placeholder="Buscar por nombre, operador o marca…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+            {marginFilter && (
+              <Badge variant="secondary" className="gap-2">
+                Filtro: margen {marginFilter === "high" ? "≥ 30%" : "< 30%"} para OO
+                <button
+                  type="button"
+                  className="ml-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => { searchParams.delete("margin"); setSearchParams(searchParams); }}
+                >
+                  ✕
+                </button>
+              </Badge>
+            )}
           </div>
           <Table>
             <TableHeader>

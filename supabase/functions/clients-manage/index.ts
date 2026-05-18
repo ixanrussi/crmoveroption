@@ -302,6 +302,39 @@ Deno.serve(async (req) => {
       )}`;
     }
 
+    // Automation: on operator creation, auto-generate affiliate commission plan
+    // templates with CPA = 70% of the operator's CPA. Only runs on insert and
+    // only for plans that actually have a CPA defined.
+    if (body.action === "insert" && plans.length) {
+      const tplRows = plans
+        .filter((p) => p.cpa !== null && p.cpa !== undefined)
+        .map((p) => {
+          const affCpa = Math.round(((Number(p.cpa) || 0) * 0.7) * 100) / 100;
+          const namePieces = [payload.company_name, p.brand].filter(Boolean).join(" · ");
+          return {
+            client_id: clientId!,
+            created_by: userData.user.id,
+            name: `${namePieces} — Afiliado 70% CPA`,
+            description: "Generado automáticamente al crear el operador (CPA afiliado = 70% del CPA total).",
+            plan_start_date: p.plan_start_date,
+            currency: p.currency,
+            country_ids: p.country_ids,
+            brand: p.brand,
+            baseline: p.baseline,
+            baseline_currency: p.baseline_currency || p.currency,
+            cpa: affCpa,
+            cpa_currency: p.cpa_currency || p.currency,
+          };
+        });
+      if (tplRows.length) {
+        await sql`insert into public.commission_plan_templates ${sql(
+          tplRows,
+          "client_id", "created_by", "name", "description", "plan_start_date", "currency",
+          "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency"
+        )}`;
+      }
+    }
+
     return json(200, { ok: true, id: clientId });
   } catch (error) {
     console.error("clients-manage error", error);

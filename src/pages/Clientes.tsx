@@ -948,7 +948,7 @@ export default function Clientes() {
                           const configured = plans.filter(isConfigured).length;
                           const total = plans.length;
                           let colorCls = "bg-red-500/15 text-red-600";
-                          let msg = "Sin Commission Plan configurado";
+                          let msg = "Margen Overoption no configurada";
                           if (total > 0) {
                             if (configured === total) {
                               colorCls = "bg-blue-500/15 text-blue-600";
@@ -957,6 +957,7 @@ export default function Clientes() {
                               colorCls = "bg-orange-500/15 text-orange-600";
                               msg = `Margen Overoption parcialmente configurada (${configured}/${total} planes)`;
                             } else {
+                              colorCls = "bg-red-500/15 text-red-600";
                               msg = "Margen Overoption no configurada";
                             }
                           }

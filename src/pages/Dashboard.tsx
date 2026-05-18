@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus, Globe, Layers, Map as MapIcon } from "lucide-react";
+import { Users, UserPlus, Globe, Layers, Map as MapIcon, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import WorldActivityMap from "@/components/WorldActivityMap";
 import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
 import TopBrandsCommission from "@/components/TopBrandsCommission";
@@ -18,6 +18,7 @@ const Dashboard = () => {
   const { user, isSuperAdmin, isAdmin } = useAuth();
   const navigate = useNavigate();
   const [stats, setStats] = useState({ clients: 0, affiliates: 0, countries: 0 });
+  const [planStats, setPlanStats] = useState({ highMargin: 0, lowMargin: 0, noRs: 0 });
   const [showMap, setShowMap] = useState(false);
   const [displayName, setDisplayName] = useState<string>("");
 
@@ -36,7 +37,43 @@ const Dashboard = () => {
     setStats({ clients: c.count ?? 0, affiliates: a.count ?? 0, countries: co.count ?? 0 });
   };
 
-  useEffect(() => { loadStats(); }, []);
+  const loadPlanStats = async () => {
+    const [tplRes, opRes, clRes] = await Promise.all([
+      supabase.from("commission_plan_templates").select("client_id, brand, cpa"),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, rev_share_pct, plan_start_date"),
+      supabase.from("clients").select("id"),
+    ]);
+    const tpls = tplRes.data ?? [];
+    const ops = opRes.data ?? [];
+    const allClientIds = (clRes.data ?? []).map((c: any) => c.id);
+
+    let high = 0;
+    let low = 0;
+    tpls.forEach((t: any) => {
+      const affCpa = t.cpa != null ? Number(t.cpa) : null;
+      if (!t.client_id || affCpa == null || !Number.isFinite(affCpa) || affCpa <= 0) return;
+      const bl = (t.brand || "").toLowerCase();
+      const cands = ops
+        .filter((cp: any) => cp.client_id === t.client_id && cp.cpa != null)
+        .filter((cp: any) => !t.brand || !cp.brand || (cp.brand || "").toLowerCase() === bl)
+        .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+      const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
+      if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return;
+      const margin = ((opCpa - affCpa) / opCpa) * 100;
+      if (margin >= 30) high++; else low++;
+    });
+
+    const clientsWithRs = new Set(
+      ops
+        .filter((cp: any) => cp.rev_share_pct != null && Number(cp.rev_share_pct) > 0)
+        .map((cp: any) => cp.client_id),
+    );
+    const noRs = allClientIds.filter((id) => !clientsWithRs.has(id)).length;
+
+    setPlanStats({ highMargin: high, lowMargin: low, noRs });
+  };
+
+  useEffect(() => { loadStats(); loadPlanStats(); }, []);
 
   const cards = [
     { label: t("nav.operators"), value: stats.clients, icon: Users, color: "text-primary", to: "/clientes" },
@@ -80,6 +117,45 @@ const Dashboard = () => {
               </Button>
             </div>
             <MapIcon className="h-8 w-8 text-primary shrink-0" />
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card
+          onClick={() => navigate("/planes-comision?margin=high")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Planes con margen ≥ 30% para OO</p>
+              <p className="text-3xl font-bold mt-1">{planStats.highMargin}</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-success" />
+          </CardContent>
+        </Card>
+        <Card
+          onClick={() => navigate("/planes-comision?margin=low")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Planes con margen &lt; 30% para OO</p>
+              <p className="text-3xl font-bold mt-1">{planStats.lowMargin}</p>
+            </div>
+            <TrendingDown className="h-8 w-8 text-destructive" />
+          </CardContent>
+        </Card>
+        <Card
+          onClick={() => navigate("/clientes?filter=no-rs")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Operadores sin acuerdo de RS</p>
+              <p className="text-3xl font-bold mt-1">{planStats.noRs}</p>
+            </div>
+            <AlertTriangle className="h-8 w-8 text-warning" />
           </CardContent>
         </Card>
       </div>

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -64,6 +65,9 @@ export default function CommissionPlans() {
   const [editing, setEditing] = useState<any | null>(null);
   const [form, setForm] = useState<Template>(empty);
   const [saving, setSaving] = useState(false);
+  const [operatorPlans, setOperatorPlans] = useState<any[]>([]);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const marginFilter = searchParams.get("margin"); // "high" | "low" | null
 
   const compareToCpa = (val: number | null, cpa: number | null) => {
     if (val == null || cpa == null) return "";
@@ -81,14 +85,29 @@ export default function CommissionPlans() {
     setList(data ?? []);
   };
   const loadLookups = async () => {
-    const [cl, co] = await Promise.all([
+    const [cl, co, op] = await Promise.all([
       supabase.from("clients").select("id, company_name, brands, login, client_type").order("company_name"),
       supabase.from("countries").select("*").order("name"),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
     ]);
     setClients(cl.data ?? []);
     setCountries(co.data ?? []);
+    setOperatorPlans(op.data ?? []);
   };
   useEffect(() => { load(); loadLookups(); }, []);
+
+  const getMargin = (r: any): number | null => {
+    const affCpa = r.cpa != null ? Number(r.cpa) : null;
+    if (!r.client_id || affCpa == null || !Number.isFinite(affCpa) || affCpa <= 0) return null;
+    const bl = (r.brand || "").toLowerCase();
+    const cands = operatorPlans
+      .filter((cp: any) => cp.client_id === r.client_id && cp.cpa != null)
+      .filter((cp: any) => !r.brand || !cp.brand || (cp.brand || "").toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const opCpa = cands[0]?.cpa != null ? Number(cands[0].cpa) : null;
+    if (opCpa == null || !Number.isFinite(opCpa) || opCpa <= 0) return null;
+    return ((opCpa - affCpa) / opCpa) * 100;
+  };
 
   const openNew = () => { setEditing(null); setForm(empty); setOpen(true); };
   const openEdit = (row: any) => {
@@ -170,6 +189,12 @@ export default function CommissionPlans() {
         r.client?.company_name?.toLowerCase().includes(q) ||
         r.brand?.toLowerCase().includes(q)
       );
+    })
+    .filter((r) => {
+      if (!marginFilter) return true;
+      const m = getMargin(r);
+      if (m == null) return false;
+      return marginFilter === "high" ? m >= 30 : m < 30;
     });
 
   // Fetch FX rates for every source currency present in BL/W so we can
@@ -429,8 +454,20 @@ export default function CommissionPlans() {
 
       <Card>
         <CardContent className="p-0">
-          <div className="p-3 border-b">
+          <div className="p-3 border-b flex flex-wrap items-center gap-2">
             <Input placeholder="Buscar por nombre, operador o marca…" value={search} onChange={(e) => setSearch(e.target.value)} className="max-w-sm" />
+            {marginFilter && (
+              <Badge variant="secondary" className="gap-2">
+                Filtro: margen {marginFilter === "high" ? "≥ 30%" : "< 30%"} para OO
+                <button
+                  type="button"
+                  className="ml-1 text-muted-foreground hover:text-foreground"
+                  onClick={() => { searchParams.delete("margin"); setSearchParams(searchParams); }}
+                >
+                  ✕
+                </button>
+              </Badge>
+            )}
           </div>
           <Table>
             <TableHeader>

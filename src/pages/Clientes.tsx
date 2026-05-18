@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
@@ -87,6 +88,8 @@ export default function Clientes() {
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [viewing, setViewing] = useState<any | null>(null);
   const [search, setSearch] = useState("");
+  const [searchParams, setSearchParams] = useSearchParams();
+  const noRsFilter = searchParams.get("filter") === "no-rs";
   const [nameUnlocked, setNameUnlocked] = useState(false);
 
 
@@ -127,6 +130,11 @@ export default function Clientes() {
   };
 
   const filteredList = list.filter((r) => {
+    if (noRsFilter) {
+      const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];
+      const hasRs = plans.some((p: any) => p.rev_share_pct != null && Number(p.rev_share_pct) > 0);
+      if (hasRs) return false;
+    }
     const q = search.trim().toLowerCase();
     if (!q) return true;
     if (r.company_name?.toLowerCase().includes(q)) return true;
@@ -794,12 +802,26 @@ export default function Clientes() {
         )}
       </div>
 
-      <div className="max-w-sm">
-        <Input
-          placeholder="Buscar por nombre, marca o país..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="max-w-sm flex-1 min-w-[200px]">
+          <Input
+            placeholder="Buscar por nombre, marca o país..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {noRsFilter && (
+          <Badge variant="secondary" className="gap-2">
+            Filtro: operadores sin acuerdo de RS
+            <button
+              type="button"
+              className="ml-1 text-muted-foreground hover:text-foreground"
+              onClick={() => { searchParams.delete("filter"); setSearchParams(searchParams); }}
+            >
+              ✕
+            </button>
+          </Badge>
+        )}
       </div>
 
       <Card>

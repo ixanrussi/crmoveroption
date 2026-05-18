@@ -69,11 +69,23 @@ export default function PublicLandingPage() {
   }
   if (notFound || !data) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Página no encontrada</p>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background gap-2 px-4 text-center">
+        <p className="text-lg font-semibold">Página no encontrada</p>
+        <p className="text-sm text-muted-foreground max-w-md">
+          Verifica que la landing page exista para este afiliado y país, y que esté marcada como <b>Publicada</b> en el panel de administración.
+        </p>
       </div>
     );
   }
+
+  const BannerSlot = ({ side }: { side: "left" | "right" }) => (
+    <aside
+      aria-label={`Espacio publicitario ${side === "left" ? "izquierdo" : "derecho"} 120x600`}
+      className="hidden xl:flex sticky top-6 self-start w-[120px] h-[600px] flex-shrink-0 rounded-md border border-dashed border-border bg-muted/30 items-center justify-center text-[10px] text-muted-foreground text-center px-1"
+    >
+      Publicidad<br />120 × 600
+    </aside>
+  );
 
   return (
     <div className="min-h-screen bg-background text-foreground">

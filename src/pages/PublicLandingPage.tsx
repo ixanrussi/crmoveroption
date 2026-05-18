@@ -41,7 +41,7 @@ export default function PublicLandingPage() {
             lp.country_id
               ? supabase.from("countries").select("id, code, name").eq("id", lp.country_id).maybeSingle()
               : Promise.resolve({ data: null } as any),
-            supabase.from("clients").select("id, company_name, website, brands").in("id", lp.operator_ids ?? []),
+            supabase.from("clients").select("id, company_name, website, brands, logo_url").in("id", lp.operator_ids ?? []),
             supabase.from("affiliate_tracking_links").select("client_id, brand, tracking_link, country_id")
               .eq("affiliate_id", lp.affiliate_id).in("client_id", lp.operator_ids ?? []),
           ]);

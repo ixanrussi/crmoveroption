@@ -270,6 +270,27 @@ export default function Afiliados() {
     );
     setOpen(true);
   };
+  // Rentabilidad esperada para Overoption por plantilla.
+  // Combina el margen de CPA retenido, los puntos de RS retenidos y, cuando hay
+  // historial de cierres, la tasa de validación (qualified/locked) del operador.
+  const getTemplateScore = (t: any): { score: number; cpaProfit: number | null; rsPp: number | null; valRate: number; hasValData: boolean } => {
+    const affCpa = t.cpa != null ? Number(t.cpa) : null;
+    const affRs = t.rev_share_pct != null ? Number(t.rev_share_pct) : null;
+    const bl = (t.brand || "").toLowerCase();
+    const cands = clientPlans
+      .filter((cp: any) => cp.client_id === t.client_id)
+      .filter((cp: any) => !t.brand || !cp.brand || cp.brand.toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const op = cands[0];
+    const opCpa = op?.cpa != null ? Number(op.cpa) : null;
+    const opRs = op?.rev_share_pct != null ? Number(op.rev_share_pct) : null;
+    const valRate = t.client_id && validationRates[t.client_id] != null ? validationRates[t.client_id] : 1;
+    const hasValData = t.client_id ? validationRates[t.client_id] != null : false;
+    const cpaProfit = opCpa != null && affCpa != null && Number.isFinite(opCpa - affCpa) ? (opCpa - affCpa) : null;
+    const rsPp = opRs != null && affRs != null && Number.isFinite(opRs - affRs) ? (opRs - affRs) : null;
+    const score = ((cpaProfit ?? 0) * valRate) + (rsPp ?? 0);
+    return { score, cpaProfit, rsPp, valRate, hasValData };
+  };
 
   const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
   const updatePlan = (i: number, patch: Partial<CommissionPlan>) =>

@@ -172,6 +172,7 @@ Deno.serve(async (req) => {
       client_type: clientType,
       brands,
       net_min_cpa: numTop(c.net_min_cpa),
+      logo_url: c.logo_url || null,
     };
 
     let clientId = body.id;

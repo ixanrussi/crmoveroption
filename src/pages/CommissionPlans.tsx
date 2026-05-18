@@ -4,6 +4,7 @@ import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -38,6 +39,7 @@ type Template = {
   wager_currency: string;
   conversion_type: string;
   cap: string;
+  comentarios: string;
 };
 
 const empty: Template = {
@@ -48,7 +50,7 @@ const empty: Template = {
   rev_share_pct: "",
   cpl: "", cpl_currency: "",
   wager: "", wager_currency: "",
-  conversion_type: "", cap: "",
+  conversion_type: "", cap: "", comentarios: "",
 };
 
 export default function CommissionPlans() {
@@ -110,6 +112,7 @@ export default function CommissionPlans() {
       wager_currency: row.wager_currency ?? "",
       conversion_type: row.conversion_type ?? "",
       cap: row.cap?.toString() ?? "",
+      comentarios: row.comentarios ?? "",
     });
     setOpen(true);
   };
@@ -136,6 +139,7 @@ export default function CommissionPlans() {
       wager_currency: form.wager_currency || null,
       conversion_type: form.conversion_type || null,
       cap: form.cap === "" ? null : Math.trunc(Number(form.cap)),
+      comentarios: form.comentarios || null,
     };
     setSaving(true);
     const res = editing
@@ -403,6 +407,15 @@ export default function CommissionPlans() {
                 <div className="space-y-1">
                   <Label className="text-xs">CAP (conversiones autorizadas)</Label>
                   <Input type="number" step="1" value={form.cap} onChange={(e) => setForm({ ...form, cap: e.target.value })} />
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">Comentarios</Label>
+                  <Textarea
+                    value={form.comentarios}
+                    onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
+                    placeholder="Apuntes relevantes sobre este plan…"
+                    rows={3}
+                  />
                 </div>
               </div>
               <DialogFooter>

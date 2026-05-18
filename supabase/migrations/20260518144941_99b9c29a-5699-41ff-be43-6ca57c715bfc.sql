@@ -1,0 +1,1 @@
+ALTER TABLE public.commission_plan_templates ADD COLUMN IF NOT EXISTS comentarios text;

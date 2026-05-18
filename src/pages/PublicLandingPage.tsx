@@ -169,8 +169,12 @@ export default function PublicLandingPage() {
                   <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-foreground/90 text-background flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    {initial}
+                  <div className="w-14 h-14 md:w-20 md:h-14 rounded-lg bg-white border flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {op.logo_url ? (
+                      <img src={op.logo_url} alt={`${op.company_name} logo`} className="max-h-full max-w-full object-contain p-1" />
+                    ) : (
+                      <span className="text-xl font-bold text-foreground/80">{initial}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-base md:text-lg truncate">{op.company_name}</div>

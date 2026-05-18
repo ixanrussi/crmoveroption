@@ -15,7 +15,7 @@ import Afiliados from "./pages/Afiliados";
 import Usuarios from "./pages/Usuarios";
 import MiCuenta from "./pages/MiCuenta";
 import SimpleListPage from "./pages/SimpleListPage";
-import CalculadoraFijos from "./pages/CalculadoraFijos";
+
 import TrackerReport from "./pages/TrackerReport";
 import CommissionPlans from "./pages/CommissionPlans";
 import ActivityLogs from "./pages/ActivityLogs";

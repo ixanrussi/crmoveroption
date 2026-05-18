@@ -10,7 +10,7 @@ export type MenuKey =
   | "prospects-afiliados"
   | "solicitar-links"
   | "planes-comision"
-  | "calculadora-fijos"
+  
   | "tracker-report"
   | "landing-pages"
   | "listas-paises"

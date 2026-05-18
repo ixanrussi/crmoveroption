@@ -121,6 +121,45 @@ const Dashboard = () => {
         </Card>
       </div>
 
+      <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <Card
+          onClick={() => navigate("/planes-comision?margin=high")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Planes con margen ≥ 30% para OO</p>
+              <p className="text-3xl font-bold mt-1">{planStats.highMargin}</p>
+            </div>
+            <TrendingUp className="h-8 w-8 text-success" />
+          </CardContent>
+        </Card>
+        <Card
+          onClick={() => navigate("/planes-comision?margin=low")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Planes con margen &lt; 30% para OO</p>
+              <p className="text-3xl font-bold mt-1">{planStats.lowMargin}</p>
+            </div>
+            <TrendingDown className="h-8 w-8 text-destructive" />
+          </CardContent>
+        </Card>
+        <Card
+          onClick={() => navigate("/clientes?filter=no-rs")}
+          className="cursor-pointer hover:bg-accent/40 transition-colors"
+        >
+          <CardContent className="p-6 flex items-center justify-between">
+            <div>
+              <p className="text-sm text-muted-foreground">Operadores sin acuerdo de RS</p>
+              <p className="text-3xl font-bold mt-1">{planStats.noRs}</p>
+            </div>
+            <AlertTriangle className="h-8 w-8 text-warning" />
+          </CardContent>
+        </Card>
+      </div>
+
       {showMap && <WorldActivityMap />}
 
       <BrandGoals />

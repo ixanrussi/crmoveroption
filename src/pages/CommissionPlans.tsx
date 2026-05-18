@@ -406,6 +406,14 @@ export default function CommissionPlans() {
                 <div className="space-y-1">
                   <Label className="text-xs">CAP (conversiones autorizadas)</Label>
                   <Input type="number" step="1" value={form.cap} onChange={(e) => setForm({ ...form, cap: e.target.value })} />
+                <div className="col-span-2 space-y-1">
+                  <Label className="text-xs">Comentarios</Label>
+                  <Textarea
+                    value={form.comentarios}
+                    onChange={(e) => setForm({ ...form, comentarios: e.target.value })}
+                    placeholder="Apuntes relevantes sobre este plan…"
+                    rows={3}
+                  />
                 </div>
               </div>
               <DialogFooter>

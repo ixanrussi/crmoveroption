@@ -802,12 +802,26 @@ export default function Clientes() {
         )}
       </div>
 
-      <div className="max-w-sm">
-        <Input
-          placeholder="Buscar por nombre, marca o país..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div className="flex flex-wrap items-center gap-2">
+        <div className="max-w-sm flex-1 min-w-[200px]">
+          <Input
+            placeholder="Buscar por nombre, marca o país..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        {noRsFilter && (
+          <Badge variant="secondary" className="gap-2">
+            Filtro: operadores sin acuerdo de RS
+            <button
+              type="button"
+              className="ml-1 text-muted-foreground hover:text-foreground"
+              onClick={() => { searchParams.delete("filter"); setSearchParams(searchParams); }}
+            >
+              ✕
+            </button>
+          </Badge>
+        )}
       </div>
 
       <Card>

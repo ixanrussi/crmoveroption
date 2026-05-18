@@ -23,6 +23,7 @@ import RoleMenuPermissions from "./pages/RoleMenuPermissions";
 import ProspectsOperadores from "./pages/ProspectsOperadores";
 import ProspectsAfiliados from "./pages/ProspectsAfiliados";
 import SolicitarLinks from "./pages/SolicitarLinks";
+import PortalAfiliado from "./pages/PortalAfiliado";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -45,6 +46,7 @@ const App = () => (
               <Route path="/prospects/operadores" element={<ProspectsOperadores />} />
               <Route path="/prospects/afiliados" element={<ProspectsAfiliados />} />
               <Route path="/solicitar-links" element={<SolicitarLinks />} />
+              <Route path="/portal-afiliado" element={<PortalAfiliado />} />
               <Route path="/calculadora-fijos" element={<CalculadoraFijos />} />
               <Route path="/tracker-report" element={<TrackerReport />} />
               <Route path="/planes-comision" element={<CommissionPlans />} />

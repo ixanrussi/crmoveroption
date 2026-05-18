@@ -15,6 +15,7 @@ const ROLE_LABELS: Record<AppRole, string> = {
   admin: "Admin",
   user: "User",
   comercial: "Comercial",
+  affiliate: "Afiliado",
 };
 
 export default function RoleMenuPermissions() {

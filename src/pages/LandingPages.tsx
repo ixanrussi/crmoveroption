@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Trash2, Edit, ExternalLink, Copy, Globe } from "lucide-react";
+import { Plus, Trash2, Edit, ExternalLink, Copy, Globe, Eye } from "lucide-react";
 import { toast } from "sonner";
 
 type LP = {

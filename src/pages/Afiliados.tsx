@@ -195,13 +195,33 @@ export default function Afiliados() {
       supabase.from("affiliate_channels").select("*").order("name"),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_plan_templates").select("*, client:clients(company_name)").order("name", { ascending: true }),
-      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, rev_share_pct, plan_start_date"),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
     setClients(cl.data ?? []);
     setTemplates(tpl.data ?? []);
     setClientPlans(cp.data ?? []);
+
+    // Tasa de validación por operador: qualified / locked a partir de cierres mensuales.
+    const { data: ci } = await supabase
+      .from("commission_closure_items")
+      .select("closure_id, qualified_players, locked_players, closure:commission_closures(client_id)");
+    const agg: Record<string, { q: number; l: number }> = {};
+    (ci ?? []).forEach((row: any) => {
+      const cid = row?.closure?.client_id;
+      if (!cid) return;
+      const q = Number(row.qualified_players) || 0;
+      const l = Number(row.locked_players) || 0;
+      if (!agg[cid]) agg[cid] = { q: 0, l: 0 };
+      agg[cid].q += q;
+      agg[cid].l += l;
+    });
+    const rates: Record<string, number> = {};
+    Object.entries(agg).forEach(([cid, { q, l }]) => {
+      if (l > 0) rates[cid] = q / l;
+    });
+    setValidationRates(rates);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 

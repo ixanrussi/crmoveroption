@@ -127,16 +127,6 @@ export default function PublicLandingPage() {
 
       <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
         <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
-          {data.operators[0]?.logo_url && (
-            <div className="hidden md:block absolute top-6 right-6 h-20 aspect-video overflow-hidden rounded-md border border-primary-foreground/20 bg-card shadow-md">
-              <img
-                src={data.operators[0].logo_url}
-                alt=""
-                aria-hidden="true"
-                className="h-full w-full object-cover"
-              />
-            </div>
-          )}
           <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
           {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
           {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}

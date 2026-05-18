@@ -426,6 +426,7 @@ export type Database = {
           notes: string | null
           payment_method: string | null
           phone: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["affiliate_status"]
           tax_id: string | null
           unique_id: string
@@ -451,6 +452,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           phone?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["affiliate_status"]
           tax_id?: string | null
           unique_id: string
@@ -476,6 +478,7 @@ export type Database = {
           notes?: string | null
           payment_method?: string | null
           phone?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["affiliate_status"]
           tax_id?: string | null
           unique_id?: string
@@ -1243,6 +1246,63 @@ export type Database = {
           },
         ]
       }
+      landing_pages: {
+        Row: {
+          affiliate_id: string
+          country_id: string | null
+          created_at: string
+          created_by: string | null
+          hero_image_url: string | null
+          id: string
+          intro: string | null
+          is_published: boolean
+          notes: string | null
+          operator_ids: string[]
+          seo_description: string | null
+          seo_title: string | null
+          slug: string
+          subtitle: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          hero_image_url?: string | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          notes?: string | null
+          operator_ids?: string[]
+          seo_description?: string | null
+          seo_title?: string | null
+          slug: string
+          subtitle?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          country_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          hero_image_url?: string | null
+          id?: string
+          intro?: string | null
+          is_published?: boolean
+          notes?: string | null
+          operator_ids?: string[]
+          seo_description?: string | null
+          seo_title?: string | null
+          slug?: string
+          subtitle?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -1404,6 +1464,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      get_public_landing_page: {
+        Args: { _affiliate_slug: string; _country_code: string }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
@@ -1412,6 +1476,8 @@ export type Database = {
         Returns: boolean
       }
       is_admin_or_super: { Args: { _user_id: string }; Returns: boolean }
+      slugify: { Args: { _txt: string }; Returns: string }
+      unaccent_safe: { Args: { _txt: string }; Returns: string }
     }
     Enums: {
       affiliate_status: "active" | "inactive" | "pending" | "prospect"

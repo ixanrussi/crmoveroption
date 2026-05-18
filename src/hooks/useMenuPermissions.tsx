@@ -12,6 +12,7 @@ export type MenuKey =
   | "planes-comision"
   | "calculadora-fijos"
   | "tracker-report"
+  | "landing-pages"
   | "listas-paises"
   | "listas-software"
   | "listas-canales"
@@ -32,6 +33,7 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
       { key: "planes-comision", label: "Comisión Afiliado" },
       { key: "calculadora-fijos", label: "Calculadora de Fijos" },
       { key: "tracker-report", label: "API Report" },
+      { key: "landing-pages", label: "Landing Pages" },
     ],
   },
   {

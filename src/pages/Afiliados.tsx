@@ -66,6 +66,7 @@ export default function Afiliados() {
   const [channels, setChannels] = useState<any[]>([]);
   const [clients, setClients] = useState<any[]>([]);
   const [clientPlans, setClientPlans] = useState<any[]>([]);
+  const [validationRates, setValidationRates] = useState<Record<string, number>>({});
   const [templates, setTemplates] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any | null>(null);
@@ -194,13 +195,33 @@ export default function Afiliados() {
       supabase.from("affiliate_channels").select("*").order("name"),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_plan_templates").select("*, client:clients(company_name)").order("name", { ascending: true }),
-      supabase.from("client_commission_plans").select("client_id, brand, cpa, plan_start_date"),
+      supabase.from("client_commission_plans").select("client_id, brand, cpa, rev_share_pct, plan_start_date"),
     ]);
     setCountries(c.data ?? []);
     setChannels(ch.data ?? []);
     setClients(cl.data ?? []);
     setTemplates(tpl.data ?? []);
     setClientPlans(cp.data ?? []);
+
+    // Tasa de validación por operador: qualified / locked a partir de cierres mensuales.
+    const { data: ci } = await supabase
+      .from("commission_closure_items")
+      .select("closure_id, qualified_players, locked_players, closure:commission_closures(client_id)");
+    const agg: Record<string, { q: number; l: number }> = {};
+    (ci ?? []).forEach((row: any) => {
+      const cid = row?.closure?.client_id;
+      if (!cid) return;
+      const q = Number(row.qualified_players) || 0;
+      const l = Number(row.locked_players) || 0;
+      if (!agg[cid]) agg[cid] = { q: 0, l: 0 };
+      agg[cid].q += q;
+      agg[cid].l += l;
+    });
+    const rates: Record<string, number> = {};
+    Object.entries(agg).forEach(([cid, { q, l }]) => {
+      if (l > 0) rates[cid] = q / l;
+    });
+    setValidationRates(rates);
   };
   useEffect(() => { load(); loadLookups(); }, []);
 
@@ -248,6 +269,27 @@ export default function Afiliados() {
       })),
     );
     setOpen(true);
+  };
+  // Rentabilidad esperada para Overoption por plantilla.
+  // Combina el margen de CPA retenido, los puntos de RS retenidos y, cuando hay
+  // historial de cierres, la tasa de validación (qualified/locked) del operador.
+  const getTemplateScore = (t: any): { score: number; cpaProfit: number | null; rsPp: number | null; valRate: number; hasValData: boolean } => {
+    const affCpa = t.cpa != null ? Number(t.cpa) : null;
+    const affRs = t.rev_share_pct != null ? Number(t.rev_share_pct) : null;
+    const bl = (t.brand || "").toLowerCase();
+    const cands = clientPlans
+      .filter((cp: any) => cp.client_id === t.client_id)
+      .filter((cp: any) => !t.brand || !cp.brand || cp.brand.toLowerCase() === bl)
+      .sort((a: any, b: any) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
+    const op = cands[0];
+    const opCpa = op?.cpa != null ? Number(op.cpa) : null;
+    const opRs = op?.rev_share_pct != null ? Number(op.rev_share_pct) : null;
+    const valRate = t.client_id && validationRates[t.client_id] != null ? validationRates[t.client_id] : 1;
+    const hasValData = t.client_id ? validationRates[t.client_id] != null : false;
+    const cpaProfit = opCpa != null && affCpa != null && Number.isFinite(opCpa - affCpa) ? (opCpa - affCpa) : null;
+    const rsPp = opRs != null && affRs != null && Number.isFinite(opRs - affRs) ? (opRs - affRs) : null;
+    const score = ((cpaProfit ?? 0) * valRate) + (rsPp ?? 0);
+    return { score, cpaProfit, rsPp, valRate, hasValData };
   };
 
   const addPlan = () => setPlans((p) => [...p, { ...emptyPlan }]);
@@ -706,27 +748,48 @@ export default function Afiliados() {
                         <SelectContent>
                           {(() => {
                             const usedIds = new Set(plans.map((p) => p.template_id).filter(Boolean));
-                            const available = templates.filter((t) => !usedIds.has(t.id));
+                            const available = templates
+                              .map((t) => ({ t, s: getTemplateScore(t) }))
+                              .sort((a, b) => b.s.score - a.s.score)
+                              .filter(({ t }) => !usedIds.has(t.id));
                             if (templates.length === 0) {
                               return <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>;
                             }
                             if (available.length === 0) {
                               return <div className="px-2 py-1.5 text-xs text-muted-foreground">Todos los planes ya fueron asignados</div>;
                             }
-                            return available.map((t) => (
-                            <SelectItem key={t.id} value={t.id}>
-                              <span className="flex w-full min-w-0 items-center gap-2">
-                                <span className="truncate">
-                                  {t.name || "Sin nombre"}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
-                                </span>
-                                {t.brand && (
-                                  <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                    {t.brand}
+                            return available.map(({ t, s }) => {
+                              const parts: string[] = [];
+                              if (s.cpaProfit != null) parts.push(`CPA +${s.cpaProfit.toFixed(2)}`);
+                              if (s.rsPp != null) parts.push(`RS +${s.rsPp.toFixed(1)}pp`);
+                              if (s.hasValData) parts.push(`val ${(s.valRate * 100).toFixed(0)}%`);
+                              const badge = parts.length > 0 ? parts.join(" · ") : "sin datos";
+                              const tone = s.score > 0
+                                ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+                                : s.score < 0
+                                ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
+                                : "border-muted bg-muted text-muted-foreground";
+                              return (
+                              <SelectItem key={t.id} value={t.id}>
+                                <span className="flex w-full min-w-0 items-center gap-2">
+                                  <span className="truncate">
+                                    {t.name || "Sin nombre"}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
                                   </span>
-                                )}
-                              </span>
-                            </SelectItem>
-                            ));
+                                  {t.brand && (
+                                    <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                      {t.brand}
+                                    </span>
+                                  )}
+                                  <span
+                                    className={`shrink-0 ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone}`}
+                                    title={`Rentabilidad estimada Overoption${s.hasValData ? "" : " (sin tasa de validación histórica, asumida 100%)"}`}
+                                  >
+                                    {badge}
+                                  </span>
+                                </span>
+                              </SelectItem>
+                              );
+                            });
                           })()}
                         </SelectContent>
                       </Select>

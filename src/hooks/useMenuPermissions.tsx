@@ -12,6 +12,7 @@ export type MenuKey =
   | "planes-comision"
   | "calculadora-fijos"
   | "tracker-report"
+  | "landing-pages"
   | "listas-paises"
   | "listas-software"
   | "listas-canales"

@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Users, UserPlus, Globe, Layers, Map as MapIcon } from "lucide-react";
+import { Users, UserPlus, Globe, Layers, Map as MapIcon, TrendingUp, TrendingDown, AlertTriangle } from "lucide-react";
 import WorldActivityMap from "@/components/WorldActivityMap";
 import TopAffiliatesFTD from "@/components/TopAffiliatesFTD";
 import TopBrandsCommission from "@/components/TopBrandsCommission";

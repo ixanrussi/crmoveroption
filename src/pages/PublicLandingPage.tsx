@@ -4,7 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight, ShieldCheck } from "lucide-react";
 
-type Operator = { id: string; company_name: string; website: string | null; brands: string[] | null; ord: number };
+type Operator = { id: string; company_name: string; website: string | null; brands: string[] | null; logo_url?: string | null; ord: number };
 type LinkRow = { client_id: string; brand: string | null; tracking_link: string; country_id: string | null };
 
 type LP = {
@@ -41,7 +41,7 @@ export default function PublicLandingPage() {
             lp.country_id
               ? supabase.from("countries").select("id, code, name").eq("id", lp.country_id).maybeSingle()
               : Promise.resolve({ data: null } as any),
-            supabase.from("clients").select("id, company_name, website, brands").in("id", lp.operator_ids ?? []),
+            supabase.from("clients").select("id, company_name, website, brands, logo_url").in("id", lp.operator_ids ?? []),
             supabase.from("affiliate_tracking_links").select("client_id, brand, tracking_link, country_id")
               .eq("affiliate_id", lp.affiliate_id).in("client_id", lp.operator_ids ?? []),
           ]);
@@ -125,14 +125,31 @@ export default function PublicLandingPage() {
         </div>
       )}
       <header className="border-b">
-        <div className="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between gap-4">
           <div className="font-bold text-lg">{data.affiliate.name}</div>
-          {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
+          <div className="flex items-center gap-4">
+            {data.country && <div className="text-sm text-muted-foreground">{data.country.name}</div>}
+            {data.operators[0]?.logo_url && (
+              <img
+                src={data.operators[0].logo_url}
+                alt={`${data.operators[0].company_name} logo`}
+                className="h-10 md:h-12 w-auto max-w-[180px] object-contain"
+              />
+            )}
+          </div>
         </div>
       </header>
 
-      <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground">
-        <div className="max-w-5xl mx-auto px-4 py-12 md:py-16">
+      <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
+          {data.operators[0]?.logo_url && (
+            <img
+              src={data.operators[0].logo_url}
+              alt=""
+              aria-hidden="true"
+              className="hidden md:block absolute top-6 right-6 h-16 w-auto max-w-[220px] object-contain bg-white/90 rounded-md p-2 shadow-md"
+            />
+          )}
           <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
           {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
           {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}
@@ -152,8 +169,12 @@ export default function PublicLandingPage() {
                   <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <div className="w-12 h-12 md:w-14 md:h-14 rounded-lg bg-foreground/90 text-background flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    {initial}
+                  <div className="w-14 h-14 md:w-20 md:h-14 rounded-lg bg-white border flex items-center justify-center overflow-hidden flex-shrink-0">
+                    {op.logo_url ? (
+                      <img src={op.logo_url} alt={`${op.company_name} logo`} className="max-h-full max-w-full object-contain p-1" />
+                    ) : (
+                      <span className="text-xl font-bold text-foreground/80">{initial}</span>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-base md:text-lg truncate">{op.company_name}</div>

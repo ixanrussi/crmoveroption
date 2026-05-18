@@ -760,6 +760,7 @@ export type Database = {
           email: string | null
           id: string
           login: string | null
+          logo_url: string | null
           net_min_cpa: number | null
           notes: string | null
           phone: string | null
@@ -782,6 +783,7 @@ export type Database = {
           email?: string | null
           id?: string
           login?: string | null
+          logo_url?: string | null
           net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null
@@ -804,6 +806,7 @@ export type Database = {
           email?: string | null
           id?: string
           login?: string | null
+          logo_url?: string | null
           net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null

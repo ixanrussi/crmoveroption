@@ -25,6 +25,7 @@ type ClientPayload = {
   client_type?: string | null;
   brands?: string[] | null;
   net_min_cpa?: number | string | null;
+  logo_url?: string | null;
 };
 
 type ContactPayload = {
@@ -171,6 +172,7 @@ Deno.serve(async (req) => {
       client_type: clientType,
       brands,
       net_min_cpa: numTop(c.net_min_cpa),
+      logo_url: c.logo_url || null,
     };
 
     let clientId = body.id;
@@ -198,12 +200,12 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, created_by
+          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, logo_url, created_by
         ) values (
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
-          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${userData.user.id}
+          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${payload.logo_url}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -224,6 +226,7 @@ Deno.serve(async (req) => {
           client_type = ${payload.client_type},
           brands = ${payload.brands},
           net_min_cpa = ${payload.net_min_cpa},
+          logo_url = ${payload.logo_url},
           updated_at = now()
         where id = ${clientId}
       `;

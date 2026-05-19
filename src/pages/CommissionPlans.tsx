@@ -519,7 +519,7 @@ export default function CommissionPlans() {
                 );
               })}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

@@ -920,7 +920,16 @@ export default function Clientes() {
                             <ExternalLink className="h-4 w-4" />
                           </a>
                         )}
+                        {r.routy_account_id && (
+                          <span
+                            title={`Routy Account ID: ${r.routy_account_id}`}
+                            className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/15 text-blue-600 shrink-0"
+                          >
+                            <Link2 className="h-3 w-3" />
+                          </span>
+                        )}
                       </div>
+
                       <div className="flex items-center gap-1.5 shrink-0">
                         {(() => {
                           const plans = Array.isArray(r.client_commission_plans) ? r.client_commission_plans : [];

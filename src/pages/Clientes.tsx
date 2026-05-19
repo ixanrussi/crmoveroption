@@ -96,7 +96,7 @@ export default function Clientes() {
   const empty = {
     company_name: "", website: "",
     address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
-    client_type: "", brands: [] as string[], net_min_cpa: "", logo_url: "",
+    client_type: "", brands: [] as string[], net_min_cpa: "", logo_url: "", routy_account_id: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [brandInput, setBrandInput] = useState("");
@@ -165,6 +165,7 @@ export default function Clientes() {
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
       net_min_cpa: row.net_min_cpa?.toString() ?? "",
+      routy_account_id: row.routy_account_id ?? "",
     });
     setSoftwareId(row.client_software_links?.[0]?.software_id ?? null);
     setContacts(
@@ -245,6 +246,7 @@ export default function Clientes() {
           brands: Array.isArray(form.brands) ? form.brands : [],
           net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
           logo_url: form.logo_url || null,
+          routy_account_id: form.routy_account_id || null,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,

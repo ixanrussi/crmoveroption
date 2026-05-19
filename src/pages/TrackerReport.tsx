@@ -181,6 +181,14 @@ export default function TrackerReport() {
     });
   }, [raw, accountIdToOperator]);
 
+  // Build alias -> affiliate map (normalized)
+  const aliasMap = useMemo(() => {
+    const m = new Map<string, { id: string; name: string }>();
+    for (const a of affiliates) {
+      for (const al of a.aliases ?? []) {
+        const k = normalize(al);
+        if (k) m.set(k, { id: a.id, name: a.fixed_name });
+      }
       // Also match fixed_name itself
       const fk = normalize(a.fixed_name);
       if (fk && !m.has(fk)) m.set(fk, { id: a.id, name: a.fixed_name });

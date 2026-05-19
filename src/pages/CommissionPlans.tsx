@@ -476,10 +476,10 @@ export default function CommissionPlans() {
                 <TableHead>Nombre</TableHead>
                 <TableHead>Marca</TableHead>
                 <TableHead className="text-right">CPA</TableHead>
+                <TableHead className="text-right">% OO</TableHead>
                 <TableHead className="text-right">BL</TableHead>
                 <TableHead className="text-right">W</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
-                <TableHead className="text-right">% OO</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
             </TableHeader>
@@ -497,6 +497,7 @@ export default function CommissionPlans() {
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
                   <TableCell className={`text-right ${lowMargin ? "text-orange-500 font-medium" : ""}`}>{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
+                  <TableCell className={`text-right ${m == null ? "text-muted-foreground" : lowMargin ? "text-orange-500 font-medium" : "text-green-600 font-medium"}`}>{m == null ? "—" : `${m.toFixed(1)}%`}</TableCell>
                   {(() => {
                     const bl = renderConverted(r.baseline, r.baseline_currency, r.cpa_currency, r.cpa);
                     const w = renderConverted(r.wager, r.wager_currency, r.cpa_currency, r.cpa);
@@ -508,7 +509,6 @@ export default function CommissionPlans() {
                     );
                   })()}
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
-                  <TableCell className={`text-right ${m == null ? "text-muted-foreground" : lowMargin ? "text-orange-500 font-medium" : "text-green-600 font-medium"}`}>{m == null ? "—" : `${m.toFixed(1)}%`}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>

@@ -505,6 +505,56 @@ export default function Afiliados() {
                     </p>
                   )}
                 </div>
+                <div className="col-span-2 space-y-1">
+                  <Label>Imagen del afiliado (avatar para landing pages)</Label>
+                  <div className="flex items-center gap-3">
+                    {form.avatar_url ? (
+                      <img
+                        src={form.avatar_url}
+                        alt="Avatar del afiliado"
+                        className="h-16 w-16 rounded-full object-cover border bg-white"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-full border border-dashed flex items-center justify-center text-[10px] text-muted-foreground text-center px-1">
+                        Sin imagen
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+                        const base = (form.fixed_name || "affiliate")
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, "-")
+                          .replace(/^-|-$/g, "") || "affiliate";
+                        const path = `${base}-${Date.now()}.${ext}`;
+                        const { error: upErr } = await supabase.storage
+                          .from("affiliate-avatars")
+                          .upload(path, file, { upsert: true, contentType: file.type });
+                        if (upErr) { toast.error(upErr.message); return; }
+                        const { data: pub } = supabase.storage.from("affiliate-avatars").getPublicUrl(path);
+                        setForm((f: any) => ({ ...f, avatar_url: pub.publicUrl }));
+                        toast.success("Imagen subida");
+                      }}
+                    />
+                    {form.avatar_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setForm((f: any) => ({ ...f, avatar_url: "" }))}
+                      >
+                        Quitar
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Recomendado: imagen cuadrada (ej. 400×400) tipo perfil. Se mostrará en la landing page del afiliado.
+                  </p>
+                </div>
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>
                   <p className="text-xs text-muted-foreground">Escribe un alias y presiona Enter para agregarlo como tag.</p>

@@ -2,7 +2,26 @@ import { useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Loader2, ChevronRight, ShieldCheck } from "lucide-react";
+import { Loader2, ChevronRight, ShieldCheck, Gift } from "lucide-react";
+
+const SAMPLE_OFFERS = [
+  "Bono de bienvenida hasta 500 €",
+  "100 Free Spins en tu primer depósito",
+  "Free Bet de 20 € sin depósito",
+  "Ruleta de Premios — apuestas y giros extra",
+  "Cashback semanal del 10%",
+  "Apuesta gratis hasta 30 € al registrarte",
+  "Duplicamos tu primer depósito hasta 200 €",
+  "50 giros gratis sin depósito",
+  "Bono recarga del 100% los viernes",
+  "Oportunidad de ganar hasta 500 R$",
+];
+
+const offerFor = (id: string) => {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) >>> 0;
+  return SAMPLE_OFFERS[h % SAMPLE_OFFERS.length];
+};
 
 type Operator = { id: string; company_name: string; website: string | null; brands: string[] | null; logo_url?: string | null; ord: number };
 type LinkRow = { client_id: string; brand: string | null; tracking_link: string; country_id: string | null };
@@ -158,6 +177,10 @@ export default function PublicLandingPage() {
                     {op.brands && op.brands.length > 0 && (
                       <div className="text-xs text-muted-foreground truncate">{op.brands.join(" · ")}</div>
                     )}
+                    <div className="mt-1.5 inline-flex items-center gap-1.5 text-xs md:text-sm font-medium text-primary">
+                      <Gift className="h-3.5 w-3.5 flex-shrink-0" />
+                      <span className="truncate">{offerFor(op.id)}</span>
+                    </div>
                   </div>
                   <div className="flex-shrink-0">
                     {link ? (

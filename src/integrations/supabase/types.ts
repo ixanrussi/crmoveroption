@@ -767,6 +767,7 @@ export type Database = {
           net_min_cpa: number | null
           notes: string | null
           phone: string | null
+          routy_account_id: string | null
           senha: string | null
           status: Database["public"]["Enums"]["client_status"]
           updated_at: string
@@ -790,6 +791,7 @@ export type Database = {
           net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null
+          routy_account_id?: string | null
           senha?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           updated_at?: string
@@ -813,6 +815,7 @@ export type Database = {
           net_min_cpa?: number | null
           notes?: string | null
           phone?: string | null
+          routy_account_id?: string | null
           senha?: string | null
           status?: Database["public"]["Enums"]["client_status"]
           updated_at?: string

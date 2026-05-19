@@ -15,6 +15,7 @@ import { ChevronDown, ChevronUp, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
+type ClientOp = { id: string; company_name: string; routy_account_id: string | null };
 
 const ALL = "__all__";
 const UNDEFINED_ID = "undefined";
@@ -102,6 +103,7 @@ export default function TrackerReport() {
   const [appliedRange, setAppliedRange] = useState<{ from: string; to: string }>({ from: "", to: "" });
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [clientOps, setClientOps] = useState<ClientOp[]>([]);
 
   const toggleExpand = (id: string) => setExpanded(prev => {
     const n = new Set(prev);
@@ -129,6 +131,13 @@ export default function TrackerReport() {
       if (error) { console.error(error); return; }
       setAffiliates((data ?? []) as Affiliate[]);
     })();
+    (async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, company_name, routy_account_id");
+      if (error) { console.error(error); return; }
+      setClientOps((data ?? []) as ClientOp[]);
+    })();
   }, []);
 
   const fetchData = async (from: string, to: string) => {
@@ -154,7 +163,23 @@ export default function TrackerReport() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [appliedRange]);
 
-  const allRows = raw?.data ?? [];
+  const accountIdToOperator = useMemo(() => {
+    const m = new Map<string, string>();
+    for (const c of clientOps) {
+      const id = (c.routy_account_id ?? "").toString().trim();
+      if (id) m.set(id, c.company_name);
+    }
+    return m;
+  }, [clientOps]);
+
+  const allRows = useMemo(() => {
+    const src = raw?.data ?? [];
+    if (accountIdToOperator.size === 0) return src;
+    return src.map((r) => {
+      const opName = accountIdToOperator.get((r.accountId ?? "").toString().trim());
+      return opName ? { ...r, brand: opName } : r;
+    });
+  }, [raw, accountIdToOperator]);
 
   // Build alias -> affiliate map (normalized)
   const aliasMap = useMemo(() => {

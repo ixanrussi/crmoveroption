@@ -1113,15 +1113,16 @@ export default function Afiliados() {
                         </div>
                       );
                     })()}
+                  </TableCell>
+                  <TableCell className="text-center align-middle">
                     <button
                       type="button"
                       onClick={() => openEdit(r)}
-                      className={`inline-flex items-center mt-1 ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
+                      className={`inline-flex items-center justify-center ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
                       title={missingLinks[r.id] > 0 ? "Operadores con plan asignado pero sin tracking link" : "Todos los tracking links asignados"}
                     >
                       <Link2 className="h-4 w-4" />
                     </button>
-
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {(() => {

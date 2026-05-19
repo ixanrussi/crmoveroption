@@ -1239,7 +1239,7 @@ export default function Afiliados() {
                 </TableRow>
               ))}
               {list.length === 0 && (
-                <TableRow><TableCell colSpan={10} className="text-center text-muted-foreground py-8">Sin afiliados registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Sin afiliados registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

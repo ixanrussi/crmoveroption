@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown, TrendingUp, Percent, Link2 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
@@ -753,11 +754,14 @@ export default function Afiliados() {
                   <div className="flex items-center justify-between gap-2 flex-wrap">
                     <Label className="text-base">Comisiones</Label>
                     <div className="flex items-center gap-2">
-                      <Select value="" onValueChange={(v) => { if (v) addPlanFromTemplate(v); }}>
-                        <SelectTrigger className="h-8 w-[220px]">
-                          <SelectValue placeholder="Asignar desde catálogo…" />
-                        </SelectTrigger>
-                        <SelectContent>
+                      <Popover>
+                        <PopoverTrigger asChild>
+                          <Button type="button" variant="outline" size="sm" className="h-8 w-[220px] justify-between font-normal">
+                            <span className="truncate text-muted-foreground">Asignar desde catálogo…</span>
+                            <ChevronDown className="h-4 w-4 opacity-50 shrink-0 ml-2" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-[360px] p-0" align="end">
                           {(() => {
                             const usedIds = new Set(plans.map((p) => p.template_id).filter(Boolean));
                             const available = templates
@@ -765,46 +769,61 @@ export default function Afiliados() {
                               .sort((a, b) => b.s.score - a.s.score)
                               .filter(({ t }) => !usedIds.has(t.id));
                             if (templates.length === 0) {
-                              return <div className="px-2 py-1.5 text-xs text-muted-foreground">Sin planes en el catálogo</div>;
+                              return <div className="px-3 py-3 text-xs text-muted-foreground">Sin planes en el catálogo</div>;
                             }
                             if (available.length === 0) {
-                              return <div className="px-2 py-1.5 text-xs text-muted-foreground">Todos los planes ya fueron asignados</div>;
+                              return <div className="px-3 py-3 text-xs text-muted-foreground">Todos los planes ya fueron asignados</div>;
                             }
-                            return available.map(({ t, s }) => {
-                              const parts: string[] = [];
-                              if (s.cpaProfit != null) parts.push(`CPA +${s.cpaProfit.toFixed(2)}`);
-                              if (s.rsPp != null) parts.push(`RS +${s.rsPp.toFixed(1)}pp`);
-                              if (s.hasValData) parts.push(`val ${(s.valRate * 100).toFixed(0)}%`);
-                              const badge = parts.length > 0 ? parts.join(" · ") : "sin datos";
-                              const tone = s.score > 0
-                                ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
-                                : s.score < 0
-                                ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
-                                : "border-muted bg-muted text-muted-foreground";
-                              return (
-                              <SelectItem key={t.id} value={t.id}>
-                                <span className="flex w-full min-w-0 items-center gap-2">
-                                  <span className="truncate">
-                                    {t.name || "Sin nombre"}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
-                                  </span>
-                                  {t.brand && (
-                                    <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
-                                      {t.brand}
-                                    </span>
-                                  )}
-                                  <span
-                                    className={`shrink-0 ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone}`}
-                                    title={`Rentabilidad estimada Overoption${s.hasValData ? "" : " (sin tasa de validación histórica, asumida 100%)"}`}
-                                  >
-                                    {badge}
-                                  </span>
-                                </span>
-                              </SelectItem>
-                              );
-                            });
+                            return (
+                              <Command>
+                                <CommandInput placeholder="Buscar plan, operador o marca…" />
+                                <CommandList>
+                                  <CommandEmpty>Sin resultados.</CommandEmpty>
+                                  <CommandGroup>
+                                    {available.map(({ t, s }) => {
+                                      const parts: string[] = [];
+                                      if (s.cpaProfit != null) parts.push(`CPA +${s.cpaProfit.toFixed(2)}`);
+                                      if (s.rsPp != null) parts.push(`RS +${s.rsPp.toFixed(1)}pp`);
+                                      if (s.hasValData) parts.push(`val ${(s.valRate * 100).toFixed(0)}%`);
+                                      const badge = parts.length > 0 ? parts.join(" · ") : "sin datos";
+                                      const tone = s.score > 0
+                                        ? "border-green-500/30 bg-green-500/10 text-green-700 dark:text-green-400"
+                                        : s.score < 0
+                                        ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
+                                        : "border-muted bg-muted text-muted-foreground";
+                                      const searchValue = `${t.name || ""} ${t.client?.company_name || ""} ${t.brand || ""}`;
+                                      return (
+                                        <CommandItem
+                                          key={t.id}
+                                          value={`${searchValue} ${t.id}`}
+                                          onSelect={() => addPlanFromTemplate(t.id)}
+                                        >
+                                          <span className="flex w-full min-w-0 items-center gap-2">
+                                            <span className="truncate">
+                                              {t.name || "Sin nombre"}{t.client?.company_name ? ` · ${t.client.company_name}` : ""}
+                                            </span>
+                                            {t.brand && (
+                                              <span className="shrink-0 rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 text-[10px] font-semibold text-primary">
+                                                {t.brand}
+                                              </span>
+                                            )}
+                                            <span
+                                              className={`shrink-0 ml-auto rounded-full border px-2 py-0.5 text-[10px] font-semibold ${tone}`}
+                                              title={`Rentabilidad estimada Overoption${s.hasValData ? "" : " (sin tasa de validación histórica, asumida 100%)"}`}
+                                            >
+                                              {badge}
+                                            </span>
+                                          </span>
+                                        </CommandItem>
+                                      );
+                                    })}
+                                  </CommandGroup>
+                                </CommandList>
+                              </Command>
+                            );
                           })()}
-                        </SelectContent>
-                      </Select>
+                        </PopoverContent>
+                      </Popover>
                       <Button type="button" size="sm" variant="outline" onClick={addPlan}>
                         <Plus className="h-4 w-4 mr-1" /> Agregar plan
                       </Button>

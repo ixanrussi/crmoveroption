@@ -723,14 +723,25 @@ export default function Afiliados() {
                     </div>
                     <div className="space-y-1 md:col-span-2">
                       <Label className="text-xs text-muted-foreground">CPA fallback (si no alcanza el volumen)</Label>
-                      <Input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        value={form.fixed_remuneration_fallback_cpa ?? ""}
-                        onChange={(e) => setForm({ ...form, fixed_remuneration_fallback_cpa: e.target.value })}
-                      />
+                      <div className="flex gap-2">
+                        <Input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          placeholder="0.00"
+                          value={form.fixed_remuneration_fallback_cpa ?? ""}
+                          onChange={(e) => setForm({ ...form, fixed_remuneration_fallback_cpa: e.target.value })}
+                        />
+                        <Select
+                          value={form.fixed_remuneration_fallback_cpa_currency ?? ""}
+                          onValueChange={(v) => setForm({ ...form, fixed_remuneration_fallback_cpa_currency: v })}
+                        >
+                          <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                          <SelectContent>
+                            {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                          </SelectContent>
+                        </Select>
+                      </div>
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">

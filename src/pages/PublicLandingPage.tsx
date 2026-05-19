@@ -165,12 +165,27 @@ export default function PublicLandingPage() {
                   <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <div className="w-16 h-12 md:w-24 md:h-14 rounded-lg bg-card border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
+                  <div className="w-16 h-12 md:w-24 md:h-14 rounded-lg bg-white border border-border flex items-center justify-center overflow-hidden flex-shrink-0 p-1.5">
                     {op.logo_url ? (
-                      <img src={op.logo_url} alt={`${op.company_name} logo`} className="h-full w-full object-cover" />
-                    ) : (
-                      <span className="text-xl font-bold text-foreground/80">{initial}</span>
-                    )}
+                      <img
+                        src={op.logo_url}
+                        alt={`${op.company_name} logo`}
+                        loading="lazy"
+                        className="max-h-full max-w-full object-contain"
+                        onError={(e) => {
+                          const img = e.currentTarget;
+                          img.style.display = "none";
+                          const fb = img.nextElementSibling as HTMLElement | null;
+                          if (fb) fb.style.display = "flex";
+                        }}
+                      />
+                    ) : null}
+                    <span
+                      className="text-xl font-bold text-foreground/80 w-full h-full items-center justify-center"
+                      style={{ display: op.logo_url ? "none" : "flex" }}
+                    >
+                      {initial}
+                    </span>
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="font-semibold text-base md:text-lg truncate">{op.company_name}</div>

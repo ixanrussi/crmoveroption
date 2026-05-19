@@ -900,7 +900,7 @@ export default function Clientes() {
                 <TableRow key={r.id} className="align-top">
                   <TableCell className="font-medium align-top">
                     <div className="flex items-center justify-between gap-2">
-                      <div className="flex items-center gap-2 min-w-0">
+                      <div className="flex items-center gap-3 min-w-0">
                         <button
                           type="button"
                           className="text-left hover:underline text-primary truncate"
@@ -908,27 +908,34 @@ export default function Clientes() {
                         >
                           {r.company_name}
                         </button>
-                        {r.website && (
-                          <a
-                            href={/^https?:\/\//i.test(r.website) ? r.website : `https://${r.website}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-muted-foreground hover:text-primary shrink-0"
-                            title="Abrir sitio web"
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <ExternalLink className="h-4 w-4" />
-                          </a>
-                        )}
-                        {r.routy_account_id && (
-                          <span
-                            title={`Routy Account ID: ${r.routy_account_id}`}
-                            className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/15 text-blue-600 shrink-0"
-                          >
-                            <Link2 className="h-3 w-3" />
-                          </span>
-                        )}
+                        <div className="flex items-center gap-3 shrink-0 ml-auto pl-2">
+                          <div className="w-5 flex items-center justify-center">
+                            {r.website && (
+                              <a
+                                href={/^https?:\/\//i.test(r.website) ? r.website : `https://${r.website}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-muted-foreground hover:text-primary"
+                                title="Abrir sitio web"
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <ExternalLink className="h-4 w-4" />
+                              </a>
+                            )}
+                          </div>
+                          <div className="w-5 flex items-center justify-center">
+                            {r.routy_account_id && (
+                              <span
+                                title={`Routy Account ID: ${r.routy_account_id}`}
+                                className="inline-flex items-center justify-center h-5 w-5 rounded-full bg-blue-500/15 text-blue-600"
+                              >
+                                <Link2 className="h-3 w-3" />
+                              </span>
+                            )}
+                          </div>
+                        </div>
                       </div>
+
 
                       <div className="flex items-center gap-1.5 shrink-0">
                         {(() => {

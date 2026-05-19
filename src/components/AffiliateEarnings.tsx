@@ -56,14 +56,16 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.company_name])), [clients]);
 
   // Match plan: same client, brand contains, most recent start_date <= period
-  const findCpa = (clientId: string, brand: string | null, period: string): number | null => {
-    const candidates = plans.filter((p) => (!p.client_id || p.client_id === clientId) && p.cpa != null);
+  const findPlanField = (clientId: string, brand: string | null, field: "cpa" | "rev_share_pct"): number | null => {
+    const candidates = plans.filter((p) => (!p.client_id || p.client_id === clientId) && p[field] != null);
     const brandLower = (brand || "").toLowerCase();
     const eligible = candidates
       .filter((p) => !p.brand || brandLower.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(brandLower))
       .sort((a, b) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
-    return eligible[0]?.cpa ?? null;
+    return (eligible[0]?.[field] as number | null | undefined) ?? null;
   };
+  const findCpa = (clientId: string, brand: string | null) => findPlanField(clientId, brand, "cpa");
+  const findRs = (clientId: string, brand: string | null) => findPlanField(clientId, brand, "rev_share_pct");
 
   // Build rows: per closure (period × client × brand)
   type Row = {
@@ -76,8 +78,11 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
     for (const it of items) {
       const cls = closureMap.get(it.closure_id);
       if (!cls) continue;
-      const cpa = it.report_type === "cpa" ? findCpa(cls.client_id, it.brand, cls.period) : null;
-      const earned = it.report_type === "cpa" && cpa != null ? cpa * (it.qualified_players || 0) : 0;
+      const cpa = it.report_type === "cpa" ? findCpa(cls.client_id, it.brand) : null;
+      const rs = it.report_type !== "cpa" ? findRs(cls.client_id, it.brand) : null;
+      const earned = it.report_type === "cpa"
+        ? (cpa != null ? cpa * (it.qualified_players || 0) : 0)
+        : (rs != null ? Number(it.commission_total || 0) * (rs / 100) : 0);
       out.push({
         period: cls.period,
         client: clientMap.get(cls.client_id) ?? "—",
@@ -160,7 +165,7 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
                       <TableCell><Badge variant="outline" className="text-[10px]">{r.type === "cpa" ? "CPA" : "RS"}</Badge></TableCell>
                       <TableCell className="text-right">{r.qualified}</TableCell>
                       <TableCell className="text-right font-medium text-success">
-                        {r.type === "cpa" ? fmt(r.affiliate_earned, r.currency) : <span className="text-xs text-muted-foreground">—</span>}
+                        {fmt(r.affiliate_earned, r.currency)}
                       </TableCell>
                       <TableCell><Badge variant={r.status === "paid" ? "default" : "secondary"} className="text-[10px]">{r.status}</Badge></TableCell>
                     </TableRow>

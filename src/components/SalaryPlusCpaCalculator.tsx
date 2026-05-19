@@ -45,9 +45,10 @@ export default function SalaryPlusCpaCalculator() {
     return pcts.map((p) => {
       const s = (p / 100) * presupuesto;
       const c = capNum > 0 ? (presupuesto - s) / capNum : 0;
-      return { pct: p, salario: s, comision: c, total: s + c * capNum };
+      const minCpas = cpaNum > 0 ? Math.ceil(s / cpaNum) : 0;
+      return { pct: p, salario: s, comision: c, total: s + c * capNum, minCpas };
     });
-  }, [presupuesto, capNum]);
+  }, [presupuesto, capNum, cpaNum]);
 
   const copyProposal = (p: { pct: number; salario: number; comision: number; total: number }) => {
     const text = `Propuesta: Sueldo fijo de ${fmtEur(p.salario)} + ${fmtEur(p.comision)} por cada CPA. Al alcanzar ${capNum} conversiones, ingreso total = ${fmtEur(p.total)}.`;
@@ -166,6 +167,7 @@ export default function SalaryPlusCpaCalculator() {
             <TableHeader>
               <TableRow>
                 <TableHead>% Sueldo fijo</TableHead>
+                <TableHead>CPAs mín. para cubrir salario</TableHead>
                 <TableHead>Sueldo fijo</TableHead>
                 <TableHead>Comisión por CPA</TableHead>
                 <TableHead>Total a pagar</TableHead>
@@ -180,6 +182,7 @@ export default function SalaryPlusCpaCalculator() {
                   onClick={() => copyProposal(p)}
                 >
                   <TableCell className="font-medium">{p.pct}%</TableCell>
+                  <TableCell>{p.minCpas}</TableCell>
                   <TableCell>{fmtEur(p.salario)}</TableCell>
                   <TableCell>{fmtEur(p.comision)}</TableCell>
                   <TableCell>{fmtEur(p.total)}</TableCell>

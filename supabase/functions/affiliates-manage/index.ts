@@ -24,6 +24,7 @@ type AffiliatePayload = {
   bank_details?: string | null;
   tax_id?: string | null;
   notes?: string | null;
+  avatar_url?: string | null;
 };
 
 type ChannelLink = { channel_id: string; link?: string | null };
@@ -132,6 +133,7 @@ Deno.serve(async (req) => {
         bank_details: a.bank_details || null,
         tax_id: a.tax_id || null,
         notes: a.notes || null,
+        avatar_url: (a as any).avatar_url || null,
         fixed_remuneration: (a as any).fixed_remuneration === null || (a as any).fixed_remuneration === undefined || (a as any).fixed_remuneration === "" ? null : Number((a as any).fixed_remuneration),
         fixed_remuneration_currency: (a as any).fixed_remuneration_currency || null,
         fixed_remuneration_min_ftd: (a as any).fixed_remuneration_min_ftd === null || (a as any).fixed_remuneration_min_ftd === undefined || (a as any).fixed_remuneration_min_ftd === "" ? null : Math.trunc(Number((a as any).fixed_remuneration_min_ftd)),
@@ -167,14 +169,14 @@ Deno.serve(async (req) => {
             fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands,
             fixed_remuneration, fixed_remuneration_currency,
-            fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency, created_by
+            fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency, avatar_url, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
             ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency},
-            ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency}, ${userData.user.id}
+            ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency}, ${payload.avatar_url}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;
@@ -203,6 +205,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
               fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
+              avatar_url = ${payload.avatar_url},
               updated_at = now()
             where id = ${affiliateId}
           `;
@@ -227,6 +230,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
               fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
+              avatar_url = ${payload.avatar_url},
               updated_at = now()
             where id = ${affiliateId}
           `;

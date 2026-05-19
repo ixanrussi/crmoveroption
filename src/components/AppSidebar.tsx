@@ -22,7 +22,7 @@ export function AppSidebar() {
   const allMainItems: { title: string; url: string; icon: any; key: MenuKey }[] = [
     { title: t("nav.dashboard"), url: "/", icon: LayoutDashboard, key: "dashboard" },
     { title: t("nav.operators"), url: "/clientes", icon: Users, key: "clientes" },
-    { title: t("nav.operatorsProspect"), url: "/prospects/operadores", icon: UserSearch, key: "prospects-operadores" },
+    
     { title: t("nav.affiliates"), url: "/afiliados", icon: UserPlus, key: "afiliados" },
     { title: t("nav.affiliatesProspect"), url: "/prospects/afiliados", icon: Sparkles, key: "prospects-afiliados" },
     { title: t("nav.requestLinks"), url: "/solicitar-links", icon: Link2, key: "solicitar-links" },
@@ -38,7 +38,7 @@ export function AppSidebar() {
     { title: t("nav.currencies"), url: "/listas/monedas", key: "listas-monedas" },
   ];
 
-  const mainItems = allMainItems.filter((i) => can(i.key)).filter((i) => !(isComercial && !isAdmin && !isSuperAdmin && i.key === "prospects-operadores"));
+  const mainItems = allMainItems.filter((i) => can(i.key));
   const visibleListItems = listItems.filter((i) => can(i.key));
 
   return (

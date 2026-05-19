@@ -6,7 +6,7 @@ export type MenuKey =
   | "dashboard"
   | "clientes"
   | "afiliados"
-  | "prospects-operadores"
+  
   | "prospects-afiliados"
   | "solicitar-links"
   | "planes-comision"
@@ -27,7 +27,7 @@ export const MENU_GROUPS: { group: string; items: { key: MenuKey; label: string 
       { key: "dashboard", label: "Dashboard" },
       { key: "clientes", label: "Operadores" },
       { key: "afiliados", label: "Afiliados" },
-      { key: "prospects-operadores", label: "Operadores prospect" },
+      
       { key: "prospects-afiliados", label: "Afiliados prospect" },
       { key: "solicitar-links", label: "Solicitar links" },
       { key: "planes-comision", label: "Comisión Afiliado" },

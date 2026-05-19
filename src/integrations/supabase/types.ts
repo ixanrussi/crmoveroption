@@ -409,6 +409,7 @@ export type Database = {
         Row: {
           alias: string | null
           aliases: string[]
+          avatar_url: string | null
           bank_details: string | null
           brands: string[]
           commission_pct: number | null
@@ -436,6 +437,7 @@ export type Database = {
         Insert: {
           alias?: string | null
           aliases?: string[]
+          avatar_url?: string | null
           bank_details?: string | null
           brands?: string[]
           commission_pct?: number | null
@@ -463,6 +465,7 @@ export type Database = {
         Update: {
           alias?: string | null
           aliases?: string[]
+          avatar_url?: string | null
           bank_details?: string | null
           brands?: string[]
           commission_pct?: number | null

@@ -80,6 +80,7 @@ export default function Afiliados() {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
     fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "", fixed_remuneration_fallback_cpa_currency: "",
+    avatar_url: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
@@ -372,6 +373,7 @@ export default function Afiliados() {
       fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
       fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
       fixed_remuneration_fallback_cpa_currency: form.fixed_remuneration_fallback_cpa_currency || null,
+      avatar_url: form.avatar_url || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -502,6 +504,56 @@ export default function Afiliados() {
                         : "Solo el super admin puede modificarlo."}
                     </p>
                   )}
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label>Imagen del afiliado (avatar para landing pages)</Label>
+                  <div className="flex items-center gap-3">
+                    {form.avatar_url ? (
+                      <img
+                        src={form.avatar_url}
+                        alt="Avatar del afiliado"
+                        className="h-16 w-16 rounded-full object-cover border bg-white"
+                      />
+                    ) : (
+                      <div className="h-16 w-16 rounded-full border border-dashed flex items-center justify-center text-[10px] text-muted-foreground text-center px-1">
+                        Sin imagen
+                      </div>
+                    )}
+                    <Input
+                      type="file"
+                      accept="image/png,image/jpeg,image/jpg,image/webp"
+                      onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if (!file) return;
+                        const ext = file.name.split(".").pop()?.toLowerCase() || "png";
+                        const base = (form.fixed_name || "affiliate")
+                          .toLowerCase()
+                          .replace(/[^a-z0-9]+/g, "-")
+                          .replace(/^-|-$/g, "") || "affiliate";
+                        const path = `${base}-${Date.now()}.${ext}`;
+                        const { error: upErr } = await supabase.storage
+                          .from("affiliate-avatars")
+                          .upload(path, file, { upsert: true, contentType: file.type });
+                        if (upErr) { toast.error(upErr.message); return; }
+                        const { data: pub } = supabase.storage.from("affiliate-avatars").getPublicUrl(path);
+                        setForm((f: any) => ({ ...f, avatar_url: pub.publicUrl }));
+                        toast.success("Imagen subida");
+                      }}
+                    />
+                    {form.avatar_url && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setForm((f: any) => ({ ...f, avatar_url: "" }))}
+                      >
+                        Quitar
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-[11px] text-muted-foreground">
+                    Recomendado: imagen cuadrada (ej. 400×400) tipo perfil. Se mostrará en la landing page del afiliado.
+                  </p>
                 </div>
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>

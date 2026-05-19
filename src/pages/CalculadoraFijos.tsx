@@ -9,6 +9,8 @@ import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SalaryPlusCpaCalculator from "@/components/SalaryPlusCpaCalculator";
 
 
 import jsPDF from "jspdf";

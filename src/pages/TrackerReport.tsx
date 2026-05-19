@@ -15,6 +15,7 @@ import { ChevronDown, ChevronUp, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
+type ClientOp = { id: string; company_name: string; routy_account_id: string | null };
 
 const ALL = "__all__";
 const UNDEFINED_ID = "undefined";
@@ -102,6 +103,7 @@ export default function TrackerReport() {
   const [appliedRange, setAppliedRange] = useState<{ from: string; to: string }>({ from: "", to: "" });
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [clientOps, setClientOps] = useState<ClientOp[]>([]);
 
   const toggleExpand = (id: string) => setExpanded(prev => {
     const n = new Set(prev);
@@ -128,6 +130,13 @@ export default function TrackerReport() {
         .order("fixed_name", { ascending: true });
       if (error) { console.error(error); return; }
       setAffiliates((data ?? []) as Affiliate[]);
+    })();
+    (async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, company_name, routy_account_id");
+      if (error) { console.error(error); return; }
+      setClientOps((data ?? []) as ClientOp[]);
     })();
   }, []);
 

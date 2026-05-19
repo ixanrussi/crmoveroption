@@ -165,13 +165,13 @@ export default function PublicLandingPage() {
                   <span className="w-8 h-8 rounded-full bg-muted text-muted-foreground flex items-center justify-center text-sm font-semibold flex-shrink-0">
                     {idx + 1}
                   </span>
-                  <div className="w-16 h-12 md:w-24 md:h-14 rounded-lg bg-white border border-border flex items-center justify-center overflow-hidden flex-shrink-0 p-1.5">
+                  <div className="w-16 h-12 md:w-24 md:h-14 rounded-lg border border-border flex items-center justify-center overflow-hidden flex-shrink-0">
                     {op.logo_url ? (
                       <img
                         src={op.logo_url}
                         alt={`${op.company_name} logo`}
                         loading="lazy"
-                        className="max-h-full max-w-full object-contain"
+                        className="w-full h-full object-cover"
                         onError={(e) => {
                           const img = e.currentTarget;
                           img.style.display = "none";

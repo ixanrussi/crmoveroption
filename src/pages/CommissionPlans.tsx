@@ -479,6 +479,7 @@ export default function CommissionPlans() {
                 <TableHead className="text-right">BL</TableHead>
                 <TableHead className="text-right">W</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
+                <TableHead className="text-right">% OO</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
             </TableHeader>

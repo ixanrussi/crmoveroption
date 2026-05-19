@@ -27,7 +27,7 @@ type Operator = { id: string; company_name: string; website: string | null; bran
 type LinkRow = { client_id: string; brand: string | null; tracking_link: string; country_id: string | null };
 
 type LP = {
-  affiliate: { id: string; name: string; slug: string };
+  affiliate: { id: string; name: string; slug: string; avatar_url?: string | null };
   country: { id: string; code: string; name: string } | null;
   page: {
     id: string;
@@ -56,7 +56,7 @@ export default function PublicLandingPage() {
         const { data: lp } = await supabase.from("landing_pages").select("*").eq("id", lpId).maybeSingle();
         if (lp) {
           const [{ data: aff }, coRes, { data: ops }, { data: links }] = await Promise.all([
-            supabase.from("affiliates").select("id, fixed_name, slug").eq("id", lp.affiliate_id).maybeSingle(),
+            supabase.from("affiliates").select("id, fixed_name, slug, avatar_url").eq("id", lp.affiliate_id).maybeSingle(),
             lp.country_id
               ? supabase.from("countries").select("id, code, name").eq("id", lp.country_id).maybeSingle()
               : Promise.resolve({ data: null } as any),
@@ -71,7 +71,7 @@ export default function PublicLandingPage() {
           }).filter(Boolean);
           if (aff) {
             result = {
-              affiliate: { id: aff.id, name: aff.fixed_name, slug: aff.slug },
+              affiliate: { id: aff.id, name: aff.fixed_name, slug: aff.slug, avatar_url: (aff as any).avatar_url ?? null },
               country: co ? { id: co.id, code: co.code, name: co.name } : null,
               page: { id: lp.id, title: lp.title, subtitle: lp.subtitle, intro: lp.intro, hero_image_url: lp.hero_image_url, seo_title: lp.seo_title, seo_description: lp.seo_description },
               operators: ordered,
@@ -145,10 +145,20 @@ export default function PublicLandingPage() {
       )}
 
       <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative">
-          <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
-          {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
-          {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative flex flex-col md:flex-row md:items-center gap-6">
+          {data.affiliate.avatar_url && (
+            <img
+              src={data.affiliate.avatar_url}
+              alt={`${data.affiliate.name} avatar`}
+              className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-primary-foreground/30 shadow-lg flex-shrink-0"
+              loading="lazy"
+            />
+          )}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
+            {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
+            {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}
+          </div>
         </div>
       </section>
 

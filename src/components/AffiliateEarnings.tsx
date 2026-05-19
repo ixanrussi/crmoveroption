@@ -165,7 +165,7 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
                       <TableCell><Badge variant="outline" className="text-[10px]">{r.type === "cpa" ? "CPA" : "RS"}</Badge></TableCell>
                       <TableCell className="text-right">{r.qualified}</TableCell>
                       <TableCell className="text-right font-medium text-success">
-                        {r.type === "cpa" ? fmt(r.affiliate_earned, r.currency) : <span className="text-xs text-muted-foreground">—</span>}
+                        {fmt(r.affiliate_earned, r.currency)}
                       </TableCell>
                       <TableCell><Badge variant={r.status === "paid" ? "default" : "secondary"} className="text-[10px]">{r.status}</Badge></TableCell>
                     </TableRow>

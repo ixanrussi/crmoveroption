@@ -487,7 +487,7 @@ export default function CommissionPlans() {
                 const m = getMargin(r);
                 const lowMargin = m != null && m < 30;
                 return (
-                <TableRow key={r.id} className={lowMargin ? "bg-orange-500/10 hover:bg-orange-500/15" : ""}>
+                <TableRow key={r.id}>
                   <TableCell className="font-medium">{r.client?.company_name || "—"}</TableCell>
                   <TableCell>
                     <button type="button" className="text-left hover:underline text-primary" onClick={() => openEdit(r)}>
@@ -495,7 +495,7 @@ export default function CommissionPlans() {
                     </button>
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
-                  <TableCell className="text-right">{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
+                  <TableCell className={`text-right ${lowMargin ? "text-orange-500 font-medium" : ""}`}>{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
                   {(() => {
                     const bl = renderConverted(r.baseline, r.baseline_currency, r.cpa_currency, r.cpa);
                     const w = renderConverted(r.wager, r.wager_currency, r.cpa_currency, r.cpa);

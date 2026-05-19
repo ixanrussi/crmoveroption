@@ -43,11 +43,15 @@ export default function WorldActivityMap() {
 
   useEffect(() => {
     (async () => {
-      const [{ data: countries }, { data: clients }] = await Promise.all([
+      const [{ data: countries }, { data: plans }, { data: clients }] = await Promise.all([
         supabase.from("countries").select("id, name, code"),
-        supabase.from("clients").select("company_name, brands, country_ids, status"),
+        supabase.from("client_commission_plans").select("client_id, brand, country_id, country_ids"),
+        supabase.from("clients").select("id, company_name, status"),
       ]);
       if (!countries) return;
+
+      const clientById = new Map<string, any>();
+      (clients ?? []).forEach((c: any) => clientById.set(c.id, c));
 
       const byCountryId = new Map<string, CountryActivity>();
       countries.forEach((c: any) => {
@@ -55,14 +59,18 @@ export default function WorldActivityMap() {
         byCountryId.set(c.id, { name: c.name, code: c.code, brands: new Set<string>() });
       });
 
-      (clients ?? []).forEach((cl: any) => {
-        if (cl.status === "inactive") return;
-        const rawBrands: string[] = (cl.brands ?? []).filter((b: string) => b && b.trim());
-        const brands: string[] = rawBrands.length > 0 ? rawBrands : (cl.company_name ? [cl.company_name] : []);
-        const countryIds: string[] = cl.country_ids ?? [];
-        countryIds.forEach((cid) => {
+      (plans ?? []).forEach((p: any) => {
+        const client = clientById.get(p.client_id);
+        if (!client || client.status === "inactive") return;
+        const brand = (p.brand && p.brand.trim()) ? p.brand.trim() : client.company_name;
+        if (!brand) return;
+        const cids: string[] = [
+          ...(p.country_ids ?? []),
+          ...(p.country_id ? [p.country_id] : []),
+        ];
+        cids.forEach((cid) => {
           const entry = byCountryId.get(cid);
-          if (entry) brands.forEach((b) => entry.brands.add(b));
+          if (entry) entry.brands.add(brand);
         });
       });
 
@@ -76,6 +84,7 @@ export default function WorldActivityMap() {
       setByNumeric(result);
     })();
   }, []);
+
 
   const activeColor = "hsl(var(--primary))";
   const inactiveColor = "hsl(var(--muted))";

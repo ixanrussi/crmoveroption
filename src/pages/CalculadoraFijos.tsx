@@ -801,6 +801,13 @@ export default function CalculadoraFijos() {
           )}
         </div>
       </div>
+        </TabsContent>
+        <TabsContent value="salario-cpa">
+          <SalaryPlusCpaCalculator />
+        </TabsContent>
+      </Tabs>
+
+
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>

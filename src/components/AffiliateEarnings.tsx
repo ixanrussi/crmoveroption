@@ -56,14 +56,16 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.company_name])), [clients]);
 
   // Match plan: same client, brand contains, most recent start_date <= period
-  const findCpa = (clientId: string, brand: string | null, period: string): number | null => {
-    const candidates = plans.filter((p) => (!p.client_id || p.client_id === clientId) && p.cpa != null);
+  const findPlanField = (clientId: string, brand: string | null, field: "cpa" | "rev_share_pct"): number | null => {
+    const candidates = plans.filter((p) => (!p.client_id || p.client_id === clientId) && p[field] != null);
     const brandLower = (brand || "").toLowerCase();
     const eligible = candidates
       .filter((p) => !p.brand || brandLower.includes(p.brand.toLowerCase()) || p.brand.toLowerCase().includes(brandLower))
       .sort((a, b) => (b.plan_start_date || "").localeCompare(a.plan_start_date || ""));
-    return eligible[0]?.cpa ?? null;
+    return (eligible[0]?.[field] as number | null | undefined) ?? null;
   };
+  const findCpa = (clientId: string, brand: string | null) => findPlanField(clientId, brand, "cpa");
+  const findRs = (clientId: string, brand: string | null) => findPlanField(clientId, brand, "rev_share_pct");
 
   // Build rows: per closure (period × client × brand)
   type Row = {

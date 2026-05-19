@@ -469,7 +469,7 @@ export default function CommissionPlans() {
               </Badge>
             )}
           </div>
-          <div className="max-h-[calc(100vh-280px)] overflow-auto rounded-md border">
+          <div className="max-h-[calc(100vh-280px)] overflow-auto rounded-md border [&>div]:overflow-visible">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[inset_0_-1px_0_hsl(var(--border))]">
               <TableRow>

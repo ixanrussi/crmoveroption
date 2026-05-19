@@ -1,0 +1,1 @@
+ALTER TABLE public.affiliates ADD COLUMN IF NOT EXISTS fixed_remuneration_fallback_cpa_currency text;

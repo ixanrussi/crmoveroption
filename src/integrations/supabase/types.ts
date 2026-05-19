@@ -421,6 +421,7 @@ export type Database = {
           fixed_remuneration: number | null
           fixed_remuneration_currency: string | null
           fixed_remuneration_fallback_cpa: number | null
+          fixed_remuneration_fallback_cpa_currency: string | null
           fixed_remuneration_min_ftd: number | null
           id: string
           notes: string | null
@@ -447,6 +448,7 @@ export type Database = {
           fixed_remuneration?: number | null
           fixed_remuneration_currency?: string | null
           fixed_remuneration_fallback_cpa?: number | null
+          fixed_remuneration_fallback_cpa_currency?: string | null
           fixed_remuneration_min_ftd?: number | null
           id?: string
           notes?: string | null
@@ -473,6 +475,7 @@ export type Database = {
           fixed_remuneration?: number | null
           fixed_remuneration_currency?: string | null
           fixed_remuneration_fallback_cpa?: number | null
+          fixed_remuneration_fallback_cpa_currency?: string | null
           fixed_remuneration_min_ftd?: number | null
           id?: string
           notes?: string | null

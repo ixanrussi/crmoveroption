@@ -80,6 +80,7 @@ export default function Afiliados() {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
     fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "", fixed_remuneration_fallback_cpa_currency: "",
+    avatar_url: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
@@ -372,6 +373,7 @@ export default function Afiliados() {
       fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
       fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
       fixed_remuneration_fallback_cpa_currency: form.fixed_remuneration_fallback_cpa_currency || null,
+      avatar_url: form.avatar_url || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {

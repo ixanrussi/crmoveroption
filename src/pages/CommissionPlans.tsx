@@ -508,6 +508,7 @@ export default function CommissionPlans() {
                     );
                   })()}
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
+                  <TableCell className={`text-right ${m == null ? "text-muted-foreground" : lowMargin ? "text-orange-500 font-medium" : "text-green-600 font-medium"}`}>{m == null ? "—" : `${m.toFixed(1)}%`}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>

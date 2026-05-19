@@ -1064,6 +1064,7 @@ export default function Afiliados() {
               <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
               <TableHead className="w-10 text-center">Margen</TableHead>
               <TableHead className="w-10 text-center">Planes</TableHead>
+              <TableHead className="w-10 text-center">Tracking</TableHead>
               <TableHead>País</TableHead><TableHead>
                 <span className="inline-flex items-center gap-1">
                   % MB

@@ -9,6 +9,8 @@ import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from 
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import SalaryPlusCpaCalculator from "@/components/SalaryPlusCpaCalculator";
 
 
 import jsPDF from "jspdf";
@@ -535,6 +537,12 @@ export default function CalculadoraFijos() {
         </div>
       </div>
 
+      <Tabs defaultValue="fijos" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="fijos">Fijo (CPAs)</TabsTrigger>
+          <TabsTrigger value="salario-cpa">Sueldo fijo + CPA</TabsTrigger>
+        </TabsList>
+        <TabsContent value="fijos" className="space-y-6">
       <div className="space-y-1 max-w-md">
         <Label>Nombre del afiliado prospecto (opcional)</Label>
         <Input
@@ -793,6 +801,13 @@ export default function CalculadoraFijos() {
           )}
         </div>
       </div>
+        </TabsContent>
+        <TabsContent value="salario-cpa">
+          <SalaryPlusCpaCalculator />
+        </TabsContent>
+      </Tabs>
+
+
 
       <Dialog open={saveDialogOpen} onOpenChange={setSaveDialogOpen}>
         <DialogContent>

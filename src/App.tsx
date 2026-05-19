@@ -20,7 +20,7 @@ import TrackerReport from "./pages/TrackerReport";
 import CommissionPlans from "./pages/CommissionPlans";
 import ActivityLogs from "./pages/ActivityLogs";
 import RoleMenuPermissions from "./pages/RoleMenuPermissions";
-import ProspectsOperadores from "./pages/ProspectsOperadores";
+
 import ProspectsAfiliados from "./pages/ProspectsAfiliados";
 import SolicitarLinks from "./pages/SolicitarLinks";
 import PortalAfiliado from "./pages/PortalAfiliado";
@@ -48,7 +48,7 @@ const App = () => (
               <Route path="/clientes" element={<Clientes />} />
               <Route path="/mi-cuenta" element={<MiCuenta />} />
               <Route path="/afiliados" element={<Afiliados />} />
-              <Route path="/prospects/operadores" element={<ProspectsOperadores />} />
+              
               <Route path="/prospects/afiliados" element={<ProspectsAfiliados />} />
               <Route path="/solicitar-links" element={<SolicitarLinks />} />
               <Route path="/portal-afiliado" element={<PortalAfiliado />} />

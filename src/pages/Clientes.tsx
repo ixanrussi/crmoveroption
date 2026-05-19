@@ -454,6 +454,15 @@ export default function Clientes() {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-1">
+                  <Label>Routy Account ID</Label>
+                  <Input
+                    value={form.routy_account_id ?? ""}
+                    onChange={(e) => setForm({ ...form, routy_account_id: e.target.value })}
+                    placeholder="Ej: 12345"
+                  />
+                </div>
+
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">

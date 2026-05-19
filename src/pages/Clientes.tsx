@@ -393,6 +393,23 @@ export default function Clientes() {
                       onTouchMove={(e) => e.stopPropagation()}
                     >
                       <div className="space-y-1">
+                        {countries.length > 0 && (() => {
+                          const allChecked = (form.country_ids ?? []).length === countries.length;
+                          return (
+                            <label className="flex items-center gap-2 px-2 py-1.5 rounded hover:bg-accent cursor-pointer border-b mb-1 font-medium">
+                              <Checkbox
+                                checked={allChecked}
+                                onCheckedChange={(v) => {
+                                  setForm({
+                                    ...form,
+                                    country_ids: v ? countries.map((c) => c.id) : [],
+                                  });
+                                }}
+                              />
+                              <span className="text-sm">Todos</span>
+                            </label>
+                          );
+                        })()}
                         {[...countries].sort((a, b) => a.name.localeCompare(b.name)).map((c) => {
                           const checked = (form.country_ids ?? []).includes(c.id);
                           return (
@@ -415,6 +432,7 @@ export default function Clientes() {
                           <p className="text-sm text-muted-foreground p-2">Sin países disponibles</p>
                         )}
                       </div>
+
                     </PopoverContent>
                   </Popover>
                 </div>

@@ -145,20 +145,24 @@ export default function PublicLandingPage() {
       )}
 
       <section className="bg-gradient-to-br from-primary/90 to-primary text-primary-foreground relative">
-        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 relative flex flex-col md:flex-row md:items-center gap-6">
-          {data.affiliate.avatar_url && (
-            <img
-              src={data.affiliate.avatar_url}
-              alt={`${data.affiliate.name} avatar`}
-              className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-primary-foreground/30 shadow-lg flex-shrink-0"
-              loading="lazy"
-            />
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
-            {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
-            {data.page.intro && <p className="opacity-80 max-w-3xl whitespace-pre-line">{data.page.intro}</p>}
+        <div className="max-w-7xl mx-auto px-4 py-12 md:py-16 flex gap-6 justify-center">
+          <div className="hidden xl:block w-[120px] flex-shrink-0" aria-hidden="true" />
+          <div className="flex-1 max-w-3xl flex flex-col md:flex-row md:items-center gap-6">
+            {data.affiliate.avatar_url && (
+              <img
+                src={data.affiliate.avatar_url}
+                alt={`${data.affiliate.name} avatar`}
+                className="h-24 w-24 md:h-32 md:w-32 rounded-full object-cover border-4 border-primary-foreground/30 shadow-lg flex-shrink-0"
+                loading="lazy"
+              />
+            )}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-3xl md:text-5xl font-bold mb-3">{data.page.title}</h1>
+              {data.page.subtitle && <p className="text-lg md:text-xl opacity-90 mb-4">{data.page.subtitle}</p>}
+              {data.page.intro && <p className="opacity-80 whitespace-pre-line">{data.page.intro}</p>}
+            </div>
           </div>
+          <div className="hidden xl:block w-[120px] flex-shrink-0" aria-hidden="true" />
         </div>
       </section>
 

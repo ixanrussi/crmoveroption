@@ -78,8 +78,11 @@ export default function AffiliateEarnings({ affiliateId }: Props) {
     for (const it of items) {
       const cls = closureMap.get(it.closure_id);
       if (!cls) continue;
-      const cpa = it.report_type === "cpa" ? findCpa(cls.client_id, it.brand, cls.period) : null;
-      const earned = it.report_type === "cpa" && cpa != null ? cpa * (it.qualified_players || 0) : 0;
+      const cpa = it.report_type === "cpa" ? findCpa(cls.client_id, it.brand) : null;
+      const rs = it.report_type !== "cpa" ? findRs(cls.client_id, it.brand) : null;
+      const earned = it.report_type === "cpa"
+        ? (cpa != null ? cpa * (it.qualified_players || 0) : 0)
+        : (rs != null ? Number(it.commission_total || 0) * (rs / 100) : 0);
       out.push({
         period: cls.period,
         client: clientMap.get(cls.client_id) ?? "—",

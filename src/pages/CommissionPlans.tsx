@@ -495,7 +495,7 @@ export default function CommissionPlans() {
                     </button>
                   </TableCell>
                   <TableCell>{r.brand || "—"}</TableCell>
-                  <TableCell className="text-right">{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
+                  <TableCell className={`text-right ${lowMargin ? "text-orange-500 font-medium" : ""}`}>{r.cpa != null ? `${r.cpa}${r.cpa_currency ? ` ${r.cpa_currency}` : ""}` : "—"}</TableCell>
                   {(() => {
                     const bl = renderConverted(r.baseline, r.baseline_currency, r.cpa_currency, r.cpa);
                     const w = renderConverted(r.wager, r.wager_currency, r.cpa_currency, r.cpa);

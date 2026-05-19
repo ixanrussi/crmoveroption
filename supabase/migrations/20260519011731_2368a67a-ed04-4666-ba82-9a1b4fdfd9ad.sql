@@ -1,0 +1,1 @@
+UPDATE public.clients SET logo_url = 'https://kcbojpgykpipdgrzyars.supabase.co/storage/v1/object/public/operator-logos/betway.png' WHERE company_name ILIKE 'betway';

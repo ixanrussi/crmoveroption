@@ -479,6 +479,7 @@ export default function CommissionPlans() {
                 <TableHead className="text-right">BL</TableHead>
                 <TableHead className="text-right">W</TableHead>
                 <TableHead className="text-right">Rev Share</TableHead>
+                <TableHead className="text-right">% OO</TableHead>
                 {isAdmin && <TableHead className="w-24"></TableHead>}
               </TableRow>
             </TableHeader>
@@ -507,6 +508,7 @@ export default function CommissionPlans() {
                     );
                   })()}
                   <TableCell className="text-right">{r.rev_share_pct != null ? `${r.rev_share_pct}%` : "—"}</TableCell>
+                  <TableCell className={`text-right ${m == null ? "text-muted-foreground" : lowMargin ? "text-orange-500 font-medium" : "text-green-600 font-medium"}`}>{m == null ? "—" : `${m.toFixed(1)}%`}</TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
@@ -517,7 +519,7 @@ export default function CommissionPlans() {
                 );
               })}
               {filtered.length === 0 && (
-                <TableRow><TableCell colSpan={8} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
+                <TableRow><TableCell colSpan={9} className="text-center text-muted-foreground py-8">Sin planes registrados</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

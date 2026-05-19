@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown, TrendingUp, Percent, Link2 } from "lucide-react";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";

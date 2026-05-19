@@ -483,8 +483,11 @@ export default function CommissionPlans() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filtered.map((r) => (
-                <TableRow key={r.id}>
+              {filtered.map((r) => {
+                const m = getMargin(r);
+                const lowMargin = m != null && m < 30;
+                return (
+                <TableRow key={r.id} className={lowMargin ? "bg-orange-500/10 hover:bg-orange-500/15" : ""}>
                   <TableCell className="font-medium">{r.client?.company_name || "—"}</TableCell>
                   <TableCell>
                     <button type="button" className="text-left hover:underline text-primary" onClick={() => openEdit(r)}>

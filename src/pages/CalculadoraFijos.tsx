@@ -537,6 +537,12 @@ export default function CalculadoraFijos() {
         </div>
       </div>
 
+      <Tabs defaultValue="fijos" className="space-y-4">
+        <TabsList>
+          <TabsTrigger value="fijos">Fijo (CPAs)</TabsTrigger>
+          <TabsTrigger value="salario-cpa">Sueldo fijo + CPA</TabsTrigger>
+        </TabsList>
+        <TabsContent value="fijos" className="space-y-6">
       <div className="space-y-1 max-w-md">
         <Label>Nombre del afiliado prospecto (opcional)</Label>
         <Input

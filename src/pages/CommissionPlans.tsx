@@ -524,6 +524,7 @@ export default function CommissionPlans() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

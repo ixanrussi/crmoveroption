@@ -469,8 +469,9 @@ export default function CommissionPlans() {
               </Badge>
             )}
           </div>
+          <div className="max-h-[calc(100vh-280px)] overflow-auto rounded-md border">
           <Table>
-            <TableHeader>
+            <TableHeader className="sticky top-0 z-10 bg-background shadow-[inset_0_-1px_0_hsl(var(--border))]">
               <TableRow>
                 <TableHead>Operador</TableHead>
                 <TableHead>Nombre</TableHead>
@@ -523,6 +524,7 @@ export default function CommissionPlans() {
               )}
             </TableBody>
           </Table>
+          </div>
         </CardContent>
       </Card>
     </div>

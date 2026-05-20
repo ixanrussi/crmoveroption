@@ -411,7 +411,15 @@ export default function Afiliados() {
       },
     });
     setSaving(false);
-    const respBody = (data as any) || (error as any)?.context?.body || {};
+    let respBody: any = (data as any) || {};
+    if (!respBody?.error && (error as any)?.context) {
+      try {
+        const ctx = (error as any).context;
+        if (typeof ctx?.json === "function") respBody = await ctx.json();
+        else if (typeof ctx?.text === "function") respBody = JSON.parse(await ctx.text());
+        else if (ctx?.body) respBody = ctx.body;
+      } catch { /* ignore */ }
+    }
     const errMsg = respBody?.error || error?.message;
     const conflictInfo = respBody?.conflict;
     if (errMsg) {

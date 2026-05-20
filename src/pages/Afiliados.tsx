@@ -845,8 +845,18 @@ export default function Afiliados() {
                               return <div className="px-3 py-3 text-xs text-muted-foreground">Todos los planes ya fueron asignados</div>;
                             }
                             return (
-                              <Command>
-                                <CommandInput placeholder="Buscar plan, operador o marca…" />
+                              <Command
+                                filter={(value, search) => {
+                                  const s = search.toLowerCase().trim();
+                                  if (!s) return 1;
+                                  const [brand = "", client = "", name = ""] = value.split("|||");
+                                  if (brand.includes(s)) return 1;
+                                  if (client.includes(s)) return 0.7;
+                                  if (name.includes(s)) return 0.4;
+                                  return 0;
+                                }}
+                              >
+                                <CommandInput placeholder="Buscar por marca u operador…" />
                                 <CommandList>
                                   <CommandEmpty>Sin resultados.</CommandEmpty>
                                   <CommandGroup>
@@ -861,11 +871,11 @@ export default function Afiliados() {
                                         : s.score < 0
                                         ? "border-red-500/30 bg-red-500/10 text-red-700 dark:text-red-400"
                                         : "border-muted bg-muted text-muted-foreground";
-                                      const searchValue = `${t.name || ""} ${t.client?.company_name || ""} ${t.brand || ""}`;
+                                      const searchValue = `${(t.brand || "").toLowerCase()}|||${(t.client?.company_name || "").toLowerCase()}|||${(t.name || "").toLowerCase()}|||${t.id}`;
                                       return (
                                         <CommandItem
                                           key={t.id}
-                                          value={`${searchValue} ${t.id}`}
+                                          value={searchValue}
                                           onSelect={() => addPlanFromTemplate(t.id)}
                                         >
                                           <span className="flex w-full min-w-0 items-center gap-2">

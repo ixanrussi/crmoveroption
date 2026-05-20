@@ -149,13 +149,61 @@ Deno.serve(async (req) => {
       let uniqueId: string | null = null;
 
       const excludeId = body.action === "update" ? body.id : null;
-      const dupAffName = await tx<{ id: string }[]>`
-        select id from public.affiliates
+
+      // 1) fixed_name duplicates another affiliate's fixed_name
+      const dupAffName = await tx<{ id: string; fixed_name: string }[]>`
+        select id, fixed_name from public.affiliates
         where lower(fixed_name) = lower(${payload.fixed_name})
           and (${excludeId}::uuid is null or id <> ${excludeId})
         limit 1
       `;
-      if (dupAffName.length) return { response: json(409, { error: "Ya existe un afiliado con ese nombre" }) };
+      if (dupAffName.length) return { response: json(409, {
+        error: "Nombre de afiliado duplicado",
+        conflict: { kind: "name_equals_name", affiliate_id: dupAffName[0].id, affiliate_name: dupAffName[0].fixed_name },
+      }) };
+
+      // 2) fixed_name matches an alias of another affiliate
+      const dupNameInAlias = await tx<{ id: string; fixed_name: string }[]>`
+        select id, fixed_name from public.affiliates
+        where (${excludeId}::uuid is null or id <> ${excludeId})
+          and exists (select 1 from unnest(aliases) a where lower(a) = lower(${payload.fixed_name}))
+        limit 1
+      `;
+      if (dupNameInAlias.length) return { response: json(409, {
+        error: `Nombre de afiliado existente como alias para ${dupNameInAlias[0].fixed_name}`,
+        conflict: { kind: "name_in_aliases", affiliate_id: dupNameInAlias[0].id, affiliate_name: dupNameInAlias[0].fixed_name },
+      }) };
+
+      // 3) Any of the proposed aliases matches another affiliate's fixed_name OR another alias
+      if (payload.aliases.length > 0) {
+        const dupAliasAsName = await tx<{ id: string; fixed_name: string; matched: string }[]>`
+          select a.id, a.fixed_name, a.fixed_name as matched
+          from public.affiliates a
+          where (${excludeId}::uuid is null or a.id <> ${excludeId})
+            and lower(a.fixed_name) = any(${payload.aliases.map((x: string) => x.toLowerCase())}::text[])
+          limit 1
+        `;
+        if (dupAliasAsName.length) return { response: json(409, {
+          error: `Alias existente como nombre del afiliado ${dupAliasAsName[0].fixed_name}`,
+          conflict: { kind: "alias_equals_name", affiliate_id: dupAliasAsName[0].id, affiliate_name: dupAliasAsName[0].fixed_name, alias: dupAliasAsName[0].matched },
+        }) };
+
+        const dupAliasInAlias = await tx<{ id: string; fixed_name: string; matched: string }[]>`
+          select a.id, a.fixed_name, m.alias as matched
+          from public.affiliates a,
+               lateral (
+                 select x as alias from unnest(a.aliases) x
+                 where lower(x) = any(${payload.aliases.map((x: string) => x.toLowerCase())}::text[])
+                 limit 1
+               ) m
+          where (${excludeId}::uuid is null or a.id <> ${excludeId})
+          limit 1
+        `;
+        if (dupAliasInAlias.length) return { response: json(409, {
+          error: `Alias existente en afiliado ${dupAliasInAlias[0].fixed_name}`,
+          conflict: { kind: "alias_in_aliases", affiliate_id: dupAliasInAlias[0].id, affiliate_name: dupAliasInAlias[0].fixed_name, alias: dupAliasInAlias[0].matched },
+        }) };
+      }
 
       const dupCliName = await tx<{ id: string }[]>`
         select id from public.clients where lower(company_name) = lower(${payload.fixed_name}) limit 1

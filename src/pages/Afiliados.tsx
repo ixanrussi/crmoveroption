@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
@@ -75,6 +75,7 @@ export default function Afiliados() {
   const [channelLinks, setChannelLinks] = useState<Record<string, string[]>>({});
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
+  const [conflict, setConflict] = useState<{ message: string; affiliate_id: string; affiliate_name: string } | null>(null);
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
@@ -410,8 +411,25 @@ export default function Afiliados() {
       },
     });
     setSaving(false);
-    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
-    if (errMsg) { toast.error(errMsg); return; }
+    let respBody: any = (data as any) || {};
+    if (!respBody?.error && (error as any)?.context) {
+      try {
+        const ctx = (error as any).context;
+        if (typeof ctx?.json === "function") respBody = await ctx.json();
+        else if (typeof ctx?.text === "function") respBody = JSON.parse(await ctx.text());
+        else if (ctx?.body) respBody = ctx.body;
+      } catch { /* ignore */ }
+    }
+    const errMsg = respBody?.error || error?.message;
+    const conflictInfo = respBody?.conflict;
+    if (errMsg) {
+      if (conflictInfo?.affiliate_id) {
+        setConflict({ message: errMsg, affiliate_id: conflictInfo.affiliate_id, affiliate_name: conflictInfo.affiliate_name });
+      } else {
+        toast.error(errMsg);
+      }
+      return;
+    }
     toast.success(!editing && (data as any)?.unique_id ? `Afiliado creado: ${(data as any).unique_id}` : "Guardado");
     setOpen(false);
     window.location.reload();
@@ -1329,6 +1347,42 @@ export default function Afiliados() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!conflict} onOpenChange={(v) => { if (!v) setConflict(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Duplicado detectado</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <p className="text-sm">
+                  {conflict?.message?.replace(conflict?.affiliate_name ?? "", "").trim()}{" "}
+                  {conflict?.affiliate_name && (
+                    <button
+                      type="button"
+                      className="text-primary underline font-medium hover:no-underline"
+                      onClick={() => {
+                        const row = list.find((r) => r.id === conflict.affiliate_id);
+                        if (row) {
+                          setConflict(null);
+                          openEdit(row);
+                        } else {
+                          toast.error("No se encontró el afiliado en la lista");
+                        }
+                      }}
+                    >
+                      {conflict.affiliate_name}
+                    </button>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">Ajusta el nombre o los alias e intenta nuevamente.</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConflict(null)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

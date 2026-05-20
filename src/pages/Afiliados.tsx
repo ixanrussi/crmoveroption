@@ -1347,6 +1347,42 @@ export default function Afiliados() {
           </div>
         </CardContent>
       </Card>
+
+      <Dialog open={!!conflict} onOpenChange={(v) => { if (!v) setConflict(null); }}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-destructive">Duplicado detectado</DialogTitle>
+            <DialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <p className="text-sm">
+                  {conflict?.message?.replace(conflict?.affiliate_name ?? "", "").trim()}{" "}
+                  {conflict?.affiliate_name && (
+                    <button
+                      type="button"
+                      className="text-primary underline font-medium hover:no-underline"
+                      onClick={() => {
+                        const row = list.find((r) => r.id === conflict.affiliate_id);
+                        if (row) {
+                          setConflict(null);
+                          openEdit(row);
+                        } else {
+                          toast.error("No se encontró el afiliado en la lista");
+                        }
+                      }}
+                    >
+                      {conflict.affiliate_name}
+                    </button>
+                  )}
+                </p>
+                <p className="text-xs text-muted-foreground">Ajusta el nombre o los alias e intenta nuevamente.</p>
+              </div>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConflict(null)}>Cerrar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -411,8 +411,17 @@ export default function Afiliados() {
       },
     });
     setSaving(false);
-    const errMsg = (data as any)?.error || (error as any)?.context?.body?.error || error?.message;
-    if (errMsg) { toast.error(errMsg); return; }
+    const respBody = (data as any) || (error as any)?.context?.body || {};
+    const errMsg = respBody?.error || error?.message;
+    const conflictInfo = respBody?.conflict;
+    if (errMsg) {
+      if (conflictInfo?.affiliate_id) {
+        setConflict({ message: errMsg, affiliate_id: conflictInfo.affiliate_id, affiliate_name: conflictInfo.affiliate_name });
+      } else {
+        toast.error(errMsg);
+      }
+      return;
+    }
     toast.success(!editing && (data as any)?.unique_id ? `Afiliado creado: ${(data as any).unique_id}` : "Guardado");
     setOpen(false);
     window.location.reload();

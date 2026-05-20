@@ -268,7 +268,14 @@ export default function TrackerReport() {
       .filter(a => affiliateFilter === ALL || a.affiliateId === affiliateFilter)
       .filter(a => !onlyActive || isActiveTotals(a.totals))
       .filter(a => !q || normalize(a.affiliateName).includes(q) ||
-        Array.from(a.trackers.values()).some(t => normalize(t.tracker).includes(q)))
+        Array.from(a.trackers.values()).some(t =>
+          normalize(t.tracker).includes(q) ||
+          normalize(t.brand).includes(q) ||
+          normalize(t.accountId).includes(q) ||
+          normalize(t.brandId).includes(q) ||
+          normalize(t.trackerId).includes(q) ||
+          normalize(t.accountTrackerId).includes(q)
+        ))
       .sort((a, b) => {
         if (a.affiliateId === UNDEFINED_ID) return 1;
         if (b.affiliateId === UNDEFINED_ID) return -1;

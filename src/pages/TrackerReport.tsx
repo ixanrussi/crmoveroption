@@ -427,7 +427,7 @@ export default function TrackerReport() {
             </div>
             <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
               <Label>Buscar</Label>
-              <Input placeholder="Afiliado o tracker..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Afiliado, tracker, brand, accountId..." value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">

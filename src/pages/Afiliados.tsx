@@ -75,6 +75,7 @@ export default function Afiliados() {
   const [channelLinks, setChannelLinks] = useState<Record<string, string[]>>({});
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
+  const [conflict, setConflict] = useState<{ message: string; affiliate_id: string; affiliate_name: string } | null>(null);
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],

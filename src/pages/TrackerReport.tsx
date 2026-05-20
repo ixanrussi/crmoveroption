@@ -268,7 +268,14 @@ export default function TrackerReport() {
       .filter(a => affiliateFilter === ALL || a.affiliateId === affiliateFilter)
       .filter(a => !onlyActive || isActiveTotals(a.totals))
       .filter(a => !q || normalize(a.affiliateName).includes(q) ||
-        Array.from(a.trackers.values()).some(t => normalize(t.tracker).includes(q)))
+        Array.from(a.trackers.values()).some(t =>
+          normalize(t.tracker).includes(q) ||
+          normalize(t.brand).includes(q) ||
+          normalize(t.accountId).includes(q) ||
+          normalize(t.brandId).includes(q) ||
+          normalize(t.trackerId).includes(q) ||
+          normalize(t.accountTrackerId).includes(q)
+        ))
       .sort((a, b) => {
         if (a.affiliateId === UNDEFINED_ID) return 1;
         if (b.affiliateId === UNDEFINED_ID) return -1;
@@ -420,7 +427,7 @@ export default function TrackerReport() {
             </div>
             <div className="space-y-1.5 sm:col-span-2 lg:col-span-2">
               <Label>Buscar</Label>
-              <Input placeholder="Afiliado o tracker..." value={search} onChange={(e) => setSearch(e.target.value)} />
+              <Input placeholder="Afiliado, tracker, brand, accountId..." value={search} onChange={(e) => setSearch(e.target.value)} />
             </div>
           </div>
           <div className="flex flex-wrap gap-2">

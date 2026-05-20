@@ -552,9 +552,11 @@ export default function TrackerReport() {
                                   <TableBody>
                                     {trackers.map((t, i) => (
                                       <TableRow key={`${a.affiliateId}-${i}`}>
-                                        <TableCell className="text-xs">{t.tracker || "—"}</TableCell>
-                                        <TableCell className="text-xs">{t.brand || "—"}</TableCell>
-                                        <TableCell className="text-xs">{t.accountId || "—"}</TableCell>
+                                      <TableCell className="text-xs">{t.tracker || "—"}</TableCell>
+                                      <TableCell className="text-xs">{t.brand || "—"}</TableCell>
+                                      <TableCell className="text-xs">
+                                        {accountIdToOperator.get((t.accountId ?? "").toString().trim()) || t.accountId || "—"}
+                                      </TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.visits)}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.signups)}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.firstTimeDeposits)}</TableCell>

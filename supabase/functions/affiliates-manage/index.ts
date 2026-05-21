@@ -226,14 +226,16 @@ Deno.serve(async (req) => {
             fixed_name, alias, aliases, email, phone, country_id, country_ids, status,
             commission_pct, payment_method, bank_details, tax_id, notes, brands,
             fixed_remuneration, fixed_remuneration_currency,
-            fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency, avatar_url, created_by
+            fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency,
+            fixed_remuneration_installments, avatar_url, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
             ${payload.status}::affiliate_status, ${payload.commission_pct}, ${payload.payment_method},
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
             ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency},
-            ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency}, ${payload.avatar_url}, ${userData.user.id}
+            ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency},
+            ${JSON.stringify(payload.fixed_remuneration_installments)}::jsonb, ${payload.avatar_url}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;

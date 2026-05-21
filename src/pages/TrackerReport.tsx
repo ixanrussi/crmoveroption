@@ -74,6 +74,7 @@ type AffAgg = {
     brand: string;
     brandId: string;
     accountId: string;
+    accountName: string;
     totals: Record<MetricKey, number>;
   }>;
 };
@@ -174,10 +175,11 @@ export default function TrackerReport() {
 
   const allRows = useMemo(() => {
     const src = raw?.data ?? [];
-    if (accountIdToOperator.size === 0) return src;
     return src.map((r) => {
-      const opName = accountIdToOperator.get((r.accountId ?? "").toString().trim());
-      return opName ? { ...r, brand: opName } : r;
+      const accountName = accountIdToOperator.get((r.accountId ?? "").toString().trim()) ?? "";
+      const hasBrandId = (r.brandId ?? "").toString().trim() !== "";
+      const brand = hasBrandId ? (r.brand ?? "") : (accountName || r.brand || "");
+      return { ...r, brand, accountName };
     });
   }, [raw, accountIdToOperator]);
 
@@ -230,6 +232,7 @@ export default function TrackerReport() {
           brand: r.brand ?? "",
           brandId: r.brandId ?? "",
           accountId: r.accountId ?? "",
+          accountName: (r as any).accountName ?? "",
           totals: emptyTotals(),
         };
         agg.trackers.set(tk, tr);
@@ -271,6 +274,7 @@ export default function TrackerReport() {
         Array.from(a.trackers.values()).some(t =>
           normalize(t.tracker).includes(q) ||
           normalize(t.brand).includes(q) ||
+          normalize(t.accountName).includes(q) ||
           normalize(t.accountId).includes(q) ||
           normalize(t.brandId).includes(q) ||
           normalize(t.trackerId).includes(q) ||
@@ -537,6 +541,7 @@ export default function TrackerReport() {
                                     <TableRow>
                                       <TableHead>Tracker</TableHead>
                                       <TableHead>Brand</TableHead>
+                                      <TableHead>Account Name</TableHead>
                                       <TableHead>Account ID</TableHead>
                                       <TableHead className="text-right">Visits</TableHead>
                                       <TableHead className="text-right">Signups</TableHead>
@@ -554,6 +559,7 @@ export default function TrackerReport() {
                                       <TableRow key={`${a.affiliateId}-${i}`}>
                                         <TableCell className="text-xs">{t.tracker || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.brand || "—"}</TableCell>
+                                        <TableCell className="text-xs">{t.accountName || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.accountId || "—"}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.visits)}</TableCell>
                                         <TableCell className="text-right tabular-nums text-xs">{fmtNum(t.totals.signups)}</TableCell>

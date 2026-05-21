@@ -297,6 +297,20 @@ export default function Clientes() {
           proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
           fixed_margin_pct: p.fixed_margin_pct === "" ? null : p.fixed_margin_pct,
           recommended_margin_pct: p.recommended_margin_pct === "" ? null : p.recommended_margin_pct,
+          fixed_remuneration: p.fixed_remuneration === "" ? null : p.fixed_remuneration,
+          fixed_remuneration_currency: p.fixed_remuneration_currency || null,
+          fixed_remuneration_min_ftd: p.fixed_remuneration_min_ftd === "" ? null : p.fixed_remuneration_min_ftd,
+          fixed_remuneration_fallback_cpa: p.fixed_remuneration_fallback_cpa === "" ? null : p.fixed_remuneration_fallback_cpa,
+          fixed_remuneration_fallback_cpa_currency: p.fixed_remuneration_fallback_cpa_currency || null,
+          fixed_remuneration_installments: Array.isArray(p.fixed_remuneration_installments)
+            ? p.fixed_remuneration_installments
+                .map((it) => ({
+                  pct: it.pct === "" ? 0 : Number(it.pct),
+                  date: it.date || null,
+                  description: (it.description || "").trim() || null,
+                }))
+                .filter((it) => it.pct > 0 || it.date || it.description)
+            : [],
         })),
       },
     });

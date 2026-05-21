@@ -81,6 +81,7 @@ export default function Afiliados() {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
     fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "", fixed_remuneration_fallback_cpa_currency: "",
+    fixed_remuneration_installments: [] as { pct: string; date: string; description: string }[],
     avatar_url: "",
   };
   const [form, setForm] = useState<any>(empty);
@@ -237,7 +238,14 @@ export default function Afiliados() {
     const aliasesArr: string[] = Array.isArray(row?.aliases) && row.aliases.length > 0
       ? row.aliases
       : (row?.alias ? [row.alias] : []);
-    setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
+    const installmentsArr = Array.isArray(row?.fixed_remuneration_installments)
+      ? row.fixed_remuneration_installments.map((x: any) => ({
+          pct: x?.pct == null ? "" : String(x.pct),
+          date: x?.date ?? "",
+          description: x?.description ?? "",
+        }))
+      : [];
+    setForm({ ...row, country_ids: affIds, aliases: aliasesArr, fixed_remuneration_installments: installmentsArr });
     setAliasInput("");
     const grouped: Record<string, string[]> = {};
     (row.affiliate_channel_links ?? []).forEach((l: any) => {
@@ -374,6 +382,15 @@ export default function Afiliados() {
       fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
       fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
       fixed_remuneration_fallback_cpa_currency: form.fixed_remuneration_fallback_cpa_currency || null,
+      fixed_remuneration_installments: Array.isArray(form.fixed_remuneration_installments)
+        ? form.fixed_remuneration_installments
+            .map((x: any) => ({
+              pct: x?.pct === "" || x?.pct == null ? null : Number(x.pct),
+              date: x?.date || null,
+              description: x?.description?.trim() ? x.description.trim() : null,
+            }))
+            .filter((x: any) => x.pct != null || x.date || x.description)
+        : [],
       avatar_url: form.avatar_url || null,
     };
     setSaving(true);
@@ -818,7 +835,107 @@ export default function Afiliados() {
                   <p className="text-[11px] text-muted-foreground">
                     Si el afiliado alcanza el volumen mínimo de FTDs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por FTD.
                   </p>
+
+                  {(() => {
+                    const installments: { pct: string; date: string; description: string }[] = Array.isArray(form.fixed_remuneration_installments) ? form.fixed_remuneration_installments : [];
+                    const totalPct = installments.reduce((s, x) => s + (Number(x.pct) || 0), 0);
+                    const update = (next: typeof installments) => setForm({ ...form, fixed_remuneration_installments: next });
+                    return (
+                      <div className="rounded-md border border-border bg-background p-3 space-y-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
+                          <div>
+                            <Label className="text-xs font-semibold">Forma de pago — Cuotas</Label>
+                            <p className="text-[11px] text-muted-foreground">Define una o más cuotas con porcentaje, fecha y regla opcional.</p>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Badge variant={totalPct === 100 ? "default" : totalPct > 100 ? "destructive" : "outline"} className="text-[10px]">
+                              Total: {totalPct}%
+                            </Badge>
+                            <Button
+                              type="button"
+                              variant="outline"
+                              size="sm"
+                              className="h-8"
+                              onClick={() => update([...installments, { pct: "", date: "", description: "" }])}
+                            >
+                              <Plus className="h-3.5 w-3.5 mr-1" /> Añadir cuota
+                            </Button>
+                          </div>
+                        </div>
+                        {installments.length === 0 ? (
+                          <p className="text-[11px] text-muted-foreground italic">Sin cuotas configuradas — el pago se realiza en una sola vez.</p>
+                        ) : (
+                          <div className="space-y-2">
+                            {installments.map((it, idx) => (
+                              <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+                                <div className="col-span-12 md:col-span-1 text-xs text-muted-foreground pb-2">#{idx + 1}</div>
+                                <div className="col-span-4 md:col-span-2 space-y-1">
+                                  <Label className="text-[10px] text-muted-foreground">Porcentaje</Label>
+                                  <div className="relative">
+                                    <Input
+                                      type="number"
+                                      min="0"
+                                      max="100"
+                                      step="0.01"
+                                      placeholder="50"
+                                      value={it.pct}
+                                      onChange={(e) => {
+                                        const next = [...installments];
+                                        next[idx] = { ...next[idx], pct: e.target.value };
+                                        update(next);
+                                      }}
+                                      className="pr-7"
+                                    />
+                                    <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                                  </div>
+                                </div>
+                                <div className="col-span-8 md:col-span-3 space-y-1">
+                                  <Label className="text-[10px] text-muted-foreground">Fecha de pago</Label>
+                                  <Input
+                                    type="date"
+                                    value={it.date}
+                                    onChange={(e) => {
+                                      const next = [...installments];
+                                      next[idx] = { ...next[idx], date: e.target.value };
+                                      update(next);
+                                    }}
+                                  />
+                                </div>
+                                <div className="col-span-11 md:col-span-5 space-y-1">
+                                  <Label className="text-[10px] text-muted-foreground">Descripción / regla</Label>
+                                  <Input
+                                    placeholder="Ej. Al firmar el contrato"
+                                    value={it.description}
+                                    onChange={(e) => {
+                                      const next = [...installments];
+                                      next[idx] = { ...next[idx], description: e.target.value };
+                                      update(next);
+                                    }}
+                                  />
+                                </div>
+                                <div className="col-span-1 flex justify-end">
+                                  <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8 text-destructive"
+                                    onClick={() => update(installments.filter((_, i) => i !== idx))}
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
+                              </div>
+                            ))}
+                            {totalPct !== 100 && installments.length > 0 && (
+                              <p className="text-[11px] text-destructive">La suma de porcentajes debe ser 100% (actual: {totalPct}%).</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })()}
                 </div>
+
 
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between gap-2 flex-wrap">

@@ -64,6 +64,12 @@ type CommissionPlan = {
   proportional_min_pct: string;
   fixed_margin_pct: string;
   recommended_margin_pct: string;
+  fixed_remuneration: string;
+  fixed_remuneration_currency: string;
+  fixed_remuneration_min_ftd: string;
+  fixed_remuneration_fallback_cpa: string;
+  fixed_remuneration_fallback_cpa_currency: string;
+  fixed_remuneration_installments: { pct: string; date: string; description: string }[];
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
@@ -71,6 +77,10 @@ const emptyPlan: CommissionPlan = {
   cpl: "", cpl_currency: "", wager: "", wager_currency: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
   proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "", recommended_margin_pct: "",
+  fixed_remuneration: "", fixed_remuneration_currency: "",
+  fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "",
+  fixed_remuneration_fallback_cpa_currency: "",
+  fixed_remuneration_installments: [],
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 
@@ -202,6 +212,18 @@ export default function Clientes() {
         proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
         fixed_margin_pct: p.fixed_margin_pct?.toString() ?? "",
         recommended_margin_pct: p.recommended_margin_pct?.toString() ?? "",
+        fixed_remuneration: p.fixed_remuneration?.toString() ?? "",
+        fixed_remuneration_currency: p.fixed_remuneration_currency ?? "",
+        fixed_remuneration_min_ftd: p.fixed_remuneration_min_ftd?.toString() ?? "",
+        fixed_remuneration_fallback_cpa: p.fixed_remuneration_fallback_cpa?.toString() ?? "",
+        fixed_remuneration_fallback_cpa_currency: p.fixed_remuneration_fallback_cpa_currency ?? "",
+        fixed_remuneration_installments: Array.isArray(p.fixed_remuneration_installments)
+          ? p.fixed_remuneration_installments.map((it: any) => ({
+              pct: it?.pct?.toString() ?? "",
+              date: it?.date ?? "",
+              description: it?.description ?? "",
+            }))
+          : [],
       })),
     );
     setBrandInput("");
@@ -275,6 +297,20 @@ export default function Clientes() {
           proportional_min_pct: p.proportional_min_pct === "" ? null : p.proportional_min_pct,
           fixed_margin_pct: p.fixed_margin_pct === "" ? null : p.fixed_margin_pct,
           recommended_margin_pct: p.recommended_margin_pct === "" ? null : p.recommended_margin_pct,
+          fixed_remuneration: p.fixed_remuneration === "" ? null : p.fixed_remuneration,
+          fixed_remuneration_currency: p.fixed_remuneration_currency || null,
+          fixed_remuneration_min_ftd: p.fixed_remuneration_min_ftd === "" ? null : p.fixed_remuneration_min_ftd,
+          fixed_remuneration_fallback_cpa: p.fixed_remuneration_fallback_cpa === "" ? null : p.fixed_remuneration_fallback_cpa,
+          fixed_remuneration_fallback_cpa_currency: p.fixed_remuneration_fallback_cpa_currency || null,
+          fixed_remuneration_installments: Array.isArray(p.fixed_remuneration_installments)
+            ? p.fixed_remuneration_installments
+                .map((it) => ({
+                  pct: it.pct === "" ? 0 : Number(it.pct),
+                  date: it.date || null,
+                  description: (it.description || "").trim() || null,
+                }))
+                .filter((it) => it.pct > 0 || it.date || it.description)
+            : [],
         })),
       },
     });
@@ -822,6 +858,128 @@ export default function Clientes() {
                               </div>
                             )}
                           </div>
+                        </div>
+                        <div className="col-span-2 mt-2 rounded-md border border-amber-200 bg-amber-50 dark:border-amber-900/50 dark:bg-amber-950/30 p-3 space-y-3">
+                          <div>
+                            <p className="text-sm font-semibold">Comisión fija por volumen de CPAs</p>
+                            <p className="text-[11px] text-muted-foreground">Pago fijo si el afiliado alcanza un volumen mínimo de CPAs/mes. La diferencia con la comisión fija del afiliado para este operador es el margen de OO.</p>
+                          </div>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Monto fijo y moneda</Label>
+                              <div className="flex gap-2">
+                                <Input type="number" step="0.01" min="0" placeholder="0.00"
+                                  value={pl.fixed_remuneration}
+                                  onChange={(e) => updatePlan(i, { fixed_remuneration: e.target.value })} />
+                                <Select value={pl.fixed_remuneration_currency || "__none__"}
+                                  onValueChange={(v) => updatePlan(i, { fixed_remuneration_currency: v === "__none__" ? "" : v })}>
+                                  <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__none__">—</SelectItem>
+                                    {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Volumen mínimo de CPAs/mes</Label>
+                              <Input type="number" min="0" step="1" placeholder="Ej. 50"
+                                value={pl.fixed_remuneration_min_ftd}
+                                onChange={(e) => updatePlan(i, { fixed_remuneration_min_ftd: e.target.value })} />
+                            </div>
+                            <div className="space-y-1 md:col-span-2">
+                              <Label className="text-xs">CPA fallback (si no alcanza el volumen)</Label>
+                              <div className="flex gap-2">
+                                <Input type="number" min="0" step="0.01" placeholder="0.00"
+                                  value={pl.fixed_remuneration_fallback_cpa}
+                                  onChange={(e) => updatePlan(i, { fixed_remuneration_fallback_cpa: e.target.value })} />
+                                <Select value={pl.fixed_remuneration_fallback_cpa_currency || "__none__"}
+                                  onValueChange={(v) => updatePlan(i, { fixed_remuneration_fallback_cpa_currency: v === "__none__" ? "" : v })}>
+                                  <SelectTrigger className="w-28"><SelectValue placeholder="Moneda" /></SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="__none__">—</SelectItem>
+                                    {CURRENCIES.map((c) => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+                                  </SelectContent>
+                                </Select>
+                              </div>
+                            </div>
+                          </div>
+                          {(() => {
+                            const installments = pl.fixed_remuneration_installments ?? [];
+                            const totalPct = installments.reduce((s, x) => s + (Number(x.pct) || 0), 0);
+                            const update = (next: typeof installments) => updatePlan(i, { fixed_remuneration_installments: next });
+                            return (
+                              <div className="rounded-md border border-border bg-background p-3 space-y-2">
+                                <div className="flex items-center justify-between gap-2 flex-wrap">
+                                  <div>
+                                    <Label className="text-xs font-semibold">Forma de pago — Cuotas</Label>
+                                    <p className="text-[11px] text-muted-foreground">Define una o más cuotas con porcentaje, fecha y regla opcional.</p>
+                                  </div>
+                                  <div className="flex items-center gap-2">
+                                    <Badge variant={totalPct === 100 ? "default" : totalPct > 100 ? "destructive" : "outline"} className="text-[10px]">
+                                      Total: {totalPct}%
+                                    </Badge>
+                                    <Button type="button" variant="outline" size="sm" className="h-8"
+                                      onClick={() => update([...installments, { pct: "", date: "", description: "" }])}>
+                                      <Plus className="h-3.5 w-3.5 mr-1" /> Añadir cuota
+                                    </Button>
+                                  </div>
+                                </div>
+                                {installments.length === 0 ? (
+                                  <p className="text-[11px] text-muted-foreground italic">Sin cuotas configuradas — el pago se realiza en una sola vez.</p>
+                                ) : (
+                                  <div className="space-y-2">
+                                    {installments.map((it, idx) => (
+                                      <div key={idx} className="grid grid-cols-12 gap-2 items-end">
+                                        <div className="col-span-12 md:col-span-1 text-xs text-muted-foreground pb-2">#{idx + 1}</div>
+                                        <div className="col-span-4 md:col-span-2 space-y-1">
+                                          <Label className="text-[10px] text-muted-foreground">Porcentaje</Label>
+                                          <div className="relative">
+                                            <Input type="number" min="0" max="100" step="0.01" placeholder="50"
+                                              value={it.pct}
+                                              onChange={(e) => {
+                                                const next = [...installments];
+                                                next[idx] = { ...next[idx], pct: e.target.value };
+                                                update(next);
+                                              }}
+                                              className="pr-7" />
+                                            <span className="absolute right-2 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">%</span>
+                                          </div>
+                                        </div>
+                                        <div className="col-span-8 md:col-span-3 space-y-1">
+                                          <Label className="text-[10px] text-muted-foreground">Fecha de pago</Label>
+                                          <Input type="date" value={it.date}
+                                            onChange={(e) => {
+                                              const next = [...installments];
+                                              next[idx] = { ...next[idx], date: e.target.value };
+                                              update(next);
+                                            }} />
+                                        </div>
+                                        <div className="col-span-11 md:col-span-5 space-y-1">
+                                          <Label className="text-[10px] text-muted-foreground">Descripción / regla</Label>
+                                          <Input placeholder="Ej. Al firmar el contrato" value={it.description}
+                                            onChange={(e) => {
+                                              const next = [...installments];
+                                              next[idx] = { ...next[idx], description: e.target.value };
+                                              update(next);
+                                            }} />
+                                        </div>
+                                        <div className="col-span-1 flex justify-end">
+                                          <Button type="button" variant="ghost" size="icon" className="h-8 w-8 text-destructive"
+                                            onClick={() => update(installments.filter((_, j) => j !== idx))}>
+                                            <Trash2 className="h-4 w-4" />
+                                          </Button>
+                                        </div>
+                                      </div>
+                                    ))}
+                                    {totalPct !== 100 && installments.length > 0 && (
+                                      <p className="text-[11px] text-destructive">La suma de porcentajes debe ser 100% (actual: {totalPct}%).</p>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            );
+                          })()}
                         </div>
                         </div>
                       </div>

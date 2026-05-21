@@ -594,6 +594,12 @@ export type Database = {
           description: string | null
           fallback_cpa: number | null
           fixed_margin_pct: number | null
+          fixed_remuneration: number | null
+          fixed_remuneration_currency: string | null
+          fixed_remuneration_fallback_cpa: number | null
+          fixed_remuneration_fallback_cpa_currency: string | null
+          fixed_remuneration_installments: Json
+          fixed_remuneration_min_ftd: number | null
           id: string
           overoption_retention: number | null
           plan_start_date: string | null
@@ -626,6 +632,12 @@ export type Database = {
           description?: string | null
           fallback_cpa?: number | null
           fixed_margin_pct?: number | null
+          fixed_remuneration?: number | null
+          fixed_remuneration_currency?: string | null
+          fixed_remuneration_fallback_cpa?: number | null
+          fixed_remuneration_fallback_cpa_currency?: string | null
+          fixed_remuneration_installments?: Json
+          fixed_remuneration_min_ftd?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null
@@ -658,6 +670,12 @@ export type Database = {
           description?: string | null
           fallback_cpa?: number | null
           fixed_margin_pct?: number | null
+          fixed_remuneration?: number | null
+          fixed_remuneration_currency?: string | null
+          fixed_remuneration_fallback_cpa?: number | null
+          fixed_remuneration_fallback_cpa_currency?: string | null
+          fixed_remuneration_installments?: Json
+          fixed_remuneration_min_ftd?: number | null
           id?: string
           overoption_retention?: number | null
           plan_start_date?: string | null

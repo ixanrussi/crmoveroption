@@ -62,6 +62,12 @@ type CommissionPlanPayload = {
   proportional_min_pct?: number | string | null;
   fixed_margin_pct?: number | string | null;
   recommended_margin_pct?: number | string | null;
+  fixed_remuneration?: number | string | null;
+  fixed_remuneration_currency?: string | null;
+  fixed_remuneration_min_ftd?: number | string | null;
+  fixed_remuneration_fallback_cpa?: number | string | null;
+  fixed_remuneration_fallback_cpa_currency?: string | null;
+  fixed_remuneration_installments?: Array<{ pct?: number | string; date?: string; description?: string }> | null;
 };
 
 type RequestBody = {
@@ -268,6 +274,15 @@ Deno.serve(async (req) => {
           const cids = Array.isArray(p?.country_ids)
             ? p!.country_ids!.filter((x): x is string => typeof x === "string" && x.length > 0)
             : [];
+          const installments = Array.isArray(p?.fixed_remuneration_installments)
+            ? p!.fixed_remuneration_installments!
+                .map((it) => ({
+                  pct: num(it?.pct) ?? 0,
+                  date: (it?.date ?? "").toString().trim() || null,
+                  description: (it?.description ?? "").toString().trim() || null,
+                }))
+                .filter((it) => it.pct > 0 || it.date || it.description)
+            : [];
           return {
             plan_start_date: p?.plan_start_date || null,
             currency: (p?.currency ?? "").toString().trim() || null,
@@ -294,18 +309,41 @@ Deno.serve(async (req) => {
             proportional_min_pct: num(p?.proportional_min_pct),
             fixed_margin_pct: num(p?.fixed_margin_pct),
             recommended_margin_pct: num(p?.recommended_margin_pct),
+            fixed_remuneration: num(p?.fixed_remuneration),
+            fixed_remuneration_currency: (p?.fixed_remuneration_currency ?? "").toString().trim() || null,
+            fixed_remuneration_min_ftd: intOrNull(p?.fixed_remuneration_min_ftd),
+            fixed_remuneration_fallback_cpa: num(p?.fixed_remuneration_fallback_cpa),
+            fixed_remuneration_fallback_cpa_currency: (p?.fixed_remuneration_fallback_cpa_currency ?? "").toString().trim() || null,
+            fixed_remuneration_installments: installments,
           };
         })
       : [];
 
     await sql`delete from public.client_commission_plans where client_id = ${clientId}`;
     if (plans.length) {
-      const values = plans.map((p) => ({ client_id: clientId!, created_by: userData.user.id, ...p }));
-      await sql`insert into public.client_commission_plans ${sql(
-        values,
-        "client_id", "created_by", "plan_start_date", "currency", "description",
-        "country_id", "country_ids", "brand", "baseline", "baseline_currency", "cpa", "cpa_currency", "rev_share_pct", "cpl", "cpl_currency", "wager", "wager_currency", "conversion_type", "cap", "overoption_retention", "fallback_cpa", "cpa_at_80", "cpa_at_90", "proportional_enabled", "proportional_min_pct", "fixed_margin_pct", "recommended_margin_pct"
-      )}`;
+      for (const p of plans) {
+        await sql`
+          insert into public.client_commission_plans (
+            client_id, created_by, plan_start_date, currency, description,
+            country_id, country_ids, brand, baseline, baseline_currency, cpa, cpa_currency,
+            rev_share_pct, cpl, cpl_currency, wager, wager_currency, conversion_type, cap,
+            overoption_retention, fallback_cpa, cpa_at_80, cpa_at_90,
+            proportional_enabled, proportional_min_pct, fixed_margin_pct, recommended_margin_pct,
+            fixed_remuneration, fixed_remuneration_currency, fixed_remuneration_min_ftd,
+            fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency,
+            fixed_remuneration_installments
+          ) values (
+            ${clientId}, ${userData.user.id}, ${p.plan_start_date}, ${p.currency}, ${p.description},
+            ${p.country_id}, ${p.country_ids}::uuid[], ${p.brand}, ${p.baseline}, ${p.baseline_currency}, ${p.cpa}, ${p.cpa_currency},
+            ${p.rev_share_pct}, ${p.cpl}, ${p.cpl_currency}, ${p.wager}, ${p.wager_currency}, ${p.conversion_type}, ${p.cap},
+            ${p.overoption_retention}, ${p.fallback_cpa}, ${p.cpa_at_80}, ${p.cpa_at_90},
+            ${p.proportional_enabled}, ${p.proportional_min_pct}, ${p.fixed_margin_pct}, ${p.recommended_margin_pct},
+            ${p.fixed_remuneration}, ${p.fixed_remuneration_currency}, ${p.fixed_remuneration_min_ftd},
+            ${p.fixed_remuneration_fallback_cpa}, ${p.fixed_remuneration_fallback_cpa_currency},
+            ${sql.json(p.fixed_remuneration_installments)}
+          )
+        `;
+      }
     }
 
     // Automation: on operator creation, auto-generate affiliate commission plan

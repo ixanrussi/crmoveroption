@@ -74,6 +74,7 @@ type AffAgg = {
     brand: string;
     brandId: string;
     accountId: string;
+    accountName: string;
     totals: Record<MetricKey, number>;
   }>;
 };

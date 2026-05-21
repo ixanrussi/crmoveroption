@@ -541,6 +541,7 @@ export default function TrackerReport() {
                                     <TableRow>
                                       <TableHead>Tracker</TableHead>
                                       <TableHead>Brand</TableHead>
+                                      <TableHead>Account Name</TableHead>
                                       <TableHead>Account ID</TableHead>
                                       <TableHead className="text-right">Visits</TableHead>
                                       <TableHead className="text-right">Signups</TableHead>

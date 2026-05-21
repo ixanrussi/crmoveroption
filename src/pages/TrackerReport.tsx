@@ -175,10 +175,11 @@ export default function TrackerReport() {
 
   const allRows = useMemo(() => {
     const src = raw?.data ?? [];
-    if (accountIdToOperator.size === 0) return src;
     return src.map((r) => {
-      const opName = accountIdToOperator.get((r.accountId ?? "").toString().trim());
-      return opName ? { ...r, brand: opName } : r;
+      const accountName = accountIdToOperator.get((r.accountId ?? "").toString().trim()) ?? "";
+      const hasBrandId = (r.brandId ?? "").toString().trim() !== "";
+      const brand = hasBrandId ? (r.brand ?? "") : (accountName || r.brand || "");
+      return { ...r, brand, accountName };
     });
   }, [raw, accountIdToOperator]);
 

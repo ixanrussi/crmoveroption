@@ -274,6 +274,7 @@ export default function TrackerReport() {
         Array.from(a.trackers.values()).some(t =>
           normalize(t.tracker).includes(q) ||
           normalize(t.brand).includes(q) ||
+          normalize(t.accountName).includes(q) ||
           normalize(t.accountId).includes(q) ||
           normalize(t.brandId).includes(q) ||
           normalize(t.trackerId).includes(q) ||

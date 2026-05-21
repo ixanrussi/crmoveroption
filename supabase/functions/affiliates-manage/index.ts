@@ -139,6 +139,15 @@ Deno.serve(async (req) => {
         fixed_remuneration_min_ftd: (a as any).fixed_remuneration_min_ftd === null || (a as any).fixed_remuneration_min_ftd === undefined || (a as any).fixed_remuneration_min_ftd === "" ? null : Math.trunc(Number((a as any).fixed_remuneration_min_ftd)),
         fixed_remuneration_fallback_cpa: (a as any).fixed_remuneration_fallback_cpa === null || (a as any).fixed_remuneration_fallback_cpa === undefined || (a as any).fixed_remuneration_fallback_cpa === "" ? null : Number((a as any).fixed_remuneration_fallback_cpa),
         fixed_remuneration_fallback_cpa_currency: (a as any).fixed_remuneration_fallback_cpa_currency || null,
+        fixed_remuneration_installments: Array.isArray((a as any).fixed_remuneration_installments)
+          ? (a as any).fixed_remuneration_installments
+              .map((x: any) => ({
+                pct: x?.pct === "" || x?.pct == null ? null : Number(x.pct),
+                date: x?.date || null,
+                description: x?.description || null,
+              }))
+              .filter((x: any) => x.pct != null || x.date || x.description)
+          : [],
         brands: Array.isArray((a as any).brands) ? (a as any).brands.filter((b: any) => typeof b === "string") : [],
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)

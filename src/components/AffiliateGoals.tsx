@@ -41,27 +41,56 @@ export default function AffiliateGoals({ affiliateId }: Props) {
   const [clients, setClients] = useState<Client[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [closures, setClosures] = useState<Closure[]>([]);
+  const [fixedMinFtd, setFixedMinFtd] = useState<number | null>(null);
+  const [draftTouched, setDraftTouched] = useState(false);
 
   const empty: Omit<Goal, "id" | "affiliate_id"> = {
     scope: "general", period: "", client_id: null, brand: null, ftd_target: 0, notes: "",
   };
   const [draft, setDraft] = useState<typeof empty>(empty);
+  const updateDraft = (patch: Partial<typeof empty>) => {
+    setDraftTouched(true);
+    setDraft((d) => ({ ...d, ...patch }));
+  };
 
   const load = async () => {
     setLoading(true);
-    const [{ data: g }, { data: c }, { data: it }, { data: cs }] = await Promise.all([
+    const [{ data: g }, { data: c }, { data: it }, { data: cs }, { data: aff }] = await Promise.all([
       supabase.from("affiliate_goals").select("*").eq("affiliate_id", affiliateId).order("created_at", { ascending: false }),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_closure_items").select("closure_id, brand, qualified_players").eq("affiliate_id", affiliateId),
       supabase.from("commission_closures").select("id, client_id, period"),
+      supabase.from("affiliates").select("fixed_remuneration_min_ftd").eq("id", affiliateId).maybeSingle(),
     ]);
     setGoals((g ?? []) as Goal[]);
     setClients((c ?? []) as Client[]);
     setItems((it ?? []) as Item[]);
     setClosures((cs ?? []) as Closure[]);
+    const minFtd = (aff as any)?.fixed_remuneration_min_ftd ?? null;
+    setFixedMinFtd(minFtd && Number(minFtd) > 0 ? Number(minFtd) : null);
     setLoading(false);
   };
   useEffect(() => { load(); }, [affiliateId]);
+
+  // Auto-fill draft form with fixed remuneration target while the user hasn't edited it.
+  useEffect(() => {
+    if (loading) return;
+    if (draftTouched) return;
+    if (fixedMinFtd && fixedMinFtd > 0) {
+      setDraft({
+        scope: "general",
+        period: "",
+        client_id: null,
+        brand: null,
+        ftd_target: fixedMinFtd,
+        notes: "Objetivo derivado de la remuneración fija del afiliado.",
+      });
+    } else {
+      setDraft(empty);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixedMinFtd, loading, draftTouched]);
+
 
   const closureMap = useMemo(() => new Map(closures.map((c) => [c.id, c])), [closures]);
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.company_name])), [clients]);

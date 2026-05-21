@@ -132,6 +132,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
     const { error } = await supabase.from("affiliate_goals").insert(payload);
     setSaving(false);
     if (error) return toast.error(error.message);
+    setDraftTouched(false);
     setDraft(empty);
     toast.success("Objetivo agregado");
     load();

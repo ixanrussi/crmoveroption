@@ -263,13 +263,19 @@ export default function AffiliateGoals({ affiliateId }: Props) {
                 {goals.map((g) => {
                   const current = computeProgress(g);
                   const pct = g.ftd_target > 0 ? Math.min(100, Math.round((current / g.ftd_target) * 100)) : 0;
+                  const isFromFixed = fixedMinFtd != null && g.scope === "general" && !g.client_id && !g.brand && g.ftd_target === fixedMinFtd;
                   return (
                     <TableRow key={g.id}>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px]">
-                          <Target className="h-3 w-3 mr-1" />
-                          {g.scope === "monthly" ? `Mes ${g.period}` : "General"}
-                        </Badge>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <Badge variant="outline" className="text-[10px]">
+                            <Target className="h-3 w-3 mr-1" />
+                            {g.scope === "monthly" ? `Mes ${g.period}` : "General"}
+                          </Badge>
+                          {isFromFixed && (
+                            <Badge variant="secondary" className="text-[10px]">Fijo</Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-xs">{g.client_id ? clientMap.get(g.client_id) ?? "—" : <span className="text-muted-foreground">Todos</span>}</TableCell>
                       <TableCell className="text-xs">{g.brand ?? <span className="text-muted-foreground">Todas</span>}</TableCell>

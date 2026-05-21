@@ -619,8 +619,17 @@ export default function Clientes() {
                             <span className="text-xs font-medium text-muted-foreground shrink-0">Plan #{i + 1}</span>
                             <span className="text-sm font-medium truncate">{pl.description || "Sin nombre"}</span>
                             <div className="flex gap-2 ml-2 shrink-0">
-                              <Badge variant="secondary" className="font-normal">CPA: {pl.cpa || "—"}</Badge>
-                              <Badge variant="secondary" className="font-normal">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
+                              {pl.fixed_remuneration && Number(pl.fixed_remuneration) > 0 ? (
+                                <>
+                                  <Badge variant="secondary" className="font-normal">Fijo: {pl.fixed_remuneration}{pl.fixed_remuneration_currency ? ` ${pl.fixed_remuneration_currency}` : ""}</Badge>
+                                  <Badge variant="secondary" className="font-normal">Objetivo CPAs: {pl.fixed_remuneration_min_ftd || "—"}</Badge>
+                                </>
+                              ) : (
+                                <>
+                                  <Badge variant="secondary" className="font-normal">CPA: {pl.cpa || "—"}</Badge>
+                                  <Badge variant="secondary" className="font-normal">Rev Share: {pl.rev_share_pct ? `${pl.rev_share_pct}%` : "—"}</Badge>
+                                </>
+                              )}
                             </div>
                           </button>
                         </CollapsibleTrigger>

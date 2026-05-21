@@ -212,6 +212,18 @@ export default function Clientes() {
         proportional_min_pct: p.proportional_min_pct?.toString() ?? "",
         fixed_margin_pct: p.fixed_margin_pct?.toString() ?? "",
         recommended_margin_pct: p.recommended_margin_pct?.toString() ?? "",
+        fixed_remuneration: p.fixed_remuneration?.toString() ?? "",
+        fixed_remuneration_currency: p.fixed_remuneration_currency ?? "",
+        fixed_remuneration_min_ftd: p.fixed_remuneration_min_ftd?.toString() ?? "",
+        fixed_remuneration_fallback_cpa: p.fixed_remuneration_fallback_cpa?.toString() ?? "",
+        fixed_remuneration_fallback_cpa_currency: p.fixed_remuneration_fallback_cpa_currency ?? "",
+        fixed_remuneration_installments: Array.isArray(p.fixed_remuneration_installments)
+          ? p.fixed_remuneration_installments.map((it: any) => ({
+              pct: it?.pct?.toString() ?? "",
+              date: it?.date ?? "",
+              description: it?.description ?? "",
+            }))
+          : [],
       })),
     );
     setBrandInput("");

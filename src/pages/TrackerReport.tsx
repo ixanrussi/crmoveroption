@@ -232,6 +232,7 @@ export default function TrackerReport() {
           brand: r.brand ?? "",
           brandId: r.brandId ?? "",
           accountId: r.accountId ?? "",
+          accountName: (r as any).accountName ?? "",
           totals: emptyTotals(),
         };
         agg.trackers.set(tk, tr);

@@ -382,6 +382,15 @@ export default function Afiliados() {
       fixed_remuneration_min_ftd: form.fixed_remuneration_min_ftd === "" || form.fixed_remuneration_min_ftd == null ? null : Math.trunc(Number(form.fixed_remuneration_min_ftd)),
       fixed_remuneration_fallback_cpa: form.fixed_remuneration_fallback_cpa === "" || form.fixed_remuneration_fallback_cpa == null ? null : Number(form.fixed_remuneration_fallback_cpa),
       fixed_remuneration_fallback_cpa_currency: form.fixed_remuneration_fallback_cpa_currency || null,
+      fixed_remuneration_installments: Array.isArray(form.fixed_remuneration_installments)
+        ? form.fixed_remuneration_installments
+            .map((x: any) => ({
+              pct: x?.pct === "" || x?.pct == null ? null : Number(x.pct),
+              date: x?.date || null,
+              description: x?.description?.trim() ? x.description.trim() : null,
+            }))
+            .filter((x: any) => x.pct != null || x.date || x.description)
+        : [],
       avatar_url: form.avatar_url || null,
     };
     setSaving(true);

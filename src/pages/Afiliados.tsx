@@ -238,7 +238,14 @@ export default function Afiliados() {
     const aliasesArr: string[] = Array.isArray(row?.aliases) && row.aliases.length > 0
       ? row.aliases
       : (row?.alias ? [row.alias] : []);
-    setForm({ ...row, country_ids: affIds, aliases: aliasesArr });
+    const installmentsArr = Array.isArray(row?.fixed_remuneration_installments)
+      ? row.fixed_remuneration_installments.map((x: any) => ({
+          pct: x?.pct == null ? "" : String(x.pct),
+          date: x?.date ?? "",
+          description: x?.description ?? "",
+        }))
+      : [];
+    setForm({ ...row, country_ids: affIds, aliases: aliasesArr, fixed_remuneration_installments: installmentsArr });
     setAliasInput("");
     const grouped: Record<string, string[]> = {};
     (row.affiliate_channel_links ?? []).forEach((l: any) => {

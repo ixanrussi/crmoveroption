@@ -151,6 +151,21 @@ export default function AffiliateGoals({ affiliateId }: Props) {
 
   return (
     <div className="space-y-4">
+      <Alert className={fixedMinFtd ? "border-primary/40 bg-primary/5" : ""}>
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          {fixedMinFtd ? (
+            <>
+              Este afiliado tiene <strong>remuneración fija</strong> con un objetivo de{" "}
+              <strong>{fixedMinFtd} CPA/mes</strong>. Los objetivos definidos aquí y la remuneración fija{" "}
+              <strong>no se suman</strong>: la remuneración fija ya incluye el cumplimiento del objetivo de CPAs.
+            </>
+          ) : (
+            <>Los objetivos definidos aquí <strong>no se suman</strong> a otras remuneraciones del afiliado.</>
+          )}
+        </AlertDescription>
+      </Alert>
+
       {isAdmin && (
         <Card>
           <CardContent className="p-4 space-y-3">

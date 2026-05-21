@@ -62,6 +62,12 @@ type CommissionPlanPayload = {
   proportional_min_pct?: number | string | null;
   fixed_margin_pct?: number | string | null;
   recommended_margin_pct?: number | string | null;
+  fixed_remuneration?: number | string | null;
+  fixed_remuneration_currency?: string | null;
+  fixed_remuneration_min_ftd?: number | string | null;
+  fixed_remuneration_fallback_cpa?: number | string | null;
+  fixed_remuneration_fallback_cpa_currency?: string | null;
+  fixed_remuneration_installments?: Array<{ pct?: number | string; date?: string; description?: string }> | null;
 };
 
 type RequestBody = {

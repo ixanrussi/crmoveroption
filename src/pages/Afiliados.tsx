@@ -799,7 +799,7 @@ export default function Afiliados() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Volumen mínimo de FTD/mes</Label>
+                      <Label className="text-xs text-muted-foreground">Volumen mínimo de CPA/mes</Label>
                       <Input
                         type="number"
                         min="0"

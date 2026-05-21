@@ -9,7 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Plus, Trash2, Loader2, Target } from "lucide-react";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Plus, Trash2, Loader2, Target, Info } from "lucide-react";
 import { toast } from "sonner";
 
 type Props = { affiliateId: string };
@@ -40,27 +41,56 @@ export default function AffiliateGoals({ affiliateId }: Props) {
   const [clients, setClients] = useState<Client[]>([]);
   const [items, setItems] = useState<Item[]>([]);
   const [closures, setClosures] = useState<Closure[]>([]);
+  const [fixedMinFtd, setFixedMinFtd] = useState<number | null>(null);
+  const [draftTouched, setDraftTouched] = useState(false);
 
   const empty: Omit<Goal, "id" | "affiliate_id"> = {
     scope: "general", period: "", client_id: null, brand: null, ftd_target: 0, notes: "",
   };
   const [draft, setDraft] = useState<typeof empty>(empty);
+  const updateDraft = (patch: Partial<typeof empty>) => {
+    setDraftTouched(true);
+    setDraft((d) => ({ ...d, ...patch }));
+  };
 
   const load = async () => {
     setLoading(true);
-    const [{ data: g }, { data: c }, { data: it }, { data: cs }] = await Promise.all([
+    const [{ data: g }, { data: c }, { data: it }, { data: cs }, { data: aff }] = await Promise.all([
       supabase.from("affiliate_goals").select("*").eq("affiliate_id", affiliateId).order("created_at", { ascending: false }),
       supabase.from("clients").select("id, company_name, brands").order("company_name"),
       supabase.from("commission_closure_items").select("closure_id, brand, qualified_players").eq("affiliate_id", affiliateId),
       supabase.from("commission_closures").select("id, client_id, period"),
+      supabase.from("affiliates").select("fixed_remuneration_min_ftd").eq("id", affiliateId).maybeSingle(),
     ]);
     setGoals((g ?? []) as Goal[]);
     setClients((c ?? []) as Client[]);
     setItems((it ?? []) as Item[]);
     setClosures((cs ?? []) as Closure[]);
+    const minFtd = (aff as any)?.fixed_remuneration_min_ftd ?? null;
+    setFixedMinFtd(minFtd && Number(minFtd) > 0 ? Number(minFtd) : null);
     setLoading(false);
   };
   useEffect(() => { load(); }, [affiliateId]);
+
+  // Auto-fill draft form with fixed remuneration target while the user hasn't edited it.
+  useEffect(() => {
+    if (loading) return;
+    if (draftTouched) return;
+    if (fixedMinFtd && fixedMinFtd > 0) {
+      setDraft({
+        scope: "general",
+        period: "",
+        client_id: null,
+        brand: null,
+        ftd_target: fixedMinFtd,
+        notes: "Objetivo derivado de la remuneración fija del afiliado.",
+      });
+    } else {
+      setDraft(empty);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fixedMinFtd, loading, draftTouched]);
+
 
   const closureMap = useMemo(() => new Map(closures.map((c) => [c.id, c])), [closures]);
   const clientMap = useMemo(() => new Map(clients.map((c) => [c.id, c.company_name])), [clients]);
@@ -102,6 +132,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
     const { error } = await supabase.from("affiliate_goals").insert(payload);
     setSaving(false);
     if (error) return toast.error(error.message);
+    setDraftTouched(false);
     setDraft(empty);
     toast.success("Objetivo agregado");
     load();
@@ -120,6 +151,21 @@ export default function AffiliateGoals({ affiliateId }: Props) {
 
   return (
     <div className="space-y-4">
+      <Alert className={fixedMinFtd ? "border-primary/40 bg-primary/5" : ""}>
+        <Info className="h-4 w-4" />
+        <AlertDescription className="text-xs">
+          {fixedMinFtd ? (
+            <>
+              Este afiliado tiene <strong>remuneración fija</strong> con un objetivo de{" "}
+              <strong>{fixedMinFtd} CPA/mes</strong>. Los objetivos definidos aquí y la remuneración fija{" "}
+              <strong>no se suman</strong>: la remuneración fija ya incluye el cumplimiento del objetivo de CPAs.
+            </>
+          ) : (
+            <>Los objetivos definidos aquí <strong>no se suman</strong> a otras remuneraciones del afiliado.</>
+          )}
+        </AlertDescription>
+      </Alert>
+
       {isAdmin && (
         <Card>
           <CardContent className="p-4 space-y-3">
@@ -129,7 +175,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               <div>
                 <Label className="text-xs">Tipo</Label>
-                <Select value={draft.scope} onValueChange={(v: any) => setDraft({ ...draft, scope: v })}>
+                <Select value={draft.scope} onValueChange={(v: any) => updateDraft({ scope: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="general">General</SelectItem>
@@ -140,12 +186,12 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               {draft.scope === "monthly" && (
                 <div>
                   <Label className="text-xs">Mes</Label>
-                  <Input type="month" value={draft.period ?? ""} onChange={(e) => setDraft({ ...draft, period: e.target.value })} />
+                  <Input type="month" value={draft.period ?? ""} onChange={(e) => updateDraft({ period: e.target.value })} />
                 </div>
               )}
               <div>
                 <Label className="text-xs">Operador (opcional)</Label>
-                <Select value={draft.client_id ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, client_id: v === "__all__" ? null : v })}>
+                <Select value={draft.client_id ?? "__all__"} onValueChange={(v) => updateDraft({ client_id: v === "__all__" ? null : v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__all__">Todos</SelectItem>
@@ -167,7 +213,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
                     );
                   }
                   return (
-                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, brand: v === "__all__" ? null : v })}>
+                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => updateDraft({ brand: v === "__all__" ? null : v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__all__">Todas</SelectItem>
@@ -179,11 +225,11 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Objetivo FTD</Label>
-                <Input type="number" min={1} max={1000000} value={draft.ftd_target || ""} onChange={(e) => setDraft({ ...draft, ftd_target: Number(e.target.value) })} />
+                <Input type="number" min={1} max={1000000} value={draft.ftd_target || ""} onChange={(e) => updateDraft({ ftd_target: Number(e.target.value) })} />
               </div>
               <div className="col-span-2 md:col-span-3">
                 <Label className="text-xs">Notas</Label>
-                <Input value={draft.notes ?? ""} maxLength={300} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
+                <Input value={draft.notes ?? ""} maxLength={300} onChange={(e) => updateDraft({ notes: e.target.value })} />
               </div>
             </div>
             <Button size="sm" onClick={addGoal} disabled={saving}>
@@ -217,13 +263,19 @@ export default function AffiliateGoals({ affiliateId }: Props) {
                 {goals.map((g) => {
                   const current = computeProgress(g);
                   const pct = g.ftd_target > 0 ? Math.min(100, Math.round((current / g.ftd_target) * 100)) : 0;
+                  const isFromFixed = fixedMinFtd != null && g.scope === "general" && !g.client_id && !g.brand && g.ftd_target === fixedMinFtd;
                   return (
                     <TableRow key={g.id}>
                       <TableCell>
-                        <Badge variant="outline" className="text-[10px]">
-                          <Target className="h-3 w-3 mr-1" />
-                          {g.scope === "monthly" ? `Mes ${g.period}` : "General"}
-                        </Badge>
+                        <div className="flex items-center gap-1 flex-wrap">
+                          <Badge variant="outline" className="text-[10px]">
+                            <Target className="h-3 w-3 mr-1" />
+                            {g.scope === "monthly" ? `Mes ${g.period}` : "General"}
+                          </Badge>
+                          {isFromFixed && (
+                            <Badge variant="secondary" className="text-[10px]">Fijo</Badge>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-xs">{g.client_id ? clientMap.get(g.client_id) ?? "—" : <span className="text-muted-foreground">Todos</span>}</TableCell>
                       <TableCell className="text-xs">{g.brand ?? <span className="text-muted-foreground">Todas</span>}</TableCell>

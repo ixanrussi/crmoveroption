@@ -235,7 +235,7 @@ Deno.serve(async (req) => {
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
             ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency},
             ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency},
-            ${JSON.stringify(payload.fixed_remuneration_installments)}::jsonb, ${payload.avatar_url}, ${userData.user.id}
+            ${tx.json(payload.fixed_remuneration_installments)}, ${payload.avatar_url}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;
@@ -264,7 +264,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
               fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
-              fixed_remuneration_installments = ${JSON.stringify(payload.fixed_remuneration_installments)}::jsonb,
+              fixed_remuneration_installments = ${tx.json(payload.fixed_remuneration_installments)},
               avatar_url = ${payload.avatar_url},
               updated_at = now()
             where id = ${affiliateId}
@@ -290,7 +290,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
               fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
-              fixed_remuneration_installments = ${JSON.stringify(payload.fixed_remuneration_installments)}::jsonb,
+              fixed_remuneration_installments = ${tx.json(payload.fixed_remuneration_installments)},
               avatar_url = ${payload.avatar_url},
               updated_at = now()
             where id = ${affiliateId}

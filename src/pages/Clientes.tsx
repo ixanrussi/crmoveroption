@@ -912,8 +912,8 @@ export default function Clientes() {
                               <div className="rounded-md border border-border bg-background p-3 space-y-2">
                                 <div className="flex items-center justify-between gap-2 flex-wrap">
                                   <div>
-                                    <Label className="text-xs font-semibold">Forma de pago — Cuotas</Label>
-                                    <p className="text-[11px] text-muted-foreground">Define una o más cuotas con porcentaje, fecha y regla opcional.</p>
+                                    <Label className="text-xs font-semibold">Forma de pago del operador — Cuotas</Label>
+                                    <p className="text-[11px] text-muted-foreground">Define cómo el operador/cliente nos paga esta comisión fija: una o más cuotas con porcentaje, fecha y regla opcional.</p>
                                   </div>
                                   <div className="flex items-center gap-2">
                                     <Badge variant={totalPct === 100 ? "default" : totalPct > 100 ? "destructive" : "outline"} className="text-[10px]">

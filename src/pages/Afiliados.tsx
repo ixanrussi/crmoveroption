@@ -799,7 +799,7 @@ export default function Afiliados() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <Label className="text-xs text-muted-foreground">Volumen mínimo de FTD/mes</Label>
+                      <Label className="text-xs text-muted-foreground">Volumen mínimo de CPA/mes</Label>
                       <Input
                         type="number"
                         min="0"
@@ -833,7 +833,7 @@ export default function Afiliados() {
                     </div>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Si el afiliado alcanza el volumen mínimo de FTDs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por FTD.
+                    Si el afiliado alcanza el volumen mínimo de CPAs en el mes, recibe la remuneración fija. En caso contrario, se le paga el CPA fallback por CPA.
                   </p>
 
                   {(() => {

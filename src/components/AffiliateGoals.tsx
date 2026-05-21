@@ -175,7 +175,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
             <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
               <div>
                 <Label className="text-xs">Tipo</Label>
-                <Select value={draft.scope} onValueChange={(v: any) => setDraft({ ...draft, scope: v })}>
+                <Select value={draft.scope} onValueChange={(v: any) => updateDraft({ scope: v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="general">General</SelectItem>
@@ -186,12 +186,12 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               {draft.scope === "monthly" && (
                 <div>
                   <Label className="text-xs">Mes</Label>
-                  <Input type="month" value={draft.period ?? ""} onChange={(e) => setDraft({ ...draft, period: e.target.value })} />
+                  <Input type="month" value={draft.period ?? ""} onChange={(e) => updateDraft({ period: e.target.value })} />
                 </div>
               )}
               <div>
                 <Label className="text-xs">Operador (opcional)</Label>
-                <Select value={draft.client_id ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, client_id: v === "__all__" ? null : v })}>
+                <Select value={draft.client_id ?? "__all__"} onValueChange={(v) => updateDraft({ client_id: v === "__all__" ? null : v })}>
                   <SelectTrigger><SelectValue /></SelectTrigger>
                   <SelectContent>
                     <SelectItem value="__all__">Todos</SelectItem>
@@ -213,7 +213,7 @@ export default function AffiliateGoals({ affiliateId }: Props) {
                     );
                   }
                   return (
-                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => setDraft({ ...draft, brand: v === "__all__" ? null : v })}>
+                    <Select value={draft.brand ?? "__all__"} onValueChange={(v) => updateDraft({ brand: v === "__all__" ? null : v })}>
                       <SelectTrigger><SelectValue /></SelectTrigger>
                       <SelectContent>
                         <SelectItem value="__all__">Todas</SelectItem>
@@ -225,11 +225,11 @@ export default function AffiliateGoals({ affiliateId }: Props) {
               </div>
               <div>
                 <Label className="text-xs">Objetivo FTD</Label>
-                <Input type="number" min={1} max={1000000} value={draft.ftd_target || ""} onChange={(e) => setDraft({ ...draft, ftd_target: Number(e.target.value) })} />
+                <Input type="number" min={1} max={1000000} value={draft.ftd_target || ""} onChange={(e) => updateDraft({ ftd_target: Number(e.target.value) })} />
               </div>
               <div className="col-span-2 md:col-span-3">
                 <Label className="text-xs">Notas</Label>
-                <Input value={draft.notes ?? ""} maxLength={300} onChange={(e) => setDraft({ ...draft, notes: e.target.value })} />
+                <Input value={draft.notes ?? ""} maxLength={300} onChange={(e) => updateDraft({ notes: e.target.value })} />
               </div>
             </div>
             <Button size="sm" onClick={addGoal} disabled={saving}>

@@ -264,6 +264,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_min_ftd = ${payload.fixed_remuneration_min_ftd},
               fixed_remuneration_fallback_cpa = ${payload.fixed_remuneration_fallback_cpa},
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
+              fixed_remuneration_installments = ${JSON.stringify(payload.fixed_remuneration_installments)}::jsonb,
               avatar_url = ${payload.avatar_url},
               updated_at = now()
             where id = ${affiliateId}

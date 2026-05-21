@@ -64,6 +64,12 @@ type CommissionPlan = {
   proportional_min_pct: string;
   fixed_margin_pct: string;
   recommended_margin_pct: string;
+  fixed_remuneration: string;
+  fixed_remuneration_currency: string;
+  fixed_remuneration_min_ftd: string;
+  fixed_remuneration_fallback_cpa: string;
+  fixed_remuneration_fallback_cpa_currency: string;
+  fixed_remuneration_installments: { pct: string; date: string; description: string }[];
 };
 const emptyPlan: CommissionPlan = {
   plan_start_date: "", currency: "", description: "", country_ids: [], brand: "",
@@ -71,6 +77,10 @@ const emptyPlan: CommissionPlan = {
   cpl: "", cpl_currency: "", wager: "", wager_currency: "", conversion_type: "", cap: "",
   overoption_retention: "", fallback_cpa: "", cpa_at_80: "", cpa_at_90: "",
   proportional_enabled: false, proportional_min_pct: "", fixed_margin_pct: "", recommended_margin_pct: "",
+  fixed_remuneration: "", fixed_remuneration_currency: "",
+  fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "",
+  fixed_remuneration_fallback_cpa_currency: "",
+  fixed_remuneration_installments: [],
 };
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
 

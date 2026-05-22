@@ -40,7 +40,8 @@ const TABLE_LABELS: Record<string, string> = {
 export default function ActivityLogs() {
   const [logs, setLogs] = useState<Log[]>([]);
   const [loading, setLoading] = useState(false);
-  const [fUser, setFUser] = useState("");
+  const [users, setUsers] = useState<{ email: string; name: string }[]>([]);
+  const [fUser, setFUser] = useState("all");
   const [fTable, setFTable] = useState<string>("all");
   const [fAction, setFAction] = useState<string>("all");
   const [fFrom, setFFrom] = useState("");
@@ -57,11 +58,28 @@ export default function ActivityLogs() {
     setLoading(false);
   };
 
-  useEffect(() => { load(); }, []);
+  const loadUsers = async () => {
+    const { data } = await supabase
+      .from("profiles")
+      .select("email, full_name, first_name, last_name");
+    const list = (data ?? [])
+      .map((p: any) => ({
+        email: p.email as string,
+        name:
+          (p.full_name as string) ||
+          [p.first_name, p.last_name].filter(Boolean).join(" ") ||
+          (p.email as string),
+      }))
+      .filter((u) => u.email)
+      .sort((a, b) => a.name.localeCompare(b.name));
+    setUsers(list);
+  };
+
+  useEffect(() => { load(); loadUsers(); }, []);
 
   const filtered = useMemo(() => {
     return logs.filter((l) => {
-      if (fUser && !(l.user_email || "").toLowerCase().includes(fUser.toLowerCase())) return false;
+      if (fUser !== "all" && (l.user_email || "") !== fUser) return false;
       if (fTable !== "all" && l.table_name !== fTable) return false;
       if (fAction !== "all" && l.action !== fAction) return false;
       if (fFrom && l.created_at < fFrom) return false;

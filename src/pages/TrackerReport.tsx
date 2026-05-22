@@ -643,6 +643,18 @@ export default function TrackerReport() {
                                     {trackers.map((t, i) => (
                                       <TableRow key={`${a.affiliateId}-${i}`}>
                                         <TableCell className="text-xs">{t.tracker || "—"}</TableCell>
+                                        <TableCell className="text-xs">
+                                          {undef ? (
+                                            <AffiliateCombo
+                                              value={null}
+                                              affiliates={affiliates}
+                                              disabled={assigning === t.tracker}
+                                              onSelect={(id) => assignTrackerToAffiliate(id, t.tracker)}
+                                            />
+                                          ) : (
+                                            <span className="text-muted-foreground">—</span>
+                                          )}
+                                        </TableCell>
                                         <TableCell className="text-xs">{t.brand || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.accountName || "—"}</TableCell>
                                         <TableCell className="text-xs">{t.accountId || "—"}</TableCell>

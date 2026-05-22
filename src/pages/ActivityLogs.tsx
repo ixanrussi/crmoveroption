@@ -107,8 +107,17 @@ export default function ActivityLogs() {
       <Card>
         <CardHeader><CardTitle className="text-base">Filtros</CardTitle></CardHeader>
         <CardContent className="grid grid-cols-1 md:grid-cols-5 gap-3">
-          <div><Label className="text-xs">Usuario (email)</Label>
-            <Input value={fUser} onChange={(e) => setFUser(e.target.value)} placeholder="email@..." /></div>
+          <div><Label className="text-xs">Usuario</Label>
+            <Select value={fUser} onValueChange={setFUser}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                {users.map((u) => (
+                  <SelectItem key={u.email} value={u.email}>{u.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
           <div><Label className="text-xs">Tabla</Label>
             <Select value={fTable} onValueChange={setFTable}>
               <SelectTrigger><SelectValue /></SelectTrigger>

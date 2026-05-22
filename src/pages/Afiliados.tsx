@@ -12,7 +12,8 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown, TrendingUp, Percent, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown, TrendingUp, Percent, Link2, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -59,6 +60,7 @@ const emptyPlan: CommissionPlan = {
 };
 
 export default function Afiliados() {
+  const navigate = useNavigate();
   const { isAdmin, isSuperAdmin } = useAuth();
   const CURRENCIES = useCurrencies();
   const [list, setList] = useState<any[]>([]);
@@ -1460,6 +1462,7 @@ export default function Afiliados() {
                   <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
+                      <Button size="icon" variant="ghost" title="Ver performance" onClick={() => navigate(`/afiliados/${r.id}/performance`)}><BarChart3 className="h-4 w-4" /></Button>
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                       {isSuperAdmin && <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>}
                     </TableCell>

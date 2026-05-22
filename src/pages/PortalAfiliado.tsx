@@ -5,7 +5,8 @@ import AffiliateEarnings from "@/components/AffiliateEarnings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, LogOut } from "lucide-react";
+import { Loader2, AlertTriangle, LogOut, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function PortalAfiliado() {
   const { user, signOut } = useAuth();
@@ -65,7 +66,18 @@ export default function PortalAfiliado() {
           </CardContent>
         </Card>
       ) : (
-        <AffiliateEarnings affiliateId={affiliateId} />
+        <>
+          <Card className="bg-gradient-to-br from-primary/10 to-transparent border-primary/30">
+            <CardContent className="p-4 flex items-center justify-between gap-3 flex-wrap">
+              <div>
+                <p className="font-semibold flex items-center gap-2"><BarChart3 className="h-4 w-4 text-primary" /> Dashboard de performance</p>
+                <p className="text-xs text-muted-foreground">CPAs cualificados, calidad de tráfico, pagos y desgloses por operador.</p>
+              </div>
+              <Button asChild size="sm"><Link to={`/afiliados/${affiliateId}/performance`}>Ver performance</Link></Button>
+            </CardContent>
+          </Card>
+          <AffiliateEarnings affiliateId={affiliateId} />
+        </>
       )}
     </div>
   );

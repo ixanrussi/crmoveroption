@@ -5,7 +5,8 @@ import AffiliateEarnings from "@/components/AffiliateEarnings";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, AlertTriangle, LogOut } from "lucide-react";
+import { Loader2, AlertTriangle, LogOut, BarChart3 } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function PortalAfiliado() {
   const { user, signOut } = useAuth();

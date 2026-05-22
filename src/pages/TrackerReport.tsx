@@ -118,7 +118,11 @@ function AffiliateCombo({
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[260px] p-0" align="start">
-        <Command>
+        <Command
+          filter={(value, search) =>
+            value.toLowerCase().includes(search.toLowerCase()) ? 1 : 0
+          }
+        >
           <CommandInput placeholder="Buscar afiliado..." className="h-9" />
           <CommandList>
             <CommandEmpty>Sin resultados.</CommandEmpty>

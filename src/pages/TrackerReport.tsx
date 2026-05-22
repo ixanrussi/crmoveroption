@@ -180,15 +180,17 @@ export default function TrackerReport() {
     setAppliedRange({ from: iso(from), to: iso(to) });
   }, []);
 
+  const loadAffiliates = async () => {
+    const { data, error } = await supabase
+      .from("affiliates")
+      .select("id, fixed_name, aliases")
+      .order("fixed_name", { ascending: true });
+    if (error) { console.error(error); return; }
+    setAffiliates((data ?? []) as Affiliate[]);
+  };
+
   useEffect(() => {
-    (async () => {
-      const { data, error } = await supabase
-        .from("affiliates")
-        .select("id, fixed_name, aliases")
-        .order("fixed_name", { ascending: true });
-      if (error) { console.error(error); return; }
-      setAffiliates((data ?? []) as Affiliate[]);
-    })();
+    loadAffiliates();
     (async () => {
       const { data, error } = await supabase
         .from("clients")
@@ -197,6 +199,31 @@ export default function TrackerReport() {
       setClientOps((data ?? []) as ClientOp[]);
     })();
   }, []);
+
+  const assignTrackerToAffiliate = async (affiliateId: string, trackerName: string) => {
+    const tracker = (trackerName ?? "").trim();
+    if (!tracker) return;
+    const aff = affiliates.find(a => a.id === affiliateId);
+    if (!aff) return;
+    const existing = aff.aliases ?? [];
+    if (existing.some(a => normalize(a) === normalize(tracker))) {
+      toast({ title: "Ya es alias", description: `"${tracker}" ya está asignado a ${aff.fixed_name}` });
+      return;
+    }
+    setAssigning(tracker);
+    const { error } = await supabase
+      .from("affiliates")
+      .update({ aliases: [...existing, tracker] })
+      .eq("id", affiliateId);
+    setAssigning(null);
+    if (error) {
+      toast({ title: "Error al asignar", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Tracker asignado", description: `"${tracker}" → ${aff.fixed_name}` });
+    await loadAffiliates();
+  };
+
 
   const fetchData = async (from: string, to: string) => {
     setLoading(true);

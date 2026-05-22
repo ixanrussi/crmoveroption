@@ -11,7 +11,11 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { ChevronDown, ChevronUp, ChevronRight, Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { ChevronDown, ChevronUp, ChevronRight, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
@@ -86,7 +90,60 @@ const isActiveTotals = (t: Record<MetricKey, number>) =>
   t.visits > 0 || t.signups > 0 || t.firstTimeDeposits > 0 ||
   t.depositAmount > 0 || t.netRevenue !== 0 || t.earning !== 0;
 
+function AffiliateCombo({
+  value,
+  affiliates,
+  onSelect,
+  disabled,
+}: {
+  value: string | null;
+  affiliates: Affiliate[];
+  onSelect: (id: string) => void;
+  disabled?: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const current = affiliates.find(a => a.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          size="sm"
+          role="combobox"
+          disabled={disabled}
+          className="h-7 w-[180px] justify-between text-xs font-normal"
+        >
+          <span className="truncate">{current?.fixed_name ?? "Asignar afiliado"}</span>
+          <ChevronsUpDown className="ml-2 h-3 w-3 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[260px] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar afiliado..." className="h-9" />
+          <CommandList>
+            <CommandEmpty>Sin resultados.</CommandEmpty>
+            <CommandGroup>
+              {affiliates.map(a => (
+                <CommandItem
+                  key={a.id}
+                  value={a.fixed_name}
+                  onSelect={() => { onSelect(a.id); setOpen(false); }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === a.id ? "opacity-100" : "opacity-0")} />
+                  {a.fixed_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
 export default function TrackerReport() {
+  const { toast } = useToast();
+  const [assigning, setAssigning] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [raw, setRaw] = useState<ApiResponse | null>(null);

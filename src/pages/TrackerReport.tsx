@@ -624,6 +624,7 @@ export default function TrackerReport() {
                                   <TableHeader>
                                     <TableRow>
                                       <TableHead>Tracker</TableHead>
+                                      <TableHead>Asignar afiliado</TableHead>
                                       <TableHead>Brand</TableHead>
                                       <TableHead>Account Name</TableHead>
                                       <TableHead>Account ID</TableHead>

@@ -593,6 +593,14 @@ export default function Afiliados() {
                     Recomendado: imagen cuadrada (ej. 400×400) tipo perfil. Se mostrará en la landing page del afiliado.
                   </p>
                 </div>
+                <div className="col-span-2 space-y-1">
+                  <Label>EXT_ID_OO</Label>
+                  <Input
+                    value={form.ext_id_oo ?? ""}
+                    onChange={(e) => setForm({ ...form, ext_id_oo: e.target.value })}
+                    placeholder="ID externo en otras plataformas de Over Option"
+                  />
+                </div>
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>
                   <p className="text-xs text-muted-foreground">Escribe un alias y presiona Enter para agregarlo como tag.</p>

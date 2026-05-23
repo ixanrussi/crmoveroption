@@ -27,6 +27,7 @@ type ClientPayload = {
   net_min_cpa?: number | string | null;
   logo_url?: string | null;
   routy_account_id?: string | null;
+  ext_id_oo?: string | null;
 };
 
 type ContactPayload = {

@@ -238,6 +238,7 @@ Deno.serve(async (req) => {
           net_min_cpa = ${payload.net_min_cpa},
           logo_url = ${payload.logo_url},
           routy_account_id = ${payload.routy_account_id},
+          ext_id_oo = ${payload.ext_id_oo},
           updated_at = now()
         where id = ${clientId}
       `;

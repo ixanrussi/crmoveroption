@@ -106,7 +106,7 @@ export default function Clientes() {
   const empty = {
     company_name: "", website: "",
     address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
-    client_type: "", brands: [] as string[], net_min_cpa: "", logo_url: "", routy_account_id: "",
+    client_type: "", brands: [] as string[], net_min_cpa: "", logo_url: "", routy_account_id: "", ext_id_oo: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [brandInput, setBrandInput] = useState("");
@@ -269,6 +269,7 @@ export default function Clientes() {
           net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
           logo_url: form.logo_url || null,
           routy_account_id: form.routy_account_id || null,
+          ext_id_oo: form.ext_id_oo || null,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,
@@ -376,6 +377,8 @@ export default function Clientes() {
                   <Input value={form.login ?? ""} onChange={(e) => setForm({ ...form, login: e.target.value })} /></div>
                 <div className="space-y-1"><Label>Seña</Label>
                   <Input type="text" value={form.senha ?? ""} onChange={(e) => setForm({ ...form, senha: e.target.value })} /></div>
+                <div className="col-span-2 space-y-1"><Label>EXT_ID_OO</Label>
+                  <Input value={form.ext_id_oo ?? ""} onChange={(e) => setForm({ ...form, ext_id_oo: e.target.value })} placeholder="ID externo en otras plataformas de Over Option" /></div>
                 <div className="col-span-2 space-y-1">
                   <Label>Logo del operador (PNG, JPG, SVG, WEBP)</Label>
                   <div className="flex items-center gap-3">

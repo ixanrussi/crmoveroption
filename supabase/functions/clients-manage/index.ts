@@ -27,6 +27,7 @@ type ClientPayload = {
   net_min_cpa?: number | string | null;
   logo_url?: string | null;
   routy_account_id?: string | null;
+  ext_id_oo?: string | null;
 };
 
 type ContactPayload = {
@@ -181,6 +182,7 @@ Deno.serve(async (req) => {
       net_min_cpa: numTop(c.net_min_cpa),
       logo_url: c.logo_url || null,
       routy_account_id: (c.routy_account_id ?? "").toString().trim() || null,
+      ext_id_oo: (c.ext_id_oo ?? "").toString().trim() || null,
     };
 
     let clientId = body.id;
@@ -208,12 +210,12 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, logo_url, routy_account_id, created_by
+          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, logo_url, routy_account_id, ext_id_oo, created_by
         ) values (
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
-          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${userData.user.id}
+          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${payload.ext_id_oo}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -236,6 +238,7 @@ Deno.serve(async (req) => {
           net_min_cpa = ${payload.net_min_cpa},
           logo_url = ${payload.logo_url},
           routy_account_id = ${payload.routy_account_id},
+          ext_id_oo = ${payload.ext_id_oo},
           updated_at = now()
         where id = ${clientId}
       `;

@@ -84,7 +84,7 @@ export default function Afiliados() {
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
     fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "", fixed_remuneration_fallback_cpa_currency: "",
     fixed_remuneration_installments: [] as { pct: string; date: string; description: string }[],
-    avatar_url: "",
+    avatar_url: "", ext_id_oo: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");
@@ -394,6 +394,7 @@ export default function Afiliados() {
             .filter((x: any) => x.pct != null || x.date || x.description)
         : [],
       avatar_url: form.avatar_url || null,
+      ext_id_oo: form.ext_id_oo?.trim() || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {
@@ -591,6 +592,14 @@ export default function Afiliados() {
                   <p className="text-[11px] text-muted-foreground">
                     Recomendado: imagen cuadrada (ej. 400×400) tipo perfil. Se mostrará en la landing page del afiliado.
                   </p>
+                </div>
+                <div className="col-span-2 space-y-1">
+                  <Label>EXT_ID_OO</Label>
+                  <Input
+                    value={form.ext_id_oo ?? ""}
+                    onChange={(e) => setForm({ ...form, ext_id_oo: e.target.value })}
+                    placeholder="ID externo en otras plataformas de Over Option"
+                  />
                 </div>
                 <div className="col-span-2 space-y-2 border rounded-md p-3">
                   <Label className="text-base">Alias (puede cambiar con el tiempo)</Label>

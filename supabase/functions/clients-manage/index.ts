@@ -182,6 +182,7 @@ Deno.serve(async (req) => {
       net_min_cpa: numTop(c.net_min_cpa),
       logo_url: c.logo_url || null,
       routy_account_id: (c.routy_account_id ?? "").toString().trim() || null,
+      ext_id_oo: (c.ext_id_oo ?? "").toString().trim() || null,
     };
 
     let clientId = body.id;

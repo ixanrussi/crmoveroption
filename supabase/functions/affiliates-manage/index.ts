@@ -268,6 +268,7 @@ Deno.serve(async (req) => {
               fixed_remuneration_fallback_cpa_currency = ${payload.fixed_remuneration_fallback_cpa_currency},
               fixed_remuneration_installments = ${tx.json(payload.fixed_remuneration_installments)},
               avatar_url = ${payload.avatar_url},
+              ext_id_oo = ${payload.ext_id_oo},
               updated_at = now()
             where id = ${affiliateId}
           `;

@@ -269,6 +269,7 @@ export default function Clientes() {
           net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
           logo_url: form.logo_url || null,
           routy_account_id: form.routy_account_id || null,
+          ext_id_oo: form.ext_id_oo || null,
         },
         software_ids: softwareId ? [softwareId] : [],
         contacts: cleanContacts,

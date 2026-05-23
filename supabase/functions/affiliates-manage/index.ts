@@ -153,6 +153,7 @@ Deno.serve(async (req) => {
         aliases: Array.isArray((a as any).aliases)
           ? (a as any).aliases.map((x: any) => (x ?? "").toString().trim()).filter((x: string) => x.length > 0)
           : [],
+        ext_id_oo: ((a as any).ext_id_oo ?? "").toString().trim() || null,
       };
 
       let affiliateId = body.id;

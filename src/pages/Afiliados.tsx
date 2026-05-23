@@ -84,7 +84,7 @@ export default function Afiliados() {
     status: "active", notes: "", fixed_remuneration: "", fixed_remuneration_currency: "",
     fixed_remuneration_min_ftd: "", fixed_remuneration_fallback_cpa: "", fixed_remuneration_fallback_cpa_currency: "",
     fixed_remuneration_installments: [] as { pct: string; date: string; description: string }[],
-    avatar_url: "",
+    avatar_url: "", ext_id_oo: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [aliasInput, setAliasInput] = useState("");

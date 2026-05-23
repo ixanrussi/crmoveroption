@@ -394,6 +394,7 @@ export default function Afiliados() {
             .filter((x: any) => x.pct != null || x.date || x.description)
         : [],
       avatar_url: form.avatar_url || null,
+      ext_id_oo: form.ext_id_oo?.trim() || null,
     };
     setSaving(true);
     const { data, error } = await supabase.functions.invoke("affiliates-manage", {

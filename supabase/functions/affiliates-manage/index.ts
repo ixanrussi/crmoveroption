@@ -25,6 +25,7 @@ type AffiliatePayload = {
   tax_id?: string | null;
   notes?: string | null;
   avatar_url?: string | null;
+  ext_id_oo?: string | null;
 };
 
 type ChannelLink = { channel_id: string; link?: string | null };

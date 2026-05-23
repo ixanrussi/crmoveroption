@@ -229,7 +229,7 @@ Deno.serve(async (req) => {
             commission_pct, payment_method, bank_details, tax_id, notes, brands,
             fixed_remuneration, fixed_remuneration_currency,
             fixed_remuneration_min_ftd, fixed_remuneration_fallback_cpa, fixed_remuneration_fallback_cpa_currency,
-            fixed_remuneration_installments, avatar_url, created_by
+            fixed_remuneration_installments, avatar_url, ext_id_oo, created_by
           ) values (
             ${payload.fixed_name}, ${aliasPrimary}, ${payload.aliases}::text[], ${payload.email}, ${payload.phone}, ${payload.country_id},
             ${payload.country_ids}::uuid[],
@@ -237,7 +237,7 @@ Deno.serve(async (req) => {
             ${payload.bank_details}, ${payload.tax_id}, ${payload.notes}, ${payload.brands},
             ${payload.fixed_remuneration}, ${payload.fixed_remuneration_currency},
             ${payload.fixed_remuneration_min_ftd}, ${payload.fixed_remuneration_fallback_cpa}, ${payload.fixed_remuneration_fallback_cpa_currency},
-            ${tx.json(payload.fixed_remuneration_installments)}, ${payload.avatar_url}, ${userData.user.id}
+            ${tx.json(payload.fixed_remuneration_installments)}, ${payload.avatar_url}, ${payload.ext_id_oo}, ${userData.user.id}
           ) returning id, unique_id
         `;
         affiliateId = inserted[0].id;

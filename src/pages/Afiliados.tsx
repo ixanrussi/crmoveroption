@@ -79,6 +79,19 @@ export default function Afiliados() {
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState<{ message: string; affiliate_id: string; affiliate_name: string } | null>(null);
+  const [statusChange, setStatusChange] = useState<{ id: string; name: string; current: string; next: string } | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
+
+  const confirmStatusChange = async () => {
+    if (!statusChange) return;
+    setStatusSaving(true);
+    const { error } = await supabase.from("affiliates").update({ status: statusChange.next as any }).eq("id", statusChange.id);
+    setStatusSaving(false);
+    if (error) { toast.error("No se pudo actualizar el estado"); return; }
+    toast.success("Estado actualizado");
+    setList((prev) => prev.map((x) => x.id === statusChange.id ? { ...x, status: statusChange.next } : x));
+    setStatusChange(null);
+  };
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],

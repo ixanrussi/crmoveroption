@@ -157,6 +157,17 @@ Deno.serve(async (req) => {
     const brands = Array.isArray(c.brands)
       ? c.brands.map((b) => (b ?? "").toString().trim()).filter((b) => b.length > 0)
       : [];
+    const brandAliases: Record<string, string[]> = {};
+    if (c.brand_aliases && typeof c.brand_aliases === "object") {
+      for (const [k, v] of Object.entries(c.brand_aliases)) {
+        const key = (k ?? "").toString().trim();
+        if (!key) continue;
+        const arr = Array.isArray(v)
+          ? Array.from(new Set(v.map((x) => (x ?? "").toString().trim()).filter((x) => x.length > 0)))
+          : [];
+        brandAliases[key] = arr;
+      }
+    }
 
     const countryIds = Array.isArray(c.country_ids)
       ? c.country_ids.filter((x) => typeof x === "string" && x.length > 0)

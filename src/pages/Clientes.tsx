@@ -603,7 +603,67 @@ export default function Clientes() {
                       ))}
                     </div>
                   )}
+
+                  {(form.brands ?? []).length > 0 && (
+                    <div className="space-y-2 border rounded-md p-3 bg-muted/20">
+                      <Label className="text-sm">Alias por marca</Label>
+                      <p className="text-xs text-muted-foreground">
+                        Variantes de nombre (de Routy u otros reportes) que deben mapearse a cada marca. Ej.: <code>betway.es</code> → <code>Betway.es</code>.
+                      </p>
+                      {(form.brands as string[]).map((b) => {
+                        const aliases: string[] = (form.brand_aliases?.[b] ?? []) as string[];
+                        const inputKey = `__alias_input_${b}`;
+                        const inputVal: string = (form as any)[inputKey] ?? "";
+                        const addAlias = () => {
+                          const v = inputVal.trim();
+                          if (!v) return;
+                          const next = { ...(form.brand_aliases ?? {}) };
+                          const list = Array.isArray(next[b]) ? next[b] : [];
+                          if (!list.some((x: string) => x.toLowerCase() === v.toLowerCase()) && v.toLowerCase() !== b.toLowerCase()) {
+                            next[b] = [...list, v];
+                          }
+                          setForm({ ...form, brand_aliases: next, [inputKey]: "" });
+                        };
+                        const removeAlias = (i: number) => {
+                          const next = { ...(form.brand_aliases ?? {}) };
+                          next[b] = (next[b] ?? []).filter((_: string, idx: number) => idx !== i);
+                          setForm({ ...form, brand_aliases: next });
+                        };
+                        return (
+                          <div key={b} className="space-y-1">
+                            <div className="flex items-center gap-2">
+                              <Badge variant="outline" className="min-w-fit">{b}</Badge>
+                              <Input
+                                placeholder="Añadir alias…"
+                                value={inputVal}
+                                onChange={(e) => setForm({ ...form, [inputKey]: e.target.value })}
+                                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAlias(); } }}
+                                className="h-8"
+                              />
+                              <Button type="button" size="sm" variant="outline" onClick={addAlias}>
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                            {aliases.length > 0 && (
+                              <div className="flex flex-wrap gap-1 pl-2">
+                                {aliases.map((a, i) => (
+                                  <Badge key={`${a}-${i}`} variant="secondary" className="flex items-center gap-1 text-xs">
+                                    {a}
+                                    <button type="button" onClick={() => removeAlias(i)} className="hover:text-destructive">
+                                      <X className="h-3 w-3" />
+                                    </button>
+                                  </Badge>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
+
+
 
                 <div data-commission-plans-section className="col-span-2 space-y-2 border rounded-md p-3">
                   <div className="flex items-center justify-between">

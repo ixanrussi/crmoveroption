@@ -15,6 +15,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Plus, Pencil, Trash2, Lock, X, ChevronDown, DollarSign, TrendingDown, TrendingUp, Percent, Link2, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
+import { Tooltip, TooltipContent, TooltipTrigger, TooltipProvider } from "@/components/ui/tooltip";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Command, CommandInput, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
@@ -106,12 +107,17 @@ export default function Afiliados() {
   const [commissionShares, setCommissionShares] = useState<Record<string, { earned: number; pct: number; currency: string | null }>>({});
   const [goalProgress, setGoalProgress] = useState<Record<string, { target: number; current: number; pct: number }>>({});
   const [missingLinks, setMissingLinks] = useState<Record<string, number>>({});
+  const [missingLinksDetail, setMissingLinksDetail] = useState<Record<string, { client_name: string; brand: string }[]>>({});
 
   const load = async () => {
-    const { data } = await supabase
-      .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), template:commission_plan_templates(name))")
-      .order("fixed_name", { ascending: true });
+    const [{ data }, { data: clData }] = await Promise.all([
+      supabase
+        .from("affiliates")
+        .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), template:commission_plan_templates(name))")
+        .order("fixed_name", { ascending: true }),
+      supabase.from("clients").select("id, company_name"),
+    ]);
+    const clientsMap = clData ?? [];
     setList(data ?? []);
 
     // Compute affiliate share of total billed (commission_total) by Overoption
@@ -196,18 +202,28 @@ export default function Afiliados() {
       linkSet.add(`${l.affiliate_id}::${l.client_id}::${(l.brand || "").toLowerCase()}`);
     });
     const missing: Record<string, number> = {};
+    const missingDetail: Record<string, { client_name: string; brand: string }[]> = {};
     (data ?? []).forEach((aff: any) => {
       const seen = new Set<string>();
       let cnt = 0;
+      const details: { client_name: string; brand: string }[] = [];
       (aff.affiliate_commission_plans ?? []).forEach((p: any) => {
         const key = `${aff.id}::${p.client_id}::${(p.brand || "").toLowerCase()}`;
         if (seen.has(key)) return;
         seen.add(key);
-        if (!linkSet.has(key)) cnt++;
+        if (!linkSet.has(key)) {
+          cnt++;
+          const client = clientsMap.find((c: any) => c.id === p.client_id);
+          details.push({ client_name: client?.company_name || "—", brand: p.brand || "" });
+        }
       });
-      if (cnt > 0) missing[aff.id] = cnt;
+      if (cnt > 0) {
+        missing[aff.id] = cnt;
+        missingDetail[aff.id] = details;
+      }
     });
     setMissingLinks(missing);
+    setMissingLinksDetail(missingDetail);
   };
   const loadLookups = async () => {
     const [c, ch, cl, tpl, cp] = await Promise.all([
@@ -1406,14 +1422,34 @@ export default function Afiliados() {
                     })()}
                   </TableCell>
                   <TableCell className="text-center align-middle">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(r)}
-                      className={`inline-flex items-center justify-center ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
-                      title={missingLinks[r.id] > 0 ? "Operadores con plan asignado pero sin tracking link" : "Todos los tracking links asignados"}
-                    >
-                      <Link2 className="h-4 w-4" />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(r)}
+                          className={`inline-flex items-center justify-center ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        {missingLinks[r.id] > 0 ? (
+                          <div className="space-y-1">
+                            <p className="font-semibold text-xs">Operadores sin tracking link:</p>
+                            <ul className="text-xs space-y-0.5">
+                              {(missingLinksDetail[r.id] ?? []).map((d, i) => (
+                                <li key={i}>
+                                  {d.client_name}
+                                  {d.brand && <span className="text-muted-foreground"> — {d.brand}</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p className="text-xs">Todos los tracking links asignados</p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {(() => {

@@ -15,7 +15,8 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Switch } from "@/components/ui/switch";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock, DollarSign, ShieldCheck, Link2 } from "lucide-react";
+import { Plus, Pencil, Trash2, X, ChevronDown, ExternalLink, Lock, Unlock, DollarSign, ShieldCheck, Link2, BarChart3 } from "lucide-react";
+import { useNavigate as useNavigateRouter } from "react-router-dom";
 import { HoverCard, HoverCardContent, HoverCardTrigger } from "@/components/ui/hover-card";
 import { toast } from "sonner";
 import { useCurrencies } from "@/lib/currencies";
@@ -1214,6 +1215,9 @@ export default function Clientes() {
                   </TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1 align-top whitespace-nowrap text-right">
+                      <Button size="icon" variant="ghost" title="Ver análisis" asChild>
+                        <a href={`/clientes/${r.id}/analisis`}><BarChart3 className="h-4 w-4" /></a>
+                      </Button>
                       <Button size="icon" variant="ghost" onClick={() => openEdit(r)}><Pencil className="h-4 w-4" /></Button>
                       {isSuperAdmin && <Button size="icon" variant="ghost" onClick={() => remove(r.id)}><Trash2 className="h-4 w-4" /></Button>}
                     </TableCell>

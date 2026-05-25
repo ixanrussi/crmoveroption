@@ -11,6 +11,7 @@ import AppLayout from "@/layouts/AppLayout";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import Clientes from "./pages/Clientes";
+import ClienteAnalisis from "./pages/ClienteAnalisis";
 import Afiliados from "./pages/Afiliados";
 import AfiliadoPerformance from "./pages/AfiliadoPerformance";
 import Usuarios from "./pages/Usuarios";
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/landing-pages" element={<LandingPages />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/clientes" element={<Clientes />} />
+              <Route path="/clientes/:id/analisis" element={<ClienteAnalisis />} />
               <Route path="/mi-cuenta" element={<MiCuenta />} />
               <Route path="/afiliados" element={<Afiliados />} />
               <Route path="/afiliados/:id/performance" element={<AfiliadoPerformance />} />

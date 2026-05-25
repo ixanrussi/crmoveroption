@@ -30,9 +30,17 @@ const fmtInt = (n: number) => Math.round(n).toLocaleString();
 const fmtMoney = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
 const brandKey = (b?: string | null) => (b ?? "").trim().toLowerCase();
-function canonBrand(b: string | undefined | null, clientBrands: string[]): string {
+function canonBrand(b: string | undefined | null, clientBrands: string[], aliases?: Record<string, string[]>): string {
   const k = brandKey(b);
   if (!k) return "";
+  // 1) explicit alias map: canonical -> [variants]
+  if (aliases) {
+    for (const [canonical, list] of Object.entries(aliases)) {
+      if (brandKey(canonical) === k) return canonical;
+      if (Array.isArray(list) && list.some(v => brandKey(v) === k)) return canonical;
+    }
+  }
+  // 2) match against client's declared brands (case-insensitive)
   const match = clientBrands.find(cb => brandKey(cb) === k);
   return match ?? (b ?? "").trim();
 }

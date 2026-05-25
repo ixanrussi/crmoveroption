@@ -1322,33 +1322,52 @@ export default function Afiliados() {
               {isAdmin && <TableHead className="w-24"></TableHead>}
             </TableRow></TableHeader>
             <TableBody>
-              {[...list].sort((a, b) => (a.fixed_name || "").localeCompare(b.fixed_name || "")).filter((r) => {
+              {(() => {
                 const q = search.trim().toLowerCase();
-                if (!q) return true;
-                if (r.fixed_name?.toLowerCase().includes(q)) return true;
-                if (r.alias?.toLowerCase().includes(q)) return true;
-                if (Array.isArray(r.aliases) && r.aliases.some((a: string) => a?.toLowerCase().includes(q))) return true;
-                // País principal + países de actuación + países de campañas (planes de comisión)
-                const countryIds = new Set<string>();
-                if (r.country_id) countryIds.add(r.country_id);
-                (r.country_ids ?? []).forEach((id: string) => countryIds.add(id));
-                (r.affiliate_commission_plans ?? []).forEach((p: any) => {
-                  if (p.country_id) countryIds.add(p.country_id);
-                  (p.country_ids ?? []).forEach((id: string) => countryIds.add(id));
+                const ranked = [...list].map((r) => {
+                  if (!q) return { r, match: true, rank: 0 };
+                  let match = false;
+                  if (r.fixed_name?.toLowerCase().includes(q)) match = true;
+                  if (!match && r.alias?.toLowerCase().includes(q)) match = true;
+                  if (!match && Array.isArray(r.aliases) && r.aliases.some((a: string) => a?.toLowerCase().includes(q))) match = true;
+
+                  // País principal
+                  const principalNames: string[] = [];
+                  if (r.country?.name) principalNames.push(r.country.name);
+                  if (r.country_id) {
+                    const c = countries.find((x: any) => x.id === r.country_id);
+                    if (c?.name) principalNames.push(c.name);
+                    if (c?.code) principalNames.push(c.code);
+                  }
+                  const principalMatch = principalNames.some((n) => n.toLowerCase().includes(q));
+
+                  // Países secundarios + comisiones
+                  const secIds = new Set<string>();
+                  (r.country_ids ?? []).forEach((id: string) => { if (id !== r.country_id) secIds.add(id); });
+                  (r.affiliate_commission_plans ?? []).forEach((p: any) => {
+                    if (p.country_id) secIds.add(p.country_id);
+                    (p.country_ids ?? []).forEach((id: string) => secIds.add(id));
+                  });
+                  const secNames: string[] = [];
+                  (r.affiliate_commission_plans ?? []).forEach((p: any) => {
+                    if (p.country?.name) secNames.push(p.country.name);
+                  });
+                  secIds.forEach((id) => {
+                    const c = countries.find((x: any) => x.id === id);
+                    if (c?.name) secNames.push(c.name);
+                    if (c?.code) secNames.push(c.code);
+                  });
+                  const secMatch = secNames.some((n) => n.toLowerCase().includes(q));
+
+                  if (principalMatch) return { r, match: true, rank: 0 };
+                  if (match) return { r, match: true, rank: 1 };
+                  if (secMatch) return { r, match: true, rank: 2 };
+                  return { r, match: false, rank: 3 };
                 });
-                const names: string[] = [];
-                if (r.country?.name) names.push(r.country.name);
-                (r.affiliate_commission_plans ?? []).forEach((p: any) => {
-                  if (p.country?.name) names.push(p.country.name);
-                });
-                countryIds.forEach((id) => {
-                  const c = countries.find((x: any) => x.id === id);
-                  if (c?.name) names.push(c.name);
-                  if (c?.code) names.push(c.code);
-                });
-                if (names.some((n) => n.toLowerCase().includes(q))) return true;
-                return false;
-              }).map((r) => (
+                return ranked
+                  .filter((x) => x.match)
+                  .sort((a, b) => a.rank - b.rank || (a.r.fixed_name || "").localeCompare(b.r.fixed_name || ""))
+                  .map(({ r }) => (
                 <TableRow key={r.id} className="[&>td]:py-2">
                   <TableCell className="font-mono text-xs">{r.unique_id}</TableCell>
                   <TableCell className="font-medium">

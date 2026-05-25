@@ -4,9 +4,10 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Copy } from "lucide-react";
+import { Copy, FileDown } from "lucide-react";
 import { toast } from "sonner";
+import jsPDF from "jspdf";
+import overoptionLogo from "@/assets/overoption-logo.png";
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(

@@ -263,7 +263,7 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
               <TableHead>Tracking link</TableHead>
               <TableHead className="w-[18%]">ID campaña</TableHead>
               <TableHead className="w-[14%]">Origen</TableHead>
-              <TableHead className="w-10"></TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

@@ -570,9 +570,9 @@ export default function TrackerReport() {
             <div className="py-12 text-center text-muted-foreground">No hay datos para los filtros aplicados.</div>
           )}
           {!loading && !error && filteredAggs.length > 0 && (
-            <div className="overflow-auto rounded-md border max-h-[70vh]">
+            <div className="overflow-x-auto rounded-md border">
               <Table>
-                <TableHeader className="sticky top-0 z-20 bg-background shadow-sm [&_tr]:border-b">
+                <TableHeader className="sticky top-0 z-30 bg-background shadow-sm [&_tr]:border-b">
                   <TableRow className="bg-background hover:bg-background">
                     <TableHead className="w-8 bg-background"></TableHead>
                     <TableHead className="bg-background">Affiliate</TableHead>

@@ -1,0 +1,1 @@
+ALTER TABLE public.clients ADD COLUMN IF NOT EXISTS brand_aliases jsonb NOT NULL DEFAULT '{}'::jsonb;

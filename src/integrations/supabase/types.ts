@@ -779,6 +779,7 @@ export type Database = {
         Row: {
           address: string | null
           affiliate_id: string | null
+          brand_aliases: Json
           brands: string[]
           client_type: string | null
           company_name: string
@@ -804,6 +805,7 @@ export type Database = {
         Insert: {
           address?: string | null
           affiliate_id?: string | null
+          brand_aliases?: Json
           brands?: string[]
           client_type?: string | null
           company_name: string
@@ -829,6 +831,7 @@ export type Database = {
         Update: {
           address?: string | null
           affiliate_id?: string | null
+          brand_aliases?: Json
           brands?: string[]
           client_type?: string | null
           company_name?: string

@@ -30,9 +30,17 @@ const fmtInt = (n: number) => Math.round(n).toLocaleString();
 const fmtMoney = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
 const brandKey = (b?: string | null) => (b ?? "").trim().toLowerCase();
-function canonBrand(b: string | undefined | null, clientBrands: string[]): string {
+function canonBrand(b: string | undefined | null, clientBrands: string[], aliases?: Record<string, string[]>): string {
   const k = brandKey(b);
   if (!k) return "";
+  // 1) explicit alias map: canonical -> [variants]
+  if (aliases) {
+    for (const [canonical, list] of Object.entries(aliases)) {
+      if (brandKey(canonical) === k) return canonical;
+      if (Array.isArray(list) && list.some(v => brandKey(v) === k)) return canonical;
+    }
+  }
+  // 2) match against client's declared brands (case-insensitive)
   const match = clientBrands.find(cb => brandKey(cb) === k);
   return match ?? (b ?? "").trim();
 }
@@ -115,12 +123,13 @@ export default function ClienteAnalisis() {
       if (cancelled) return;
 
       const clientBrands: string[] = (client.brands ?? []) as string[];
-      const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands) || r.brand }));
+      const aliases: Record<string, string[]> = (client.brand_aliases && typeof client.brand_aliases === "object" && !Array.isArray(client.brand_aliases)) ? client.brand_aliases : {};
+      const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands, aliases) || r.brand }));
       setRows(norm(monthRes));
       setPrevMonthRows(norm(prevRes));
       setThisWeekRows(norm(twRes));
       setPrevWeekRows(norm(pwRes));
-      setGoals((goalsRes as Goal[]).map(g => ({ ...g, brand: canonBrand(g.brand, clientBrands) || g.brand })));
+      setGoals((goalsRes as Goal[]).map(g => ({ ...g, brand: canonBrand(g.brand, clientBrands, aliases) || g.brand })));
       const map = new Map<string, { id: string; name: string }>();
       for (const a of (affRes.data ?? []) as any[]) {
         if (a.unique_id) map.set(String(a.unique_id), { id: a.id, name: a.fixed_name });

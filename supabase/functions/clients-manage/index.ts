@@ -24,6 +24,7 @@ type ClientPayload = {
   senha?: string | null;
   client_type?: string | null;
   brands?: string[] | null;
+  brand_aliases?: Record<string, string[]> | null;
   net_min_cpa?: number | string | null;
   logo_url?: string | null;
   routy_account_id?: string | null;
@@ -156,6 +157,17 @@ Deno.serve(async (req) => {
     const brands = Array.isArray(c.brands)
       ? c.brands.map((b) => (b ?? "").toString().trim()).filter((b) => b.length > 0)
       : [];
+    const brandAliases: Record<string, string[]> = {};
+    if (c.brand_aliases && typeof c.brand_aliases === "object") {
+      for (const [k, v] of Object.entries(c.brand_aliases)) {
+        const key = (k ?? "").toString().trim();
+        if (!key) continue;
+        const arr = Array.isArray(v)
+          ? Array.from(new Set(v.map((x) => (x ?? "").toString().trim()).filter((x) => x.length > 0)))
+          : [];
+        brandAliases[key] = arr;
+      }
+    }
 
     const countryIds = Array.isArray(c.country_ids)
       ? c.country_ids.filter((x) => typeof x === "string" && x.length > 0)
@@ -179,6 +191,7 @@ Deno.serve(async (req) => {
       senha: c.senha || null,
       client_type: clientType,
       brands,
+      brand_aliases: brandAliases,
       net_min_cpa: numTop(c.net_min_cpa),
       logo_url: c.logo_url || null,
       routy_account_id: (c.routy_account_id ?? "").toString().trim() || null,
@@ -207,12 +220,12 @@ Deno.serve(async (req) => {
       const inserted = await sql<{ id: string }[]>`
         insert into public.clients (
           company_name, website, address,
-          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, net_min_cpa, logo_url, routy_account_id, ext_id_oo, created_by
+          country_id, country_ids, affiliate_id, status, notes, login, senha, client_type, brands, brand_aliases, net_min_cpa, logo_url, routy_account_id, ext_id_oo, created_by
         ) values (
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
-          ${payload.client_type}, ${payload.brands}, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${payload.ext_id_oo}, ${userData.user.id}
+          ${payload.client_type}, ${payload.brands}, ${JSON.stringify(payload.brand_aliases)}::jsonb, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${payload.ext_id_oo}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -232,6 +245,7 @@ Deno.serve(async (req) => {
           senha = ${payload.senha},
           client_type = ${payload.client_type},
           brands = ${payload.brands},
+          brand_aliases = ${JSON.stringify(payload.brand_aliases)}::jsonb,
           net_min_cpa = ${payload.net_min_cpa},
           logo_url = ${payload.logo_url},
           routy_account_id = ${payload.routy_account_id},

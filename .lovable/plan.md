@@ -1,87 +1,84 @@
-# Página de Performance del Afiliado
 
-Nueva ruta `/afiliados/:id/performance` con acceso desde la lista de afiliados y desde `PortalAfiliado` (el afiliado solo ve la suya).
+## Objetivo
 
-## Filosofía de métricas
+Crear una página de análisis por operador accesible desde el listado de Operadores (botón **"Ver análisis"** en cada fila), que use **Routy** en tiempo real como fuente de datos y `brand_cpa_goals` como objetivos.
 
-- **Métrica principal: CPA cualificado** — número de FTDs que cumplen baseline + wagering y por los que el operador nos paga. Es el corazón de todos los KPIs y agregados.
-- **NGR**: métrica secundaria de **calidad del tráfico** que entregamos al operador. Se muestra siempre acompañando a CPAs, no como número principal.
-- Comisión generada y a pagar se derivan del CPA cualificado × tarifa del plan (operador) / plan del afiliado.
+## Acceso
 
-## Layout
+- Ruta nueva: `/clientes/:id/analisis` (registrada en `App.tsx`, protegida por `ProtectedRoute`).
+- En `src/pages/Clientes.tsx`, agregar acción **"Ver análisis"** (icono `BarChart3`) en la tabla, junto a Editar/Eliminar, que navega a la ruta.
 
-```text
-┌──────────────────────────────────────────────────────────────┐
-│ Header: avatar · nombre · país · status · selector período   │
-├──────────────────────────────────────────────────────────────┤
-│ KPI principal (destacado, grande)                            │
-│  ▸ CPAs cualificados en el período · vs período anterior     │
-│  ▸ vs meta (affiliate_goals) — barra de progreso             │
-├──────────────────────────────────────────────────────────────┤
-│ KPI row secundaria (5 tarjetas)                              │
-│ [Comisión generada €] [Comisión a pagar al aff €]            │
-│ [Pagado] [Pendiente] [% Margen bruto OO]                     │
-├──────────────────────────────────────────────────────────────┤
-│ Card "Calidad del tráfico"                                   │
-│  ▸ NGR total del período · NGR / CPA cualificado             │
-│  ▸ Funnel: Visitas → Signups → FTDs → CPA cualificado        │
-│  ▸ Tasas: signup%, FTD%, cualificación% (FTD→CPA cualif.)    │
-├──────────────────────────────────────────────────────────────┤
-│ Gráfico diario (líneas)                                      │
-│ Eje izq: CPAs cualificados (barra) · Eje der: NGR (línea)    │
-│ Toggle adicional: comisión generada                          │
-├──────────────────────────────────────────────────────────────┤
-│ Split: [CPAs por operador] | [CPAs por marca]                │
-│ Barras horizontales · tabla con CPAs · NGR · Comisión        │
-│ generada · Tarifa CPA aplicada · Moneda                      │
-├──────────────────────────────────────────────────────────────┤
-│ Tabla de cierres del período                                 │
-│ Período · Operador · Marca · FTDs · CPAs cualif. · NGR ·     │
-│ CPA tarifa · Total cobrado · Pagado al afiliado              │
-├──────────────────────────────────────────────────────────────┤
-│ Card "Pagos" (placeholder hasta integrar finanzas)           │
-│ Total recibido · Pendiente · próxima fecha · histórico       │
-└──────────────────────────────────────────────────────────────┘
-```
+## Estructura de la página
 
-## Definición exacta de KPIs
+Header con nombre/logo del operador, selector de período (mes en curso por defecto, con flechas para navegar meses) y selector de marca (`Todas` + cada marca del operador).
 
-- **CPAs cualificados** = Σ `commission_closure_items.qualified_players` filtrado por `affiliate_id` y `report_type = 'cpa'` dentro del período. Es la cifra autoritativa (ya viene validada por baseline + wagering desde el operador).
-- **Comisión generada** = Σ `commission_closure_items.commission_total` (CPA + RevShare) cobrada al operador, normalizada a EUR.
-- **Comisión a pagar al afiliado** = calculada con `affiliate_commission_plans` del afiliado para ese operador/marca (CPA × cualificados + RevShare% × NGR + fijo/instalments aplicables) — no se asume igual a lo cobrado.
-- **% Margen bruto OO** = (Comisión cobrada − Comisión a pagar al afiliado) ÷ margen bruto total de OO del período. Indicador con barra y delta vs período anterior.
-- **NGR** = Σ `commission_closure_items.sports_ngr + casino_ngr` (cuando hay) o `netRevenue` de Routy si el cierre no lo tiene desglosado.
-- **Calidad** = visitas → signups → FTDs (Routy) → CPAs cualificados (CRM). La última conversión (FTD→cualificado) es el verdadero indicador de calidad para el operador.
+### 1. Card de Objetivo del operador (estilo `BrandGoals`)
 
-## Fuentes de datos
+- Reusar la visualización exacta de `GlobalIndicator` + `DailyDots` de `BrandGoals.tsx` (anillo SVG con % del mes, esperado al día, barra, puntitos diarios verde/amarillo/naranja/rojo).
+- **Objetivo total** = suma de `brand_cpa_goals.cpa_target` para el período, filtrando por las marcas del operador (`clients.brands`).
+- **Actual** = suma de `cpaCount` de Routy filtrando `accountId = clients.routy_account_id` y `brand ∈ clients.brands` (si hay filtro de marca activo, restringir a esa marca).
+- Si se selecciona una marca: el card se enfoca en esa marca (objetivo de esa sola marca, actual de esa marca).
 
-**CRM (Supabase):**
-- `commission_closures` + `commission_closure_items` (autoritativo para CPAs cualificados, NGR y comisión).
-- `affiliate_commission_plans` (tarifa CPA, revshare, fijo/instalments por operador+marca+país del afiliado).
-- `affiliate_goals` (meta de CPAs/FTDs).
-- `affiliates`, `clients` (cabecera y nombre/logo del operador).
+### 2. Desglose por marca (colapsable)
 
-**Routy (vía `routy-proxy` ya existente):**
-- Solo para el funnel arriba del CPA: visits, signups, firstTimeDeposits, depositAmount, netRevenue por día/brand/operador.
-- Por cada operador con `routy_account_id`, llamar `routy-proxy` y filtrar las filas pivotadas cuyo `tracker` coincida con `affiliates.unique_id`, `aliases` o `affiliate_operator_ids.operator_campaign_id`.
+Igual que `BrandGoals` pero filtrado al operador: una fila por marca del cliente con objetivo editable, barra de progreso, y puntos diarios.
 
-**Pagos (paso 2):**
-- Nueva tabla `affiliate_payments` (afiliado, período, monto, moneda, status, fecha, referencia, proveedor) que alimenta la card de pagos. Mientras tanto, derivar "pagado" de `commission_closure_items.is_paid_to_affiliate = true`.
+### 3. Card de Tendencia (nuevo, también reusable en home)
 
-## Arquitectura técnica
+- Promedio diario del mes en curso = `actual / dayOfMonth`.
+- **Proyección cierre de mes** = `promedio_diario * daysInMonth`.
+- **Comparativo vs mes anterior**: traer total del mes anterior (Routy con `from/to` del mes anterior) y mostrar `proyección vs total_mes_anterior` con delta % y flecha ↑/↓.
+- Mostrar tres números: Actual MTD · Proyección fin de mes · Mes anterior (con delta).
+- Métricas: **FTDs (cpaCount)** y **Comisión total (cpaCommission + revShareCommission)** en dos sub-cards.
 
-- Ruta `/afiliados/:id/performance` en `src/App.tsx`, archivo `src/pages/AfiliadoPerformance.tsx`.
-- Hook `useAffiliatePerformance(affiliateId, period)` con React Query: corre en paralelo los reads del CRM y las llamadas Routy por operador, luego agrega.
-- Conversión a EUR usando `src/lib/fxRates.ts` con la moneda de cada plan/closure.
-- Componentes Recharts (barras + línea combinadas), `Card`/`Badge`/`Progress`/`Table` de shadcn. Reutilizar el patrón visual de `MarketingFunnel` y `MonthlyCpaChart` del Dashboard.
-- Permisos: admin/super ven cualquier afiliado; rol `affiliate` solo el suyo (validado contra `affiliates.email = profiles.email`).
-- Acceso: botón "Performance" en cada card de `Afiliados.tsx` y CTA grande en `PortalAfiliado.tsx`.
-- Sin cambios de schema en esta entrega; la tabla `affiliate_payments` se añade en el paso 2 cuando definamos la plataforma de finanzas.
+### 4. Comparativos semana/mes anterior
 
-## Entregables de esta iteración
+Mini cards con FTDs y Comisión:
+- **Esta semana vs semana anterior** (lunes-domingo): delta absoluto y %.
+- **Este mes vs mes anterior** (mismo rango de días, ej. día 1 al día N): delta y %.
 
-1. Página `AfiliadoPerformance` con todas las secciones excepto pagos reales (placeholder + datos derivados de `is_paid_to_affiliate`).
-2. Hook de agregación CRM + Routy con período seleccionable (Mes actual / Mes pasado / Trimestre / YTD / custom).
-3. Enlaces de acceso desde lista de afiliados y portal del afiliado.
+### 5. Tabla de afiliados que entregan resultado
 
-¿Confirmas para implementar, o quieres ajustar algún KPI / añadir desglose (p. ej. por país, por canal) antes?
+- Agrupar filas Routy por `tracker` (= `affiliates.unique_id`, p.ej. `OVO-00123`).
+- Resolver nombre con `affiliates` (join por `unique_id`).
+- Columnas: Afiliado · Marca · FTDs · Comisión · Última actividad.
+- Filtros locales: marca y rango de días (todo el mes / últimos 7 / últimos 30 / día específico).
+- Orden por FTDs desc; click en fila → `/afiliados/:id/performance` (si existe) o popover con detalle.
+
+### 6. Tendencia global en la home
+
+Agregar el mismo card **Tendencia** en `Dashboard.tsx` (sin filtro de operador): proyección global de FTDs y Comisión con comparativo vs mes anterior. Componente reutilizable.
+
+## Datos y queries
+
+Toda la data viene de la edge function existente `routy-proxy` (ya pivota por brand/accountId/tracker/date). No requiere cambios en el backend ni migraciones.
+
+Llamadas necesarias por carga (en paralelo):
+1. Mes en curso completo, `accountId = client.routy_account_id`.
+2. Mes anterior completo, mismo accountId (para tendencia y comparativo mensual).
+3. Semana actual y semana anterior, mismo accountId (comparativo semanal).
+4. `brand_cpa_goals` del período actual filtrados por `brand IN client.brands`.
+5. `affiliates` (id, unique_id, fixed_name) para resolver nombres de los trackers presentes.
+
+El desglose por día se obtiene agrupando localmente las filas del mes (cada fila trae `date`), evitando 30 llamadas separadas.
+
+## Detalles técnicos
+
+- **Archivos nuevos**:
+  - `src/pages/ClienteAnalisis.tsx` — página principal.
+  - `src/components/operator/OperatorGoalCard.tsx` — refactor extraído de `GlobalIndicator`/`DailyDots`.
+  - `src/components/TrendCard.tsx` — card de tendencia reutilizable (acepta `currentMTD`, `previousMonthTotal`, `daysInMonth`, `dayOfMonth`, `label`, `format`).
+  - `src/components/operator/OperatorAffiliatesTable.tsx`.
+- **Archivos modificados**:
+  - `src/App.tsx` — nueva ruta.
+  - `src/pages/Clientes.tsx` — botón "Ver análisis" en cada fila.
+  - `src/pages/Dashboard.tsx` — montar `<TrendCard>` global.
+  - `src/components/BrandGoals.tsx` — extraer `DailyDots` y `GlobalIndicator` a `OperatorGoalCard` y reimportarlos para no duplicar.
+- **Sin cambios** en `supabase/`, `src/integrations/supabase/types.ts` ni migraciones.
+- Caching: usar `useMemo` y cancelación con flag `cancelled`. Loading skeletons por sección.
+
+## Edge cases
+
+- Operadores sin `routy_account_id` → mostrar aviso: "Vincula la cuenta Routy en la ficha del operador para ver el análisis".
+- Operadores sin marcas o sin `brand_cpa_goals` → mostrar la sección de tendencia/afiliados igual; el card de objetivo muestra "Sin objetivo definido".
+- Tracker no encontrado en `affiliates` → mostrar el tracker crudo en la tabla.

@@ -12,6 +12,7 @@ import TopBrandsCommission from "@/components/TopBrandsCommission";
 import MonthlyCpaChart from "@/components/MonthlyCpaChart";
 import MarketingFunnel from "@/components/MarketingFunnel";
 import BrandGoals from "@/components/BrandGoals";
+import GlobalTrendCard from "@/components/GlobalTrendCard";
 
 const Dashboard = () => {
   const { t } = useTranslation();
@@ -161,6 +162,8 @@ const Dashboard = () => {
       </div>
 
       {showMap && <WorldActivityMap />}
+
+      <GlobalTrendCard />
 
       <BrandGoals />
 

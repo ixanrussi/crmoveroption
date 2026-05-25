@@ -1520,7 +1520,20 @@ export default function Afiliados() {
                       );
                     })()}
                   </TableCell>
-                  <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
+                  <TableCell>
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        onClick={() => setStatusChange({ id: r.id, name: r.fixed_name, current: r.status, next: r.status === "active" ? "inactive" : "active" })}
+                        className="cursor-pointer"
+                        title="Cambiar estado"
+                      >
+                        <Badge variant={r.status === "active" ? "default" : "secondary"} className="hover:opacity-80 transition-opacity">{r.status}</Badge>
+                      </button>
+                    ) : (
+                      <Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge>
+                    )}
+                  </TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" title="Ver performance" onClick={() => navigate(`/afiliados/${r.id}/performance`)}><BarChart3 className="h-4 w-4" /></Button>

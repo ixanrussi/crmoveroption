@@ -123,7 +123,10 @@ export default function ClienteAnalisis() {
       if (cancelled) return;
 
       const clientBrands: string[] = (client.brands ?? []) as string[];
-      const aliases: Record<string, string[]> = (client.brand_aliases && typeof client.brand_aliases === "object" && !Array.isArray(client.brand_aliases)) ? client.brand_aliases : {};
+      let aliasesRaw: any = client.brand_aliases;
+      if (typeof aliasesRaw === "string") { try { aliasesRaw = JSON.parse(aliasesRaw); } catch { aliasesRaw = {}; } }
+      if (typeof aliasesRaw === "string") { try { aliasesRaw = JSON.parse(aliasesRaw); } catch { aliasesRaw = {}; } }
+      const aliases: Record<string, string[]> = (aliasesRaw && typeof aliasesRaw === "object" && !Array.isArray(aliasesRaw)) ? aliasesRaw : {};
       const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands, aliases) || r.brand }));
       setRows(norm(monthRes));
       setPrevMonthRows(norm(prevRes));

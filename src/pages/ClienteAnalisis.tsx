@@ -114,11 +114,13 @@ export default function ClienteAnalisis() {
       ]);
       if (cancelled) return;
 
-      setRows(monthRes);
-      setPrevMonthRows(prevRes);
-      setThisWeekRows(twRes);
-      setPrevWeekRows(pwRes);
-      setGoals(goalsRes as Goal[]);
+      const clientBrands: string[] = (client.brands ?? []) as string[];
+      const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands) || r.brand }));
+      setRows(norm(monthRes));
+      setPrevMonthRows(norm(prevRes));
+      setThisWeekRows(norm(twRes));
+      setPrevWeekRows(norm(pwRes));
+      setGoals((goalsRes as Goal[]).map(g => ({ ...g, brand: canonBrand(g.brand, clientBrands) || g.brand })));
       const map = new Map<string, { id: string; name: string }>();
       for (const a of (affRes.data ?? []) as any[]) {
         if (a.unique_id) map.set(String(a.unique_id), { id: a.id, name: a.fixed_name });
@@ -130,12 +132,18 @@ export default function ClienteAnalisis() {
     return () => { cancelled = true; };
   }, [client, first.getTime(), last.getTime(), period]);
 
-  // Available brands from data + client
+  // Available brands from data + client (case-insensitive dedupe)
   const brands = useMemo(() => {
-    const s = new Set<string>((client?.brands ?? []) as string[]);
-    for (const r of rows) if (r.brand) s.add(r.brand);
-    return Array.from(s).filter(Boolean).sort();
+    const map = new Map<string, string>();
+    for (const b of (client?.brands ?? []) as string[]) {
+      const k = brandKey(b); if (k && !map.has(k)) map.set(k, b);
+    }
+    for (const r of rows) {
+      const k = brandKey(r.brand); if (k && !map.has(k)) map.set(k, (r.brand ?? "").trim());
+    }
+    return Array.from(map.values()).sort();
   }, [client, rows]);
+
 
   const filteredRows = useMemo(() => {
     let out = rows;

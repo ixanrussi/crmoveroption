@@ -1422,14 +1422,34 @@ export default function Afiliados() {
                     })()}
                   </TableCell>
                   <TableCell className="text-center align-middle">
-                    <button
-                      type="button"
-                      onClick={() => openEdit(r)}
-                      className={`inline-flex items-center justify-center ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
-                      title={missingLinks[r.id] > 0 ? "Operadores con plan asignado pero sin tracking link" : "Todos los tracking links asignados"}
-                    >
-                      <Link2 className="h-4 w-4" />
-                    </button>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          type="button"
+                          onClick={() => openEdit(r)}
+                          className={`inline-flex items-center justify-center ${missingLinks[r.id] > 0 ? "text-destructive" : "text-success"}`}
+                        >
+                          <Link2 className="h-4 w-4" />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="max-w-xs">
+                        {missingLinks[r.id] > 0 ? (
+                          <div className="space-y-1">
+                            <p className="font-semibold text-xs">Operadores sin tracking link:</p>
+                            <ul className="text-xs space-y-0.5">
+                              {(missingLinksDetail[r.id] ?? []).map((d, i) => (
+                                <li key={i}>
+                                  {d.client_name}
+                                  {d.brand && <span className="text-muted-foreground"> — {d.brand}</span>}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ) : (
+                          <p className="text-xs">Todos los tracking links asignados</p>
+                        )}
+                      </TooltipContent>
+                    </Tooltip>
                   </TableCell>
                   <TableCell className="text-center align-middle">
                     {(() => {

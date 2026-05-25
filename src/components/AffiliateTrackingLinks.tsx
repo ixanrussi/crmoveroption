@@ -115,10 +115,55 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
     addLinkFor({ client_id: first.client_id, brand: first.brand || "", country_id: first.country_id ?? null });
   };
 
+  const saveOne = async (idx: number) => {
+    const l = links[idx];
+    if (!l.client_id || !l.tracking_link?.trim()) {
+      return toast.error("Operador y URL son obligatorios");
+    }
+    setSaving(true);
+    try {
+      if (l.isNew) {
+        const { data, error } = await supabase
+          .from("affiliate_tracking_links")
+          .insert({
+            affiliate_id: affiliateId,
+            client_id: l.client_id,
+            brand: l.brand || null,
+            country_id: l.country_id || null,
+            tracking_link: l.tracking_link.trim(),
+            operator_campaign_id: l.operator_campaign_id || null,
+            notes: l.notes || null,
+            source: "manual",
+          })
+          .select()
+          .single();
+        if (error) throw error;
+        setLinks((prev) => prev.map((x, i) => (i === idx ? { ...(data as any), source: data?.source ?? "manual" } : x)));
+      } else if (l.id) {
+        const { error } = await supabase
+          .from("affiliate_tracking_links")
+          .update({
+            client_id: l.client_id,
+            brand: l.brand || null,
+            country_id: l.country_id || null,
+            tracking_link: l.tracking_link.trim(),
+            operator_campaign_id: l.operator_campaign_id || null,
+            notes: l.notes || null,
+          })
+          .eq("id", l.id);
+        if (error) throw error;
+      }
+      toast.success("Link guardado");
+    } catch (e: any) {
+      toast.error(e.message ?? "Error al guardar");
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const saveAll = async () => {
     setSaving(true);
     try {
-      // Validate
       const invalid = links.find((l) => !l.client_id || !l.tracking_link?.trim());
       if (invalid) {
         toast.error("Cada link necesita operador y URL");
@@ -136,6 +181,7 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
         source: "manual",
       }));
       const toUpdate = links.filter((l) => !l.isNew && l.id);
+
 
       if (toInsert.length) {
         const { error } = await supabase.from("affiliate_tracking_links").insert(toInsert);
@@ -217,7 +263,7 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
               <TableHead>Tracking link</TableHead>
               <TableHead className="w-[18%]">ID campaña</TableHead>
               <TableHead className="w-[14%]">Origen</TableHead>
-              <TableHead className="w-10"></TableHead>
+              <TableHead className="w-20"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -269,10 +315,16 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" onClick={() => removeLink(idx)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => saveOne(idx)} disabled={saving} title="Guardar">
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => removeLink(idx)} title="Eliminar">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>

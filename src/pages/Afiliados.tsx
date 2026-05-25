@@ -1291,7 +1291,7 @@ export default function Afiliados() {
         <CardContent className="p-0">
           <div className="p-3 border-b">
             <Input
-              placeholder="Buscar por nombre o alias…"
+              placeholder="Buscar por nombre, alias o país…"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="max-w-sm"
@@ -1328,6 +1328,25 @@ export default function Afiliados() {
                 if (r.fixed_name?.toLowerCase().includes(q)) return true;
                 if (r.alias?.toLowerCase().includes(q)) return true;
                 if (Array.isArray(r.aliases) && r.aliases.some((a: string) => a?.toLowerCase().includes(q))) return true;
+                // País principal + países de actuación + países de campañas (planes de comisión)
+                const countryIds = new Set<string>();
+                if (r.country_id) countryIds.add(r.country_id);
+                (r.country_ids ?? []).forEach((id: string) => countryIds.add(id));
+                (r.affiliate_commission_plans ?? []).forEach((p: any) => {
+                  if (p.country_id) countryIds.add(p.country_id);
+                  (p.country_ids ?? []).forEach((id: string) => countryIds.add(id));
+                });
+                const names: string[] = [];
+                if (r.country?.name) names.push(r.country.name);
+                (r.affiliate_commission_plans ?? []).forEach((p: any) => {
+                  if (p.country?.name) names.push(p.country.name);
+                });
+                countryIds.forEach((id) => {
+                  const c = countries.find((x: any) => x.id === id);
+                  if (c?.name) names.push(c.name);
+                  if (c?.code) names.push(c.code);
+                });
+                if (names.some((n) => n.toLowerCase().includes(q))) return true;
                 return false;
               }).map((r) => (
                 <TableRow key={r.id} className="[&>td]:py-2">

@@ -23,6 +23,7 @@ import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
 import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;

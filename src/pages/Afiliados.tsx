@@ -213,7 +213,7 @@ export default function Afiliados() {
         seen.add(key);
         if (!linkSet.has(key)) {
           cnt++;
-          const client = cl.data?.find((c: any) => c.id === p.client_id);
+          const client = clientsMap.find((c: any) => c.id === p.client_id);
           details.push({ client_name: client?.company_name || "—", brand: p.brand || "" });
         }
       });

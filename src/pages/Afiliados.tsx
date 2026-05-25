@@ -110,10 +110,14 @@ export default function Afiliados() {
   const [missingLinksDetail, setMissingLinksDetail] = useState<Record<string, { client_name: string; brand: string }[]>>({});
 
   const load = async () => {
-    const { data } = await supabase
-      .from("affiliates")
-      .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), template:commission_plan_templates(name))")
-      .order("fixed_name", { ascending: true });
+    const [{ data }, { data: clData }] = await Promise.all([
+      supabase
+        .from("affiliates")
+        .select("*, country:countries(name), affiliate_channel_links(channel_id, link, channel:affiliate_channels(name)), affiliate_commission_plans(*, country:countries(name), template:commission_plan_templates(name))")
+        .order("fixed_name", { ascending: true }),
+      supabase.from("clients").select("id, company_name"),
+    ]);
+    const clientsMap = clData ?? [];
     setList(data ?? []);
 
     // Compute affiliate share of total billed (commission_total) by Overoption

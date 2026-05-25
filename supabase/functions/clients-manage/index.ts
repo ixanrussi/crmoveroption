@@ -24,6 +24,7 @@ type ClientPayload = {
   senha?: string | null;
   client_type?: string | null;
   brands?: string[] | null;
+  brand_aliases?: Record<string, string[]> | null;
   net_min_cpa?: number | string | null;
   logo_url?: string | null;
   routy_account_id?: string | null;

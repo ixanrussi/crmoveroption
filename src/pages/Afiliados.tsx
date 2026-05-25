@@ -23,6 +23,7 @@ import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
 import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
 import { toast } from "sonner";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
 
 const CONVERSION_TYPES = ["NCO", "NNCO"] as const;
@@ -78,6 +79,19 @@ export default function Afiliados() {
   const [plans, setPlans] = useState<CommissionPlan[]>([]);
   const [saving, setSaving] = useState(false);
   const [conflict, setConflict] = useState<{ message: string; affiliate_id: string; affiliate_name: string } | null>(null);
+  const [statusChange, setStatusChange] = useState<{ id: string; name: string; current: string; next: string } | null>(null);
+  const [statusSaving, setStatusSaving] = useState(false);
+
+  const confirmStatusChange = async () => {
+    if (!statusChange) return;
+    setStatusSaving(true);
+    const { error } = await supabase.from("affiliates").update({ status: statusChange.next as any }).eq("id", statusChange.id);
+    setStatusSaving(false);
+    if (error) { toast.error("No se pudo actualizar el estado"); return; }
+    toast.success("Estado actualizado");
+    setList((prev) => prev.map((x) => x.id === statusChange.id ? { ...x, status: statusChange.next } : x));
+    setStatusChange(null);
+  };
 
   const empty: any = {
     fixed_name: "", alias: "", aliases: [] as string[], email: "", phone: "", country_ids: [] as string[],
@@ -1506,7 +1520,20 @@ export default function Afiliados() {
                       );
                     })()}
                   </TableCell>
-                  <TableCell><Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge></TableCell>
+                  <TableCell>
+                    {isAdmin ? (
+                      <button
+                        type="button"
+                        onClick={() => setStatusChange({ id: r.id, name: r.fixed_name, current: r.status, next: r.status === "active" ? "inactive" : "active" })}
+                        className="cursor-pointer"
+                        title="Cambiar estado"
+                      >
+                        <Badge variant={r.status === "active" ? "default" : "secondary"} className="hover:opacity-80 transition-opacity">{r.status}</Badge>
+                      </button>
+                    ) : (
+                      <Badge variant={r.status === "active" ? "default" : "secondary"}>{r.status}</Badge>
+                    )}
+                  </TableCell>
                   {isAdmin && (
                     <TableCell className="space-x-1">
                       <Button size="icon" variant="ghost" title="Ver performance" onClick={() => navigate(`/afiliados/${r.id}/performance`)}><BarChart3 className="h-4 w-4" /></Button>
@@ -1525,6 +1552,41 @@ export default function Afiliados() {
           </div>
         </CardContent>
       </Card>
+
+      <AlertDialog open={!!statusChange} onOpenChange={(v) => { if (!v && !statusSaving) setStatusChange(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cambiar estado del afiliado</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <p className="text-sm">
+                  Afiliado: <span className="font-medium text-foreground">{statusChange?.name}</span>
+                </p>
+                <p className="text-sm">Estado actual: <Badge variant={statusChange?.current === "active" ? "default" : "secondary"}>{statusChange?.current}</Badge></p>
+                <div className="space-y-1">
+                  <Label className="text-xs">Nuevo estado</Label>
+                  <Select value={statusChange?.next} onValueChange={(v) => setStatusChange((s) => s ? { ...s, next: v } : s)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">active</SelectItem>
+                      <SelectItem value="inactive">inactive</SelectItem>
+                      <SelectItem value="pending">pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">¿Confirmas el cambio de estado?</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={statusSaving}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); confirmStatusChange(); }} disabled={statusSaving || statusChange?.current === statusChange?.next}>
+              {statusSaving ? "Guardando..." : "Sí, cambiar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
 
       <Dialog open={!!conflict} onOpenChange={(v) => { if (!v) setConflict(null); }}>
         <DialogContent className="max-w-md">

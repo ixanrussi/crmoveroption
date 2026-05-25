@@ -225,7 +225,7 @@ Deno.serve(async (req) => {
           ${payload.company_name},
           ${payload.website}, ${payload.address}, ${payload.country_id}, ${payload.country_ids}::uuid[], ${payload.affiliate_id},
           ${payload.status}::client_status, ${payload.notes}, ${payload.login}, ${payload.senha},
-          ${payload.client_type}, ${payload.brands}, ${JSON.stringify(payload.brand_aliases)}::jsonb, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${payload.ext_id_oo}, ${userData.user.id}
+          ${payload.client_type}, ${payload.brands}, ${sql.json(payload.brand_aliases)}, ${payload.net_min_cpa}, ${payload.logo_url}, ${payload.routy_account_id}, ${payload.ext_id_oo}, ${userData.user.id}
         ) returning id
       `;
       clientId = inserted[0].id;
@@ -245,7 +245,7 @@ Deno.serve(async (req) => {
           senha = ${payload.senha},
           client_type = ${payload.client_type},
           brands = ${payload.brands},
-          brand_aliases = ${JSON.stringify(payload.brand_aliases)}::jsonb,
+          brand_aliases = ${sql.json(payload.brand_aliases)},
           net_min_cpa = ${payload.net_min_cpa},
           logo_url = ${payload.logo_url},
           routy_account_id = ${payload.routy_account_id},

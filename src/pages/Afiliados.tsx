@@ -999,7 +999,7 @@ export default function Afiliados() {
                                 }}
                               >
                                 <CommandInput placeholder="Buscar por marca u operador…" />
-                                <CommandList>
+                                <CommandList className="max-h-[320px] overflow-y-auto overscroll-contain [scrollbar-width:none] [-ms-overflow-style:none] [&::-webkit-scrollbar]:hidden">
                                   <CommandEmpty>Sin resultados.</CommandEmpty>
                                   <CommandGroup>
                                     {available.map(({ t, s }) => {

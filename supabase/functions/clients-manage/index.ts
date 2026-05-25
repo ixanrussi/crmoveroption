@@ -191,6 +191,7 @@ Deno.serve(async (req) => {
       senha: c.senha || null,
       client_type: clientType,
       brands,
+      brand_aliases: brandAliases,
       net_min_cpa: numTop(c.net_min_cpa),
       logo_url: c.logo_url || null,
       routy_account_id: (c.routy_account_id ?? "").toString().trim() || null,

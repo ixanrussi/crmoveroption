@@ -163,6 +163,8 @@ const Dashboard = () => {
 
       {showMap && <WorldActivityMap />}
 
+      <GlobalTrendCard />
+
       <BrandGoals />
 
       <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">

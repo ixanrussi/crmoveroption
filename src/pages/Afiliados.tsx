@@ -198,18 +198,28 @@ export default function Afiliados() {
       linkSet.add(`${l.affiliate_id}::${l.client_id}::${(l.brand || "").toLowerCase()}`);
     });
     const missing: Record<string, number> = {};
+    const missingDetail: Record<string, { client_name: string; brand: string }[]> = {};
     (data ?? []).forEach((aff: any) => {
       const seen = new Set<string>();
       let cnt = 0;
+      const details: { client_name: string; brand: string }[] = [];
       (aff.affiliate_commission_plans ?? []).forEach((p: any) => {
         const key = `${aff.id}::${p.client_id}::${(p.brand || "").toLowerCase()}`;
         if (seen.has(key)) return;
         seen.add(key);
-        if (!linkSet.has(key)) cnt++;
+        if (!linkSet.has(key)) {
+          cnt++;
+          const client = cl.data?.find((c: any) => c.id === p.client_id);
+          details.push({ client_name: client?.company_name || "—", brand: p.brand || "" });
+        }
       });
-      if (cnt > 0) missing[aff.id] = cnt;
+      if (cnt > 0) {
+        missing[aff.id] = cnt;
+        missingDetail[aff.id] = details;
+      }
     });
     setMissingLinks(missing);
+    setMissingLinksDetail(missingDetail);
   };
   const loadLookups = async () => {
     const [c, ch, cl, tpl, cp] = await Promise.all([

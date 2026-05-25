@@ -29,6 +29,14 @@ const iso = (d: Date) => d.toISOString().slice(0, 10);
 const fmtInt = (n: number) => Math.round(n).toLocaleString();
 const fmtMoney = (n: number) => n.toLocaleString(undefined, { maximumFractionDigits: 2 });
 
+const brandKey = (b?: string | null) => (b ?? "").trim().toLowerCase();
+function canonBrand(b: string | undefined | null, clientBrands: string[]): string {
+  const k = brandKey(b);
+  if (!k) return "";
+  const match = clientBrands.find(cb => brandKey(cb) === k);
+  return match ?? (b ?? "").trim();
+}
+
 function monthBounds(d: Date) {
   const y = d.getFullYear(), m = d.getMonth();
   const first = new Date(y, m, 1);

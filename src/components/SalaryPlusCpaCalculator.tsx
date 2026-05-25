@@ -187,9 +187,25 @@ function ProposalBuilder({
   capNum: number;
   presupuesto: number;
 }) {
+  type SavedProp = {
+    id: string;
+    name: string;
+    pct: number;
+    salario: number;
+    comision: number;
+    minCpas: number;
+    total: number;
+    capNum: number;
+    cpaNum: number;
+    presupuesto: number;
+    createdAffiliateId?: string;
+  };
+
   const [propPct, setPropPct] = useState<number>(50);
   const [affiliate, setAffiliate] = useState<string>("");
   const [generating, setGenerating] = useState(false);
+  const [saved, setSaved] = useState<SavedProp[]>([]);
+  const [creatingId, setCreatingId] = useState<string | null>(null);
 
   const salario = (propPct / 100) * presupuesto;
   const comision = capNum > 0 ? (presupuesto - salario) / capNum : 0;
@@ -197,16 +213,51 @@ function ProposalBuilder({
   const total = salario + comision * capNum;
   const valid = cpaNum > 0 && capNum > 0;
 
-  const generatePdf = async () => {
-    if (!valid) {
-      toast.error("Completa los datos de entrada");
-      return;
-    }
-    setGenerating(true);
+  const saveProposal = () => {
+    if (!valid) { toast.error("Completa los datos de entrada"); return; }
+    if (!affiliate.trim()) { toast.error("Indica el nombre de la propuesta / afiliado"); return; }
+    const item: SavedProp = {
+      id: crypto.randomUUID(),
+      name: affiliate.trim(),
+      pct: propPct, salario, comision, minCpas, total,
+      capNum, cpaNum, presupuesto,
+    };
+    setSaved((s) => [item, ...s]);
+    toast.success("Propuesta guardada");
+    setAffiliate("");
+  };
+
+  const removeSaved = (id: string) => setSaved((s) => s.filter((x) => x.id !== id));
+
+  const createAffiliateFromProposal = async (p: SavedProp) => {
+    setCreatingId(p.id);
     try {
-      const doc = new jsPDF({ unit: "pt", format: "a4" });
-      const pageW = doc.internal.pageSize.getWidth();
-      const pageH = doc.internal.pageSize.getHeight();
+      const payload = {
+        fixed_name: p.name,
+        status: "prospect",
+        notes: `Propuesta generada desde calculadora Sueldo fijo + CPA (${p.pct}%). Volumen CPA referencia: ${p.capNum}.`,
+        fixed_remuneration: p.salario,
+        fixed_remuneration_currency: "EUR",
+        fixed_remuneration_min_ftd: p.minCpas,
+        fixed_remuneration_fallback_cpa: p.comision,
+        fixed_remuneration_fallback_cpa_currency: "EUR",
+        fixed_remuneration_installments: [],
+      };
+      const { data, error } = await supabase.functions.invoke("affiliates-manage", {
+        body: { action: "insert", affiliate: payload, channel_ids: [], channel_links: [], commission_plans: [] },
+      });
+      if (error) throw error;
+      const newId = (data as any)?.data?.id || (data as any)?.id;
+      setSaved((s) => s.map((x) => (x.id === p.id ? { ...x, createdAffiliateId: newId } : x)));
+      toast.success(`Afiliado "${p.name}" creado`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "Error al crear el afiliado");
+    } finally {
+      setCreatingId(null);
+    }
+  };
+
+  const generatePdfFor = async (data: { name: string; pct: number; salario: number; comision: number; capNum: number; cpaNum: number }) => {
 
       // ===== HEADER — elegant blue stylized background =====
       const headerH = 120;

@@ -123,12 +123,13 @@ export default function ClienteAnalisis() {
       if (cancelled) return;
 
       const clientBrands: string[] = (client.brands ?? []) as string[];
-      const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands) || r.brand }));
+      const aliases: Record<string, string[]> = (client.brand_aliases && typeof client.brand_aliases === "object" && !Array.isArray(client.brand_aliases)) ? client.brand_aliases : {};
+      const norm = (rs: RoutyRow[]) => rs.map(r => ({ ...r, brand: canonBrand(r.brand, clientBrands, aliases) || r.brand }));
       setRows(norm(monthRes));
       setPrevMonthRows(norm(prevRes));
       setThisWeekRows(norm(twRes));
       setPrevWeekRows(norm(pwRes));
-      setGoals((goalsRes as Goal[]).map(g => ({ ...g, brand: canonBrand(g.brand, clientBrands) || g.brand })));
+      setGoals((goalsRes as Goal[]).map(g => ({ ...g, brand: canonBrand(g.brand, clientBrands, aliases) || g.brand })));
       const map = new Map<string, { id: string; name: string }>();
       for (const a of (affRes.data ?? []) as any[]) {
         if (a.unique_id) map.set(String(a.unique_id), { id: a.id, name: a.fixed_name });

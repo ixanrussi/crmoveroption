@@ -267,6 +267,7 @@ export default function Clientes() {
           senha: form.senha,
           client_type: form.client_type || null,
           brands: Array.isArray(form.brands) ? form.brands : [],
+          brand_aliases: form.brand_aliases && typeof form.brand_aliases === "object" ? form.brand_aliases : {},
           net_min_cpa: form.net_min_cpa === "" ? null : form.net_min_cpa,
           logo_url: form.logo_url || null,
           routy_account_id: form.routy_account_id || null,

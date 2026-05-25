@@ -315,10 +315,16 @@ export default function AffiliateTrackingLinks({ affiliateId }: Props) {
                   </Badge>
                 </TableCell>
                 <TableCell>
-                  <Button size="icon" variant="ghost" onClick={() => removeLink(idx)}>
-                    <Trash2 className="h-4 w-4" />
-                  </Button>
+                  <div className="flex items-center gap-1">
+                    <Button size="icon" variant="ghost" onClick={() => saveOne(idx)} disabled={saving} title="Guardar">
+                      <Save className="h-4 w-4" />
+                    </Button>
+                    <Button size="icon" variant="ghost" onClick={() => removeLink(idx)} title="Eliminar">
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
                 </TableCell>
+
               </TableRow>
             ))}
           </TableBody>

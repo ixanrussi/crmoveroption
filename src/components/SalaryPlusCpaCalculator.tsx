@@ -278,12 +278,10 @@ function ProposalBuilder({
       doc.text("Detalle de la oferta", 60, y + 28);
 
       const rows: Array<[string, string]> = [
-        ["Capacidad estimada (conversiones/mes)", `${capNum}`],
-        ["Sueldo fijo mensual", fmtEur(salario)],
+        ["Fixed fee", fmtEur(salario)],
         ["Comisión por CPA", fmtEur(comision)],
-        ["CPAs mínimos para cubrir el sueldo fijo", `${minCpas}`],
-        ["Ingreso total al cumplir capacidad", fmtEur(total)],
       ];
+
 
       doc.setFontSize(11);
       let ry = y + 55;

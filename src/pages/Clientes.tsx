@@ -106,7 +106,7 @@ export default function Clientes() {
   const empty = {
     company_name: "", website: "",
     address: "", country_ids: [] as string[], status: "active", notes: "", login: "", senha: "",
-    client_type: "", brands: [] as string[], net_min_cpa: "", logo_url: "", routy_account_id: "", ext_id_oo: "",
+    client_type: "", brands: [] as string[], brand_aliases: {} as Record<string, string[]>, net_min_cpa: "", logo_url: "", routy_account_id: "", ext_id_oo: "",
   };
   const [form, setForm] = useState<any>(empty);
   const [brandInput, setBrandInput] = useState("");

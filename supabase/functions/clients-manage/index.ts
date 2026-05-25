@@ -360,12 +360,25 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Automation: on operator creation, auto-generate affiliate commission plan
-    // templates with CPA = 70% of the operator's CPA. Only runs on insert and
-    // only for plans that actually have a CPA defined.
-    if (body.action === "insert" && plans.length) {
-      const tplRows = plans
-        .filter((p) => p.cpa !== null && p.cpa !== undefined)
+    // Automation: auto-generate affiliate commission plan templates with
+    // CPA = 70% of the operator's CPA. Runs on insert and update; on update it
+    // skips brands that already have a template for this operator so we don't
+    // duplicate when admins edit existing plans.
+    if (plans.length) {
+      const candidates = plans.filter((p) => p.cpa !== null && p.cpa !== undefined);
+      let existingBrands = new Set<string>();
+      if (body.action === "update" && candidates.length) {
+        const existing = await sql<{ brand: string | null }[]>`
+          select brand from public.commission_plan_templates where client_id = ${clientId}
+        `;
+        existingBrands = new Set(existing.map((r) => (r.brand ?? "").toString().trim().toLowerCase()));
+      }
+      const tplRows = candidates
+        .filter((p) => {
+          if (body.action !== "update") return true;
+          const key = (p.brand ?? "").toString().trim().toLowerCase();
+          return !existingBrands.has(key);
+        })
         .map((p) => {
           const affCpa = Math.round(((Number(p.cpa) || 0) * 0.7) * 100) / 100;
           const namePieces = [payload.company_name, p.brand].filter(Boolean).join(" · ");
@@ -373,7 +386,7 @@ Deno.serve(async (req) => {
             client_id: clientId!,
             created_by: userData.user.id,
             name: `${namePieces} — Afiliado 70% CPA`,
-            description: "Generado automáticamente al crear el operador (CPA afiliado = 70% del CPA total).",
+            description: "Generado automáticamente desde el plan del operador (CPA afiliado = 70% del CPA total).",
             plan_start_date: p.plan_start_date,
             currency: p.currency,
             country_ids: p.country_ids,

@@ -1553,6 +1553,41 @@ export default function Afiliados() {
         </CardContent>
       </Card>
 
+      <AlertDialog open={!!statusChange} onOpenChange={(v) => { if (!v && !statusSaving) setStatusChange(null); }}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Cambiar estado del afiliado</AlertDialogTitle>
+            <AlertDialogDescription asChild>
+              <div className="space-y-3 pt-2">
+                <p className="text-sm">
+                  Afiliado: <span className="font-medium text-foreground">{statusChange?.name}</span>
+                </p>
+                <p className="text-sm">Estado actual: <Badge variant={statusChange?.current === "active" ? "default" : "secondary"}>{statusChange?.current}</Badge></p>
+                <div className="space-y-1">
+                  <Label className="text-xs">Nuevo estado</Label>
+                  <Select value={statusChange?.next} onValueChange={(v) => setStatusChange((s) => s ? { ...s, next: v } : s)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="active">active</SelectItem>
+                      <SelectItem value="inactive">inactive</SelectItem>
+                      <SelectItem value="pending">pending</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <p className="text-xs text-muted-foreground">¿Confirmas el cambio de estado?</p>
+              </div>
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={statusSaving}>No</AlertDialogCancel>
+            <AlertDialogAction onClick={(e) => { e.preventDefault(); confirmStatusChange(); }} disabled={statusSaving || statusChange?.current === statusChange?.next}>
+              {statusSaving ? "Guardando..." : "Sí, cambiar"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+
       <Dialog open={!!conflict} onOpenChange={(v) => { if (!v) setConflict(null); }}>
         <DialogContent className="max-w-md">
           <DialogHeader>

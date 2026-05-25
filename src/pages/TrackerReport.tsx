@@ -570,23 +570,23 @@ export default function TrackerReport() {
             <div className="py-12 text-center text-muted-foreground">No hay datos para los filtros aplicados.</div>
           )}
           {!loading && !error && filteredAggs.length > 0 && (
-            <div className="overflow-auto rounded-md border">
+            <div className="overflow-auto rounded-md border max-h-[70vh]">
               <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-8"></TableHead>
-                    <TableHead>Affiliate</TableHead>
-                    <TableHead className="text-right">Visits</TableHead>
-                    <TableHead className="text-right">Signups</TableHead>
-                    <TableHead className="text-right">FTD</TableHead>
-                    <TableHead className="text-right">Deposit Amount</TableHead>
-                    <TableHead className="text-right">Net Revenue</TableHead>
-                    <TableHead className="text-right">Earning</TableHead>
-                    <TableHead className="text-right">CPA Commission</TableHead>
-                    <TableHead className="text-right">RevShare Commission</TableHead>
-                    <TableHead className="text-right">CPA Count</TableHead>
-                    <TableHead className="text-right">Signup Rate</TableHead>
-                    <TableHead className="text-right">FTD Rate</TableHead>
+                <TableHeader className="sticky top-0 z-20 bg-background shadow-sm [&_tr]:border-b">
+                  <TableRow className="bg-background hover:bg-background">
+                    <TableHead className="w-8 bg-background"></TableHead>
+                    <TableHead className="bg-background">Affiliate</TableHead>
+                    <TableHead className="text-right bg-background">Visits</TableHead>
+                    <TableHead className="text-right bg-background">Signups</TableHead>
+                    <TableHead className="text-right bg-background">FTD</TableHead>
+                    <TableHead className="text-right bg-background">Deposit Amount</TableHead>
+                    <TableHead className="text-right bg-background">Net Revenue</TableHead>
+                    <TableHead className="text-right bg-background">Earning</TableHead>
+                    <TableHead className="text-right bg-background">CPA Commission</TableHead>
+                    <TableHead className="text-right bg-background">RevShare Commission</TableHead>
+                    <TableHead className="text-right bg-background">CPA Count</TableHead>
+                    <TableHead className="text-right bg-background">Signup Rate</TableHead>
+                    <TableHead className="text-right bg-background">FTD Rate</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>

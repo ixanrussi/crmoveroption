@@ -174,6 +174,7 @@ export default function Clientes() {
       country_ids: ids,
       client_type: row.client_type ?? "",
       brands: Array.isArray(row.brands) ? row.brands : [],
+      brand_aliases: (row.brand_aliases && typeof row.brand_aliases === "object" && !Array.isArray(row.brand_aliases)) ? row.brand_aliases : {},
       net_min_cpa: row.net_min_cpa?.toString() ?? "",
       routy_account_id: row.routy_account_id ?? "",
     });

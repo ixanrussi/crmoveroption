@@ -385,7 +385,7 @@ Deno.serve(async (req) => {
           return {
             client_id: clientId!,
             created_by: userData.user.id,
-            name: `${namePieces} — Afiliado 70% CPA`,
+            name: `${namePieces} — Autobuilded`,
             description: "Generado automáticamente desde el plan del operador (CPA afiliado = 70% del CPA total).",
             plan_start_date: p.plan_start_date,
             currency: p.currency,

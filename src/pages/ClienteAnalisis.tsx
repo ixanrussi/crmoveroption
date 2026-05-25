@@ -194,13 +194,22 @@ export default function ClienteAnalisis() {
     return arr;
   }, [rows, daysInMonth, brandFilter]);
 
-  // Per-brand breakdown rows
+  // Per-brand breakdown rows — only client's declared brands
   const brandBreakdown = useMemo(() => {
+    const clientBrands: string[] = (client?.brands ?? []) as string[];
     const map = new Map<string, { cpa: number; perDay: Map<string, number>; commission: number }>();
+    // Initialize one entry per declared brand so they always appear
+    for (const cb of clientBrands) {
+      if (cb && !map.has(cb)) map.set(cb, { cpa: 0, perDay: new Map(), commission: 0 });
+    }
+    const allowed = new Set(clientBrands.map(brandKey));
     for (const r of rows) {
-      const b = (r.brand ?? "").trim() || "—";
-      if (!map.has(b)) map.set(b, { cpa: 0, perDay: new Map(), commission: 0 });
-      const obj = map.get(b)!;
+      const b = (r.brand ?? "").trim();
+      if (!b || !allowed.has(brandKey(b))) continue;
+      // Resolve to the canonical client brand spelling
+      const canonical = clientBrands.find(cb => brandKey(cb) === brandKey(b)) ?? b;
+      if (!map.has(canonical)) map.set(canonical, { cpa: 0, perDay: new Map(), commission: 0 });
+      const obj = map.get(canonical)!;
       obj.cpa += Number(r.cpaCount) || 0;
       obj.commission += (Number(r.cpaCommission) || 0) + (Number(r.revShareCommission) || 0);
       if (r.date) {
@@ -209,13 +218,12 @@ export default function ClienteAnalisis() {
       }
     }
     return Array.from(map.entries())
-      .filter(([b]) => b !== "—")
       .map(([brand, v]) => ({
         brand, ...v,
         target: goals.find(g => g.brand === brand)?.cpa_target ?? 0,
       }))
       .sort((a, b) => b.cpa - a.cpa);
-  }, [rows, goals]);
+  }, [rows, goals, client]);
 
   // Affiliates table
   const affiliateRows = useMemo(() => {

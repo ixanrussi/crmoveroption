@@ -187,23 +187,20 @@ Deno.serve(async (req) => {
 
     let clientId = body.id;
 
-    if (body.action === "insert") {
+    {
+      const excludeId = body.action === "update" ? body.id ?? null : null;
       const dupName = await sql<{ id: string }[]>`
         select id from public.clients
         where lower(company_name) = lower(${payload.company_name})
-          and coalesce(lower(website),'') = coalesce(lower(${payload.website}),'')
-          and coalesce(login,'') = coalesce(${payload.login},'')
-          and coalesce(senha,'') = coalesce(${payload.senha},'')
-          and coalesce(country_id::text,'') = coalesce(${payload.country_id}::text,'')
+          and (${excludeId}::uuid is null or id <> ${excludeId})
         limit 1
       `;
-      if (dupName.length) return json(409, { error: "Ya existe un cliente con esos mismos datos (nombre, sitio web, login, contraseña y país)" });
+      if (dupName.length) return json(409, { error: "Ya existe un operador con ese nombre" });
 
       const dupAff = await sql<{ id: string }[]>`
         select id from public.affiliates where lower(fixed_name) = lower(${payload.company_name}) limit 1
       `;
       if (dupAff.length) return json(409, { error: "El nombre coincide con un afiliado existente" });
-
     }
 
     if (body.action === "insert") {

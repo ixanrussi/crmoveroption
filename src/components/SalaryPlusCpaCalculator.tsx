@@ -257,60 +257,48 @@ function ProposalBuilder({
     }
   };
 
-  const generatePdfFor = async (data: { name: string; pct: number; salario: number; comision: number; capNum: number; cpaNum: number }) => {
+  const generatePdfFor = async (p: { name: string; pct: number; salario: number; comision: number; capNum: number; cpaNum: number }) => {
+    setGenerating(true);
+    try {
+      const doc = new jsPDF({ unit: "pt", format: "a4" });
+      const pageW = doc.internal.pageSize.getWidth();
+      const pageH = doc.internal.pageSize.getHeight();
 
-      // ===== HEADER — elegant blue stylized background =====
+      // ===== HEADER =====
       const headerH = 120;
-      // Gradient-like layered rectangles (deep navy → blue)
-      doc.setFillColor(10, 25, 60);
-      doc.rect(0, 0, pageW, headerH, "F");
-      doc.setFillColor(20, 45, 95);
-      doc.rect(0, headerH - 60, pageW, 60, "F");
-      doc.setFillColor(35, 75, 140);
-      doc.rect(0, headerH - 25, pageW, 25, "F");
-      // Decorative diagonal accents
-      doc.setDrawColor(80, 130, 200);
-      doc.setLineWidth(0.6);
+      doc.setFillColor(10, 25, 60); doc.rect(0, 0, pageW, headerH, "F");
+      doc.setFillColor(20, 45, 95); doc.rect(0, headerH - 60, pageW, 60, "F");
+      doc.setFillColor(35, 75, 140); doc.rect(0, headerH - 25, pageW, 25, "F");
+      doc.setDrawColor(80, 130, 200); doc.setLineWidth(0.6);
       for (let i = 0; i < 14; i++) {
         const x = pageW - 240 + i * 18;
         doc.line(x, 0, x - 80, headerH);
       }
-      // Gold thin underline
-      doc.setDrawColor(201, 168, 76);
-      doc.setLineWidth(1.2);
+      doc.setDrawColor(201, 168, 76); doc.setLineWidth(1.2);
       doc.line(0, headerH, pageW, headerH);
 
-      // Logo top-left (white logo on dark bg — invert by using a white rounded chip behind it)
       try {
         const logoData = await toDataUrl(overoptionLogo);
-        const chipW = 180;
-        const chipH = 50;
-        const chipX = 30;
-        const chipY = 28;
+        const chipW = 180, chipH = 50, chipX = 30, chipY = 28;
         doc.setFillColor(255, 255, 255);
         doc.roundedRect(chipX, chipY, chipW, chipH, 6, 6, "F");
         doc.addImage(logoData, "PNG", chipX + 10, chipY + 7, chipW - 20, chipH - 14);
       } catch {}
 
-      // Header title
       doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(20);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(20);
       doc.text("Propuesta Comercial", pageW - 30, 55, { align: "right" });
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10);
       doc.setTextColor(200, 215, 240);
       doc.text("Sueldo fijo + CPA", pageW - 30, 75, { align: "right" });
 
       // ===== BODY =====
       let y = headerH + 50;
       doc.setTextColor(20, 20, 20);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(13);
-      doc.text(`Para: ${affiliate || "Afiliado"}`, 40, y);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(13);
+      doc.text(`Para: ${p.name || "Afiliado"}`, 40, y);
       y += 22;
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(11);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(11);
       doc.setTextColor(60, 60, 60);
       const intro =
         "Nos complace presentarte la siguiente propuesta de colaboración bajo el modelo " +
@@ -318,22 +306,19 @@ function ProposalBuilder({
       doc.text(doc.splitTextToSize(intro, pageW - 80), 40, y);
       y += 50;
 
-      // Offer box
-      doc.setDrawColor(35, 75, 140);
-      doc.setLineWidth(1);
+      doc.setDrawColor(35, 75, 140); doc.setLineWidth(1);
       doc.setFillColor(245, 248, 255);
-      doc.roundedRect(40, y, pageW - 80, 200, 8, 8, "FD");
+      doc.roundedRect(40, y, pageW - 80, 170, 8, 8, "FD");
 
       doc.setTextColor(10, 25, 60);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(14);
       doc.text("Detalle de la oferta", 60, y + 28);
 
       const rows: Array<[string, string]> = [
-        ["Fixed fee", fmtEur(salario)],
-        ["Comisión por CPA", fmtEur(comision)],
+        ["Volumen de CPA's de referencia", String(p.capNum)],
+        ["Fixed fee", fmtEur(p.salario)],
+        ["Comisión por CPA", fmtEur(p.comision)],
       ];
-
 
       doc.setFontSize(11);
       let ry = y + 55;
@@ -342,56 +327,41 @@ function ProposalBuilder({
           doc.setFillColor(232, 240, 252);
           doc.rect(50, ry - 12, pageW - 100, 22, "F");
         }
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(40, 40, 40);
+        doc.setFont("helvetica", "normal"); doc.setTextColor(40, 40, 40);
         doc.text(k, 60, ry + 3);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(10, 25, 60);
+        doc.setFont("helvetica", "bold"); doc.setTextColor(10, 25, 60);
         doc.text(v, pageW - 60, ry + 3, { align: "right" });
         ry += 26;
       });
 
-      y += 220;
+      y += 190;
 
-      // Validity
       doc.setFillColor(201, 168, 76);
       doc.roundedRect(40, y, pageW - 80, 36, 6, 6, "F");
       doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(12);
-      doc.text("Esta oferta prevalecerá durante 5 días desde la fecha de emisión.", pageW / 2, y + 23, {
-        align: "center",
-      });
+      doc.setFont("helvetica", "bold"); doc.setFontSize(12);
+      doc.text("Esta oferta prevalecerá durante 5 días desde la fecha de emisión.", pageW / 2, y + 23, { align: "center" });
 
       y += 60;
       doc.setTextColor(80, 80, 80);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(10);
       doc.text(`Fecha de emisión: ${new Date().toLocaleDateString("es-ES")}`, 40, y);
 
       // ===== FOOTER =====
       const footerH = 50;
       doc.setFillColor(10, 25, 60);
       doc.rect(0, pageH - footerH, pageW, footerH, "F");
-      doc.setDrawColor(201, 168, 76);
-      doc.setLineWidth(1);
+      doc.setDrawColor(201, 168, 76); doc.setLineWidth(1);
       doc.line(0, pageH - footerH, pageW, pageH - footerH);
       doc.setTextColor(255, 255, 255);
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold"); doc.setFontSize(11);
       doc.text("OVEROPTION", 40, pageH - footerH + 20);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal"); doc.setFontSize(9);
       doc.setTextColor(180, 200, 230);
       doc.text("Affiliate Management", 40, pageH - footerH + 35);
-      doc.text(
-        `© ${new Date().getFullYear()} Overoption — Documento confidencial`,
-        pageW - 40,
-        pageH - footerH + 30,
-        { align: "right" },
-      );
+      doc.text(`© ${new Date().getFullYear()} Overoption — Documento confidencial`, pageW - 40, pageH - footerH + 30, { align: "right" });
 
-      const fname = `propuesta-${(affiliate || "afiliado").replace(/[^\w-]+/g, "_")}-${propPct}pct.pdf`;
+      const fname = `propuesta-${(p.name || "afiliado").replace(/[^\w-]+/g, "_")}-${p.pct}pct.pdf`;
       doc.save(fname);
       toast.success("PDF generado");
     } catch (e: any) {
@@ -407,6 +377,14 @@ function ProposalBuilder({
         <CardTitle className="text-lg">Propuesta para el afiliado</CardTitle>
       </CardHeader>
       <CardContent className="space-y-6">
+        <div className="rounded-lg border p-3 bg-muted/30">
+          <div className="text-xs text-muted-foreground">Volumen de CPA's de referencia</div>
+          <div className="text-xl font-bold">{capNum}</div>
+          <div className="text-[11px] text-muted-foreground mt-1">
+            Capacidad media del afiliado utilizada para el cálculo del fijo
+          </div>
+        </div>
+
         <div className="space-y-2">
           <div className="flex items-baseline justify-between">
             <Label>% del presupuesto a sueldo fijo</Label>
@@ -445,24 +423,81 @@ function ProposalBuilder({
           </div>
         </div>
 
-        <div className="grid gap-3 md:grid-cols-[1fr_auto] items-end">
+        <div className="grid gap-3 md:grid-cols-[1fr_auto_auto] items-end">
           <div className="space-y-1">
-            <Label>Nombre del afiliado (para el PDF)</Label>
+            <Label>Nombre de la propuesta / afiliado</Label>
             <Input
               value={affiliate}
               onChange={(e) => setAffiliate(e.target.value)}
               placeholder="Ej. Juan Pérez"
             />
           </div>
-          <Button onClick={generatePdf} disabled={!valid || generating}>
+          <Button variant="outline" onClick={saveProposal} disabled={!valid}>
+            <Save className="h-4 w-4" />
+            Guardar propuesta
+          </Button>
+          <Button
+            onClick={() => generatePdfFor({ name: affiliate, pct: propPct, salario, comision, capNum, cpaNum })}
+            disabled={!valid || generating}
+          >
             <FileDown className="h-4 w-4" />
             {generating ? "Generando..." : "Generar PDF"}
           </Button>
         </div>
 
+        {saved.length > 0 && (
+          <div className="space-y-2">
+            <Label>Propuestas guardadas</Label>
+            <div className="rounded-lg border divide-y">
+              {saved.map((p) => (
+                <div key={p.id} className="flex flex-wrap items-center gap-3 p-3">
+                  <div className="flex-1 min-w-[160px]">
+                    <div className="font-medium">{p.name}</div>
+                    <div className="text-xs text-muted-foreground">
+                      {p.pct}% · Fijo {fmtEur(p.salario)} · CPA {fmtEur(p.comision)} · Total {fmtEur(p.total)} · Ref {p.capNum} CPAs
+                    </div>
+                    {p.createdAffiliateId && (
+                      <div className="text-[11px] text-emerald-600 mt-1">Afiliado creado ✓</div>
+                    )}
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => generatePdfFor({ name: p.name, pct: p.pct, salario: p.salario, comision: p.comision, capNum: p.capNum, cpaNum: p.cpaNum })}
+                    disabled={generating}
+                    title="Generar PDF"
+                  >
+                    <FileDown className="h-4 w-4" />
+                  </Button>
+                  {!p.createdAffiliateId && (
+                    <Button
+                      size="sm"
+                      onClick={() => createAffiliateFromProposal(p)}
+                      disabled={creatingId === p.id}
+                      title="Crear afiliado con estos datos"
+                    >
+                      <UserPlus className="h-4 w-4" />
+                      {creatingId === p.id ? "Creando..." : "Crear Afiliado"}
+                    </Button>
+                  )}
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => removeSaved(p.id)}
+                    title="Borrar"
+                  >
+                    <Trash2 className="h-4 w-4 text-destructive" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <p className="text-xs text-muted-foreground">
           La oferta generada prevalecerá durante 5 días desde su emisión.
         </p>
       </CardContent>
-    </Card>);
+    </Card>
+  );
 }

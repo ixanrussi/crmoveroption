@@ -245,6 +245,7 @@ Deno.serve(async (req) => {
           senha = ${payload.senha},
           client_type = ${payload.client_type},
           brands = ${payload.brands},
+          brand_aliases = ${JSON.stringify(payload.brand_aliases)}::jsonb,
           net_min_cpa = ${payload.net_min_cpa},
           logo_url = ${payload.logo_url},
           routy_account_id = ${payload.routy_account_id},

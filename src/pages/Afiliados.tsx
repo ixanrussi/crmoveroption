@@ -1515,7 +1515,8 @@ export default function Afiliados() {
                     </TableCell>
                   )}
                 </TableRow>
-              ))}
+              ));
+              })()}
               {list.length === 0 && (
                 <TableRow><TableCell colSpan={11} className="text-center text-muted-foreground py-8">Sin afiliados registrados</TableCell></TableRow>
               )}

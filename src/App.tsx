@@ -28,6 +28,7 @@ import SolicitarLinks from "./pages/SolicitarLinks";
 import PortalAfiliado from "./pages/PortalAfiliado";
 import LandingPages from "./pages/LandingPages";
 import PublicLandingPage from "./pages/PublicLandingPage";
+import ExportData from "./pages/ExportData";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();

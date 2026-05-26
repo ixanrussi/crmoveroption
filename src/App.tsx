@@ -28,6 +28,7 @@ import SolicitarLinks from "./pages/SolicitarLinks";
 import PortalAfiliado from "./pages/PortalAfiliado";
 import LandingPages from "./pages/LandingPages";
 import PublicLandingPage from "./pages/PublicLandingPage";
+import ExportData from "./pages/ExportData";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -46,6 +47,7 @@ const App = () => (
             <Route path="/lp/:affiliateSlug/:countryCode" element={<PublicLandingPage />} />
             <Route element={<ProtectedRoute><ComercialGuard><AppLayout /></ComercialGuard></ProtectedRoute>}>
               <Route path="/landing-pages" element={<LandingPages />} />
+              <Route path="/descarga-datos" element={<ExportData />} />
               <Route path="/" element={<Dashboard />} />
               <Route path="/clientes" element={<Clientes />} />
               <Route path="/clientes/:id/analisis" element={<ClienteAnalisis />} />

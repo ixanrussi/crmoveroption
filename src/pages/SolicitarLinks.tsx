@@ -32,6 +32,7 @@ interface Request {
   requested_by: string;
   created_at: string;
   resolved_at: string | null;
+}
 
 interface ExistingLink {
   id: string;

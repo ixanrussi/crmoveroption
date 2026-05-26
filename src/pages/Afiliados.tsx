@@ -624,7 +624,7 @@ export default function Afiliados() {
                   </p>
                 </div>
                 <div className="col-span-2 space-y-1">
-                  <Label>EXT_ID_OO</Label>
+                  <Label>EXT_UUID</Label>
                   <Input
                     value={form.ext_id_oo ?? ""}
                     onChange={(e) => setForm({ ...form, ext_id_oo: e.target.value })}

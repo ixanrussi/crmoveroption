@@ -10,7 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
-import { Loader2, Send, Bell, Check, X, Trash2, ChevronsUpDown } from "lucide-react";
+import { Loader2, Send, Bell, Check, X, Trash2, ChevronsUpDown, ExternalLink, Link2 } from "lucide-react";
 import { toast } from "sonner";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -34,6 +34,17 @@ interface Request {
   resolved_at: string | null;
 }
 
+interface ExistingLink {
+  id: string;
+  affiliate_id: string;
+  client_id: string;
+  brand: string | null;
+  country_id: string | null;
+  tracking_link: string;
+  source: string;
+}
+
+
 const empty = { affiliate_id: "", client_id: "", brand: "", country_id: "", notes: "" };
 
 export default function SolicitarLinks() {
@@ -42,6 +53,7 @@ export default function SolicitarLinks() {
   const [clients, setClients] = useState<Client[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [existingLinks, setExistingLinks] = useState<ExistingLink[]>([]);
   const [plans, setPlans] = useState<{ client_id: string; brand: string | null; country_ids: string[] }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
@@ -54,18 +66,20 @@ export default function SolicitarLinks() {
 
   const load = async () => {
     setLoading(true);
-    const [a, c, co, r, p] = await Promise.all([
+    const [a, c, co, r, p, l] = await Promise.all([
       supabase.from("affiliates").select("id, fixed_name, alias, brands").eq("status", "active").order("fixed_name"),
       supabase.from("clients").select("id, company_name, brands, country_ids").eq("status", "active").order("company_name"),
       supabase.from("countries").select("id,name").order("name"),
       supabase.from("tracking_link_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("client_commission_plans").select("client_id, brand, country_ids"),
+      supabase.from("affiliate_tracking_links").select("id, affiliate_id, client_id, brand, country_id, tracking_link, source"),
     ]);
     setAffiliates((a.data as any) ?? []);
     setClients((c.data as any) ?? []);
     setCountries(co.data ?? []);
     setRequests((r.data as any) ?? []);
     setPlans((p.data as any) ?? []);
+    setExistingLinks((l.data as any) ?? []);
     setLoading(false);
   };
 
@@ -116,6 +130,21 @@ export default function SolicitarLinks() {
       setForm((f) => ({ ...f, country_id: "" }));
     }
   }, [countryOptions, form.client_id]);
+
+  // Matching existing tracking links for the current filters
+  const matchingLinks = useMemo(() => {
+    if (!form.affiliate_id || !form.client_id) return [];
+    const brand = (form.brand || "").toLowerCase();
+    return existingLinks.filter((l) => {
+      if (l.affiliate_id !== form.affiliate_id) return false;
+      if (l.client_id !== form.client_id) return false;
+      if (form.brand && (l.brand || "").toLowerCase() !== brand) return false;
+      if (form.country_id && l.country_id && l.country_id !== form.country_id) return false;
+      return true;
+    });
+  }, [existingLinks, form.affiliate_id, form.client_id, form.brand, form.country_id]);
+
+  const hasFilters = !!(form.affiliate_id && form.client_id);
 
   const submit = async () => {
     if (!user?.id) return;
@@ -281,6 +310,42 @@ export default function SolicitarLinks() {
               </Select>
             </div>
           </div>
+
+          {hasFilters && (
+            matchingLinks.length > 0 ? (
+              <div className="rounded-md border border-green-600/40 bg-green-600/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
+                  <Link2 className="h-4 w-4" />
+                  {matchingLinks.length} link{matchingLinks.length > 1 ? "s" : ""} disponible{matchingLinks.length > 1 ? "s" : ""} para los filtros aplicados
+                </div>
+                <ul className="space-y-1.5">
+                  {matchingLinks.map((l) => (
+                    <li key={l.id} className="flex items-center gap-2 text-sm">
+                      <Badge variant="outline" className="text-[10px]">{l.brand || "—"}</Badge>
+                      <Badge variant="secondary" className="text-[10px]">{couName(l.country_id)}</Badge>
+                      <a
+                        href={l.tracking_link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline truncate flex items-center gap-1 min-w-0"
+                      >
+                        <span className="truncate">{l.tracking_link}</span>
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted-foreground">
+                  Si necesitas un link adicional para una variante distinta, puedes igual generar una solicitud.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-400">
+                No existe ningún link para los filtros aplicados. Genera una solicitud al equipo admin.
+              </div>
+            )
+          )}
+
           <div className="space-y-2">
             <Label>Notas</Label>
             <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} maxLength={500} placeholder="Información adicional opcional" />
@@ -288,7 +353,7 @@ export default function SolicitarLinks() {
           <div className="flex justify-end">
             <Button onClick={submit} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Solicitar link
+              {hasFilters && matchingLinks.length > 0 ? "Solicitar link adicional" : "Solicitar link"}
             </Button>
           </div>
         </CardContent>

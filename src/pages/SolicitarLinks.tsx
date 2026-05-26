@@ -53,6 +53,7 @@ export default function SolicitarLinks() {
   const [clients, setClients] = useState<Client[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [requests, setRequests] = useState<Request[]>([]);
+  const [existingLinks, setExistingLinks] = useState<ExistingLink[]>([]);
   const [plans, setPlans] = useState<{ client_id: string; brand: string | null; country_ids: string[] }[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);

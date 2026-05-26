@@ -387,6 +387,15 @@ export default function SolicitarLinks() {
                         <span className="truncate">{l.tracking_link}</span>
                         <ExternalLink className="h-3.5 w-3.5 shrink-0" />
                       </a>
+                      <button
+                        type="button"
+                        onClick={() => copyToClipboard(l.tracking_link)}
+                        className="inline-flex items-center justify-center rounded p-1 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                        title="Copiar link"
+                      >
+                        <Copy className="h-3.5 w-3.5" />
+                      </button>
+                      <ShareMenu url={l.tracking_link} />
                     </li>
                   ))}
                 </ul>

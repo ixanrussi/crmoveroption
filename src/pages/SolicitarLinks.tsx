@@ -146,7 +146,7 @@ export default function SolicitarLinks() {
 
   const hasFilters = !!(form.affiliate_id && form.client_id);
 
-
+  const submit = async () => {
     if (!user?.id) return;
     if (!form.affiliate_id || !form.client_id) {
       toast.error("Selecciona afiliado y operador");

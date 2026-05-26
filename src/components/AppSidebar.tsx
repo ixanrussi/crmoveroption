@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from "react-router-dom";
 import { useTranslation } from "react-i18next";
-import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, Link2, Globe } from "lucide-react";
+import { LayoutDashboard, Users, UserPlus, Shield, List, LogOut, UserCircle, ScrollText, Calculator, Activity, Wallet, KeyRound, Sparkles, Link2, Globe, Download } from "lucide-react";
 import { useMenuPermissions, type MenuKey } from "@/hooks/useMenuPermissions";
 import logo from "@/assets/overoption-logo.png";
 import {

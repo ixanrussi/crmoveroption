@@ -211,6 +211,61 @@ export default function SolicitarLinks() {
   const cliName = (id: string) => clients.find((c) => c.id === id)?.company_name ?? "—";
   const couName = (id: string | null) => (id ? countries.find((c) => c.id === id)?.name ?? "—" : "—");
 
+  const copyToClipboard = async (text: string) => {
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Link copiado al portapapeles");
+    } catch {
+      toast.error("No se pudo copiar el link");
+    }
+  };
+
+  const shareVia = (platform: "whatsapp" | "telegram", url: string) => {
+    const encoded = encodeURIComponent(url);
+    if (platform === "whatsapp") {
+      window.open(`https://wa.me/?text=${encoded}`, "_blank");
+    } else {
+      window.open(`https://t.me/share/url?url=${encoded}`, "_blank");
+    }
+  };
+
+  const ShareMenu = ({ url }: { url: string }) => {
+    const [open, setOpen] = useState(false);
+    return (
+      <div className="relative inline-block">
+        <button
+          type="button"
+          onClick={() => setOpen(!open)}
+          className="inline-flex items-center justify-center rounded p-1 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+          title="Compartir"
+        >
+          <Share2 className="h-3.5 w-3.5" />
+        </button>
+        {open && (
+          <>
+            <div className="fixed inset-0 z-40" onClick={() => setOpen(false)} />
+            <div className="absolute right-0 z-50 mt-1 w-40 rounded-md border bg-popover shadow-md p-1 space-y-0.5">
+              <button
+                type="button"
+                onClick={() => { shareVia("whatsapp", url); setOpen(false); }}
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent"
+              >
+                <MessageCircle className="h-4 w-4 text-green-600" /> WhatsApp
+              </button>
+              <button
+                type="button"
+                onClick={() => { shareVia("telegram", url); setOpen(false); }}
+                className="flex w-full items-center gap-2 rounded px-2 py-1.5 text-sm hover:bg-accent"
+              >
+                <TelegramIcon className="h-4 w-4 text-sky-500" /> Telegram
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   const pendingCount = requests.filter((r) => r.status === "pending").length;
   const statusBadge = (s: Request["status"]) => {
     if (s === "pending") return <Badge variant="secondary">Pendiente</Badge>;

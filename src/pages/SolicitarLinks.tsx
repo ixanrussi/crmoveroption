@@ -454,9 +454,20 @@ export default function SolicitarLinks() {
                       <TableCell>{r.brand ?? "—"}</TableCell>
                       <TableCell>{couName(r.country_id)}</TableCell>
                       <TableCell>{statusBadge(r.status)}</TableCell>
-                      <TableCell className="max-w-[200px] truncate">
+                      <TableCell className="max-w-[260px]">
                         {r.tracking_link ? (
-                          <a href={r.tracking_link} target="_blank" rel="noreferrer" className="text-primary underline">{r.tracking_link}</a>
+                          <div className="flex items-center gap-1.5">
+                            <a href={r.tracking_link} target="_blank" rel="noreferrer" className="text-primary underline truncate flex-1 min-w-0">{r.tracking_link}</a>
+                            <button
+                              type="button"
+                              onClick={() => copyToClipboard(r.tracking_link!)}
+                              className="inline-flex items-center justify-center rounded p-1 hover:bg-accent text-muted-foreground hover:text-foreground transition-colors shrink-0"
+                              title="Copiar link"
+                            >
+                              <Copy className="h-3.5 w-3.5" />
+                            </button>
+                            <div className="shrink-0"><ShareMenu url={r.tracking_link} /></div>
+                          </div>
                         ) : "—"}
                       </TableCell>
                       <TableCell className="flex gap-2">

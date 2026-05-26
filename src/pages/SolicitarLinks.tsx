@@ -310,6 +310,42 @@ export default function SolicitarLinks() {
               </Select>
             </div>
           </div>
+
+          {hasFilters && (
+            matchingLinks.length > 0 ? (
+              <div className="rounded-md border border-green-600/40 bg-green-600/5 p-3 space-y-2">
+                <div className="flex items-center gap-2 text-sm font-semibold text-green-700 dark:text-green-400">
+                  <Link2 className="h-4 w-4" />
+                  {matchingLinks.length} link{matchingLinks.length > 1 ? "s" : ""} disponible{matchingLinks.length > 1 ? "s" : ""} para los filtros aplicados
+                </div>
+                <ul className="space-y-1.5">
+                  {matchingLinks.map((l) => (
+                    <li key={l.id} className="flex items-center gap-2 text-sm">
+                      <Badge variant="outline" className="text-[10px]">{l.brand || "—"}</Badge>
+                      <Badge variant="secondary" className="text-[10px]">{couName(l.country_id)}</Badge>
+                      <a
+                        href={l.tracking_link}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="text-primary underline truncate flex items-center gap-1 min-w-0"
+                      >
+                        <span className="truncate">{l.tracking_link}</span>
+                        <ExternalLink className="h-3.5 w-3.5 shrink-0" />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <p className="text-xs text-muted-foreground">
+                  Si necesitas un link adicional para una variante distinta, puedes igual generar una solicitud.
+                </p>
+              </div>
+            ) : (
+              <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 text-sm text-amber-700 dark:text-amber-400">
+                No existe ningún link para los filtros aplicados. Genera una solicitud al equipo admin.
+              </div>
+            )
+          )}
+
           <div className="space-y-2">
             <Label>Notas</Label>
             <Textarea value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} maxLength={500} placeholder="Información adicional opcional" />
@@ -317,7 +353,7 @@ export default function SolicitarLinks() {
           <div className="flex justify-end">
             <Button onClick={submit} disabled={saving}>
               {saving ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-              Solicitar link
+              {hasFilters && matchingLinks.length > 0 ? "Solicitar link adicional" : "Solicitar link"}
             </Button>
           </div>
         </CardContent>

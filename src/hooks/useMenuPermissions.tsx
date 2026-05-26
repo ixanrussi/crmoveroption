@@ -13,6 +13,7 @@ export type MenuKey =
   | "calculadora-fijos"
   | "tracker-report"
   | "landing-pages"
+  | "descarga-datos"
   | "listas-paises"
   | "listas-software"
   | "listas-canales"

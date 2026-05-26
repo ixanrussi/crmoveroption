@@ -66,18 +66,20 @@ export default function SolicitarLinks() {
 
   const load = async () => {
     setLoading(true);
-    const [a, c, co, r, p] = await Promise.all([
+    const [a, c, co, r, p, l] = await Promise.all([
       supabase.from("affiliates").select("id, fixed_name, alias, brands").eq("status", "active").order("fixed_name"),
       supabase.from("clients").select("id, company_name, brands, country_ids").eq("status", "active").order("company_name"),
       supabase.from("countries").select("id,name").order("name"),
       supabase.from("tracking_link_requests").select("*").order("created_at", { ascending: false }),
       supabase.from("client_commission_plans").select("client_id, brand, country_ids"),
+      supabase.from("affiliate_tracking_links").select("id, affiliate_id, client_id, brand, country_id, tracking_link, source"),
     ]);
     setAffiliates((a.data as any) ?? []);
     setClients((c.data as any) ?? []);
     setCountries(co.data ?? []);
     setRequests((r.data as any) ?? []);
     setPlans((p.data as any) ?? []);
+    setExistingLinks((l.data as any) ?? []);
     setLoading(false);
   };
 

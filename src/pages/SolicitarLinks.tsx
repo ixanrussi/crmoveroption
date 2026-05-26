@@ -131,7 +131,22 @@ export default function SolicitarLinks() {
     }
   }, [countryOptions, form.client_id]);
 
-  const submit = async () => {
+  // Matching existing tracking links for the current filters
+  const matchingLinks = useMemo(() => {
+    if (!form.affiliate_id || !form.client_id) return [];
+    const brand = (form.brand || "").toLowerCase();
+    return existingLinks.filter((l) => {
+      if (l.affiliate_id !== form.affiliate_id) return false;
+      if (l.client_id !== form.client_id) return false;
+      if (form.brand && (l.brand || "").toLowerCase() !== brand) return false;
+      if (form.country_id && l.country_id && l.country_id !== form.country_id) return false;
+      return true;
+    });
+  }, [existingLinks, form.affiliate_id, form.client_id, form.brand, form.country_id]);
+
+  const hasFilters = !!(form.affiliate_id && form.client_id);
+
+
     if (!user?.id) return;
     if (!form.affiliate_id || !form.client_id) {
       toast.error("Selecciona afiliado y operador");

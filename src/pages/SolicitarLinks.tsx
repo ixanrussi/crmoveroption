@@ -32,7 +32,17 @@ interface Request {
   requested_by: string;
   created_at: string;
   resolved_at: string | null;
+
+interface ExistingLink {
+  id: string;
+  affiliate_id: string;
+  client_id: string;
+  brand: string | null;
+  country_id: string | null;
+  tracking_link: string;
+  source: string;
 }
+
 
 const empty = { affiliate_id: "", client_id: "", brand: "", country_id: "", notes: "" };
 

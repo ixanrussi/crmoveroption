@@ -57,6 +57,9 @@ export default function ProspectsAfiliados() {
   const [newChannelName, setNewChannelName] = useState("");
   const [creatingChannel, setCreatingChannel] = useState(false);
 
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
   const load = async () => {
     setLoading(true);
     let q = supabase
@@ -207,6 +210,15 @@ export default function ProspectsAfiliados() {
     load();
   };
 
+  const remove = async (id: string) => {
+    const { error } = await supabase.from("affiliates").delete().eq("id", id);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Prospect eliminado");
+    setConfirmOpen(false);
+    setDeletingId(null);
+    load();
+  };
+
   const countryNames = (ids: string[]) =>
     countries.filter((c) => ids?.includes(c.id)).map((c) => c.name).join(", ");
 
@@ -271,6 +283,14 @@ export default function ProspectsAfiliados() {
                     <TableCell className="text-right">
                       <Button size="sm" variant="ghost" onClick={() => openEdit(r)}>
                         <Pencil className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive hover:text-destructive"
+                        onClick={() => { setDeletingId(r.id); setConfirmOpen(true); }}
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </Button>
                     </TableCell>
                   </TableRow>
@@ -506,6 +526,29 @@ export default function ProspectsAfiliados() {
             <Button onClick={save} disabled={saving}>
               {saving && <Loader2 className="h-4 w-4 mr-2 animate-spin" />}
               {editing ? "Guardar" : "Crear prospect"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar prospect?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Esta acción no se puede deshacer. ¿Seguro que quieres eliminar este afiliado prospect?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setConfirmOpen(false); setDeletingId(null); }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingId && remove(deletingId)}
+              disabled={!deletingId}
+            >
+              Eliminar
             </Button>
           </DialogFooter>
         </DialogContent>

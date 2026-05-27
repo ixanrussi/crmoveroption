@@ -118,12 +118,12 @@ export default function ProspectsAfiliados() {
     setOpen(true);
   };
 
-  const createChannel = async () => {
-    const name = newChannelName.trim();
-    if (!name) return;
+  const createChannel = async (nameOverride?: string) => {
+    const name = (nameOverride ?? newChannelName).trim();
+    if (!name) return null as any;
     if (channels.some((c) => c.name.toLowerCase() === name.toLowerCase())) {
-      toast.error("Ese canal ya existe");
-      return;
+      if (!nameOverride) toast.error("Ese canal ya existe");
+      return channels.find((c) => c.name.toLowerCase() === name.toLowerCase());
     }
     setCreatingChannel(true);
     const { data, error } = await supabase
@@ -132,12 +132,29 @@ export default function ProspectsAfiliados() {
       .select("id,name")
       .single();
     setCreatingChannel(false);
-    if (error) { toast.error(error.message); return; }
-    setChannels((prev) => [...prev, data].sort((a, b) => a.name.localeCompare(b.name)));
-    setForm((f) => ({ ...f, channel_ids: [...f.channel_ids, data.id] }));
-    setNewChannelName("");
-    toast.success("Canal creado");
+    if (error) { if (!nameOverride) toast.error(error.message); return null as any; }
+    const updated = [...channels, data].sort((a, b) => a.name.localeCompare(b.name));
+    setChannels(updated);
+    if (!nameOverride) { setNewChannelName(""); toast.success("Canal creado"); }
+    return data;
   };
+
+  const togglePresetChannel = async (name: string) => {
+    const existing = channels.find((c) => c.name.toLowerCase() === name.toLowerCase());
+    let channel = existing;
+    if (!channel) {
+      channel = await createChannel(name);
+      if (!channel) return;
+    }
+    const checked = form.channel_ids.includes(channel.id);
+    const next = checked ? form.channel_ids.filter((x) => x !== channel.id) : [...form.channel_ids, channel.id];
+    const nextLinks = { ...form.channel_links };
+    if (!checked) { if (!(channel.id in nextLinks)) nextLinks[channel.id] = [""]; }
+    else { delete nextLinks[channel.id]; }
+    setForm({ ...form, channel_ids: next, channel_links: nextLinks });
+  };
+
+  const PRESET_CHANNELS = ["Kick", "Pinterest", "Web", "Otros"];
 
   const addBrand = () => {
     const v = brandInput.trim();
@@ -413,11 +430,34 @@ export default function ProspectsAfiliados() {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        onClick={createChannel}
+                        onClick={() => createChannel()}
                         disabled={creatingChannel || !newChannelName.trim()}
                       >
                         {creatingChannel ? <Loader2 className="h-3 w-3 animate-spin" /> : "Añadir"}
                       </Button>
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-xs text-muted-foreground mb-1.5">Canales comunes</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {PRESET_CHANNELS.map((name) => {
+                          const ch = channels.find((c) => c.name.toLowerCase() === name.toLowerCase());
+                          const active = ch ? form.channel_ids.includes(ch.id) : false;
+                          return (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => togglePresetChannel(name)}
+                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                active
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-background hover:bg-muted border-border"
+                              }`}
+                            >
+                              {name}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </PopoverContent>

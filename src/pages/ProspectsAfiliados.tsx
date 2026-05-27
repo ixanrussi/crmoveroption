@@ -599,6 +599,101 @@ export default function ProspectsAfiliados() {
             </div>
 
             <div className="grid gap-2">
+              <Label>Operadores y planes de comisión de interés</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="justify-start font-normal">
+                    {Object.keys(form.interests).length === 0
+                      ? "Seleccionar operadores"
+                      : clients.filter((c) => c.id in form.interests).map((c) => c.company_name).join(", ")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div
+                    className="max-h-60 overflow-y-auto space-y-2 pr-1 overscroll-contain"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
+                    {clients.length === 0 && (
+                      <p className="text-xs text-muted-foreground">No hay operadores activos.</p>
+                    )}
+                    {clients.map((c) => {
+                      const checked = c.id in form.interests;
+                      return (
+                        <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              const next = { ...form.interests };
+                              if (v) next[c.id] = [];
+                              else delete next[c.id];
+                              setForm({ ...form, interests: next });
+                            }}
+                          />
+                          {c.company_name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {Object.keys(form.interests).length > 0 && (
+                <div className="grid gap-3 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Planes de comisión de afiliado de interés (opcional)</p>
+                  {Object.keys(form.interests).map((cid) => {
+                    const client = clients.find((c) => c.id === cid);
+                    const clientTpls = templates.filter((t) => t.client_id === cid);
+                    const selected = form.interests[cid] ?? [];
+                    return (
+                      <div key={cid} className="grid gap-1">
+                        <Label className="text-xs font-medium">{client?.company_name ?? "—"}</Label>
+                        {clientTpls.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">Sin planes disponibles para este operador.</p>
+                        ) : (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm" className="justify-start font-normal h-8">
+                                {selected.length === 0
+                                  ? "Sin plan específico"
+                                  : clientTpls.filter((t) => selected.includes(t.id)).map((t) => t.name).join(", ")}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-72">
+                              <div
+                                className="max-h-60 overflow-y-auto space-y-2 pr-1 overscroll-contain"
+                                onWheel={(e) => e.stopPropagation()}
+                                onTouchMove={(e) => e.stopPropagation()}
+                              >
+                                {clientTpls.map((t) => {
+                                  const isChecked = selected.includes(t.id);
+                                  return (
+                                    <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                                      <Checkbox
+                                        checked={isChecked}
+                                        onCheckedChange={(v) => {
+                                          const next = v
+                                            ? [...selected, t.id]
+                                            : selected.filter((x) => x !== t.id);
+                                          setForm({ ...form, interests: { ...form.interests, [cid]: next } });
+                                        }}
+                                      />
+                                      <span>{t.name}{t.brand ? ` · ${t.brand}` : ""}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
+
+            <div className="grid gap-2">
               <Label>Notas</Label>
               <Textarea rows={3} value={form.notes} onChange={(e) => setForm({ ...form, notes: e.target.value })} />
             </div>

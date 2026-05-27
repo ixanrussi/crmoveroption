@@ -5,11 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from "lucide-react";
+import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import SalaryPlusCpaCalculator from "@/components/SalaryPlusCpaCalculator";
 
 
@@ -18,6 +21,8 @@ import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import overoptionLogo from "@/assets/overoption-logo.png";
+
+const OO_MARGIN_PCT = 30;
 
 
 type Plan = {
@@ -424,7 +429,7 @@ export default function CalculadoraFijos() {
     const proportionalEnabled = !!plan.proportional_enabled;
     const proportionalMinPct = plan.proportional_min_pct ?? 0;
     const fixedMarginPct = plan.fixed_margin_pct ?? 0;
-    const recommendedMarginPct = plan.recommended_margin_pct ?? 0;
+    const recommendedMarginPct = OO_MARGIN_PCT;
     const ftdT = parseFloat(sel.ftdTarget) || 0;
     const ftdA = sel.ftdActual === "" ? ftdT : (parseFloat(sel.ftdActual) || 0);
     const fixed = cpaNeto * ftdT;
@@ -543,14 +548,37 @@ export default function CalculadoraFijos() {
           <TabsTrigger value="salario-cpa">Sueldo fijo + CPA</TabsTrigger>
         </TabsList>
         <TabsContent value="fijos" className="space-y-6">
-      <div className="space-y-1 max-w-md">
-        <Label>Nombre del afiliado prospecto (opcional)</Label>
-        <Input
-          placeholder="Ej. Juan / AffiliateXYZ"
-          value={prospectName}
-          onChange={(e) => setProspectName(e.target.value)}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <Label>Nombre del afiliado prospecto (opcional)</Label>
+          <Input
+            placeholder="Ej. Juan / AffiliateXYZ"
+            value={prospectName}
+            onChange={(e) => setProspectName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Operador (búsqueda rápida)</Label>
+          <OperatorCombobox
+            operators={filteredOperators}
+            value={selections[0]?.opId || ""}
+            onChange={(opId) => {
+              const op = filteredOperators.find((o) => o.id === opId);
+              const plans = op?.client_commission_plans ?? [];
+              const onlyPlan = plans.length === 1 ? plans[0].id : "";
+              setSelections((prev) => {
+                const next = [...prev];
+                next[0] = { ...(next[0] ?? newSelection()), opId, planId: onlyPlan };
+                return next;
+              });
+            }}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            El cálculo usa el CPA neto del afiliado como base y garantiza un margen Overoption del {OO_MARGIN_PCT}%.
+          </p>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>
@@ -580,7 +608,7 @@ export default function CalculadoraFijos() {
               const retencion = plan?.overoption_retention ?? 0;
               const cpaNeto = Math.max(0, cpaBruto - retencion);
               const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
-              const recommendedMarginPct = plan?.recommended_margin_pct ?? 0;
+              const recommendedMarginPct = OO_MARGIN_PCT;
               const ftdT = parseFloat(sel.ftdTarget) || 0;
               const fijoMax = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
               const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - recommendedMarginPct / 100);
@@ -860,3 +888,57 @@ export default function CalculadoraFijos() {
     </div>
   );
 }
+
+function OperatorCombobox({
+  operators,
+  value,
+  onChange,
+}: {
+  operators: Operator[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = operators.find((o) => o.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-full justify-between font-normal"
+        >
+          <span className="truncate">
+            {selected ? selected.company_name : (operators.length ? "Selecciona un operador..." : "Sin operadores disponibles")}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar operador..." />
+          <CommandList>
+            <CommandEmpty>Sin resultados.</CommandEmpty>
+            <CommandGroup>
+              {operators.map((o) => (
+                <CommandItem
+                  key={o.id}
+                  value={o.company_name}
+                  onSelect={() => {
+                    onChange(o.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === o.id ? "opacity-100" : "opacity-0")} />
+                  {o.company_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+

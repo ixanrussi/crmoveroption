@@ -412,8 +412,8 @@ export default function ProspectsAfiliados() {
                       : channels.filter((c) => form.channel_ids.includes(c.id)).map((c) => c.name).join(", ")}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-80 max-h-80 overflow-auto">
-                  <div className="space-y-2">
+                <PopoverContent className="w-80">
+                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
                     {channels.length === 0 && (
                       <p className="text-xs text-muted-foreground">No hay canales aún. Crea el primero abajo.</p>
                     )}
@@ -436,24 +436,24 @@ export default function ProspectsAfiliados() {
                         </label>
                       );
                     })}
-                    <div className="border-t pt-2 mt-2 flex gap-2">
-                      <Input
-                        placeholder="Nuevo canal (ej. Telegram)"
-                        value={newChannelName}
-                        onChange={(e) => setNewChannelName(e.target.value)}
-                        onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createChannel(); } }}
-                        className="h-8"
-                      />
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="secondary"
-                        onClick={() => createChannel()}
-                        disabled={creatingChannel || !newChannelName.trim()}
-                      >
-                        {creatingChannel ? <Loader2 className="h-3 w-3 animate-spin" /> : "Añadir"}
-                      </Button>
-                    </div>
+                  </div>
+                  <div className="border-t pt-2 mt-2 flex gap-2">
+                    <Input
+                      placeholder="Nuevo canal (ej. Telegram)"
+                      value={newChannelName}
+                      onChange={(e) => setNewChannelName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); createChannel(); } }}
+                      className="h-8"
+                    />
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="secondary"
+                      onClick={() => createChannel()}
+                      disabled={creatingChannel || !newChannelName.trim()}
+                    >
+                      {creatingChannel ? <Loader2 className="h-3 w-3 animate-spin" /> : "Añadir"}
+                    </Button>
                   </div>
                 </PopoverContent>
               </Popover>

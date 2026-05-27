@@ -258,6 +258,26 @@ export default function ProspectsAfiliados() {
       }
     }
 
+    // Sync interests (operators + commission plan templates of interest)
+    if (affiliateId) {
+      await supabase.from("affiliate_prospect_interests").delete().eq("affiliate_id", affiliateId);
+      const interestRows: { affiliate_id: string; client_id: string; template_id: string | null; created_by: string | null }[] = [];
+      for (const [client_id, tplIds] of Object.entries(form.interests)) {
+        if (tplIds.length === 0) {
+          interestRows.push({ affiliate_id: affiliateId!, client_id, template_id: null, created_by: user?.id ?? null });
+        } else {
+          for (const template_id of tplIds) {
+            interestRows.push({ affiliate_id: affiliateId!, client_id, template_id, created_by: user?.id ?? null });
+          }
+        }
+      }
+      if (interestRows.length > 0) {
+        await supabase.from("affiliate_prospect_interests").insert(interestRows);
+      }
+    }
+
+
+
     setSaving(false);
     toast.success(editing ? "Prospect actualizado" : "Prospect creado");
     setOpen(false);

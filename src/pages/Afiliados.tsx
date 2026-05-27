@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
 import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
+import AffiliateCasinoAccounts from "@/components/AffiliateCasinoAccounts";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 
@@ -544,9 +545,10 @@ export default function Afiliados() {
                 <DialogTitle>{editing ? `Editar afiliado ${editing.unique_id}` : "Nuevo afiliado"}</DialogTitle>
               </DialogHeader>
               <Tabs defaultValue="datos" className="w-full">
-                <TabsList className={editing ? "grid w-full grid-cols-4" : "grid w-full grid-cols-1"}>
+                <TabsList className={editing ? "grid w-full grid-cols-5" : "grid w-full grid-cols-1"}>
                   <TabsTrigger value="datos">Datos & Comisiones</TabsTrigger>
                   {editing && <TabsTrigger value="links">Tracking Links</TabsTrigger>}
+                  {editing && <TabsTrigger value="cuentas">Cuentas casino</TabsTrigger>}
                   {editing && <TabsTrigger value="ganadas">Comisiones ganadas</TabsTrigger>}
                   {editing && <TabsTrigger value="objetivos">Objetivos</TabsTrigger>}
                 </TabsList>
@@ -1295,6 +1297,11 @@ export default function Afiliados() {
                 {editing && (
                   <TabsContent value="links">
                     <AffiliateTrackingLinks affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+                {editing && (
+                  <TabsContent value="cuentas">
+                    <AffiliateCasinoAccounts affiliateId={editing.id} />
                   </TabsContent>
                 )}
                 {editing && (

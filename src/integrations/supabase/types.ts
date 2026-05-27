@@ -53,6 +53,54 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_casino_accounts: {
+        Row: {
+          affiliate_id: string
+          balance: number | null
+          balance_currency: string | null
+          balance_notes: string | null
+          brand: string | null
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          password: string
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          affiliate_id: string
+          balance?: number | null
+          balance_currency?: string | null
+          balance_notes?: string | null
+          brand?: string | null
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          password: string
+          updated_at?: string
+          username: string
+        }
+        Update: {
+          affiliate_id?: string
+          balance?: number | null
+          balance_currency?: string | null
+          balance_notes?: string | null
+          brand?: string | null
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          password?: string
+          updated_at?: string
+          username?: string
+        }
+        Relationships: []
+      }
       affiliate_channel_links: {
         Row: {
           affiliate_id: string

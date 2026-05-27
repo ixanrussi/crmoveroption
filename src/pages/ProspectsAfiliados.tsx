@@ -430,11 +430,34 @@ export default function ProspectsAfiliados() {
                         type="button"
                         size="sm"
                         variant="secondary"
-                        onClick={createChannel}
+                        onClick={() => createChannel()}
                         disabled={creatingChannel || !newChannelName.trim()}
                       >
                         {creatingChannel ? <Loader2 className="h-3 w-3 animate-spin" /> : "Añadir"}
                       </Button>
+                    </div>
+                    <div className="pt-2">
+                      <p className="text-xs text-muted-foreground mb-1.5">Canales comunes</p>
+                      <div className="flex flex-wrap gap-1.5">
+                        {PRESET_CHANNELS.map((name) => {
+                          const ch = channels.find((c) => c.name.toLowerCase() === name.toLowerCase());
+                          const active = ch ? form.channel_ids.includes(ch.id) : false;
+                          return (
+                            <button
+                              key={name}
+                              type="button"
+                              onClick={() => togglePresetChannel(name)}
+                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
+                                active
+                                  ? "bg-primary text-primary-foreground border-primary"
+                                  : "bg-background hover:bg-muted border-border"
+                              }`}
+                            >
+                              {name}
+                            </button>
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </PopoverContent>

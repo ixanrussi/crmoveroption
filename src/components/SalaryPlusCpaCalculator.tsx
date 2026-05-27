@@ -185,20 +185,24 @@ export default function SalaryPlusCpaCalculator() {
                   <CommandList>
                     <CommandEmpty>Sin planes</CommandEmpty>
                     <CommandGroup>
-                      {plans.map((p) => (
-                        <CommandItem
-                          key={p.id}
-                          value={`${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
-                          onSelect={() => { setPlanId(p.id); setPlanOpen(false); }}
-                        >
-                          <Check className={cn("mr-2 h-4 w-4", planId === p.id ? "opacity-100" : "opacity-0")} />
-                          <span className="flex-1">
-                            <span className="font-medium">{p.brand ?? "—"}</span>
-                            {p.description ? <span className="text-muted-foreground"> · {p.description}</span> : null}
-                          </span>
-                          <span className="ml-2 text-xs font-semibold">CPA {p.cpa ?? 0} {p.currency ?? ""}</span>
-                        </CommandItem>
-                      ))}
+                      {plans.map((p) => {
+                        const aff = p.affiliates?.fixed_name ?? "—";
+                        return (
+                          <CommandItem
+                            key={p.id}
+                            value={`${aff} ${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
+                            onSelect={() => { setPlanId(p.id); setPlanOpen(false); }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", planId === p.id ? "opacity-100" : "opacity-0")} />
+                            <span className="flex-1">
+                              <span className="font-medium">{aff}</span>
+                              {p.brand ? <span className="text-muted-foreground"> · {p.brand}</span> : null}
+                              {p.description ? <span className="text-muted-foreground"> · {p.description}</span> : null}
+                            </span>
+                            <span className="ml-2 text-xs font-semibold">CPA {p.cpa ?? 0} {p.currency ?? ""}</span>
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   </CommandList>
                 </Command>
@@ -207,9 +211,9 @@ export default function SalaryPlusCpaCalculator() {
           </div>
           {plan && (
             <div className="md:col-span-2 rounded-lg border p-3 bg-primary/5 border-primary/20 text-sm">
-              Base CPA tomada del plan: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
+              Base CPA del afiliado <span className="font-semibold">{plan.affiliates?.fixed_name ?? "—"}</span>: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
               {plan.brand ? <> · Brand <span className="font-medium">{plan.brand}</span></> : null}
-              <span className="text-muted-foreground"> — puedes ajustarlo manualmente abajo.</span>
+              <span className="text-muted-foreground"> — este CPA ya contempla el margen de OO. Puedes ajustarlo manualmente abajo.</span>
             </div>
           )}
         </CardContent>

@@ -80,7 +80,18 @@ export default function ProspectsAfiliados() {
       supabase.from("affiliate_channels").select("id,name").order("name"),
     ]);
     setCountries(c.data ?? []);
-    setChannels(ch.data ?? []);
+    let existing = ch.data ?? [];
+    const missing = PRESET_CHANNELS.filter(
+      (n) => !existing.some((e) => e.name.toLowerCase() === n.toLowerCase())
+    );
+    if (missing.length > 0) {
+      const { data: inserted } = await supabase
+        .from("affiliate_channels")
+        .insert(missing.map((name) => ({ name })))
+        .select("id,name");
+      if (inserted) existing = [...existing, ...inserted];
+    }
+    setChannels(existing.sort((a, b) => a.name.localeCompare(b.name)));
   };
 
   useEffect(() => { load(); loadLookups(); }, []);

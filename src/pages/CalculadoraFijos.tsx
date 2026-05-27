@@ -548,14 +548,37 @@ export default function CalculadoraFijos() {
           <TabsTrigger value="salario-cpa">Sueldo fijo + CPA</TabsTrigger>
         </TabsList>
         <TabsContent value="fijos" className="space-y-6">
-      <div className="space-y-1 max-w-md">
-        <Label>Nombre del afiliado prospecto (opcional)</Label>
-        <Input
-          placeholder="Ej. Juan / AffiliateXYZ"
-          value={prospectName}
-          onChange={(e) => setProspectName(e.target.value)}
-        />
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="space-y-1">
+          <Label>Nombre del afiliado prospecto (opcional)</Label>
+          <Input
+            placeholder="Ej. Juan / AffiliateXYZ"
+            value={prospectName}
+            onChange={(e) => setProspectName(e.target.value)}
+          />
+        </div>
+        <div className="space-y-1">
+          <Label>Operador (búsqueda rápida)</Label>
+          <OperatorCombobox
+            operators={filteredOperators}
+            value={selections[0]?.opId || ""}
+            onChange={(opId) => {
+              const op = filteredOperators.find((o) => o.id === opId);
+              const plans = op?.client_commission_plans ?? [];
+              const onlyPlan = plans.length === 1 ? plans[0].id : "";
+              setSelections((prev) => {
+                const next = [...prev];
+                next[0] = { ...(next[0] ?? newSelection()), opId, planId: onlyPlan };
+                return next;
+              });
+            }}
+          />
+          <p className="text-[11px] text-muted-foreground">
+            El cálculo usa el CPA neto del afiliado como base y garantiza un margen Overoption del {OO_MARGIN_PCT}%.
+          </p>
+        </div>
       </div>
+
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         <Card>

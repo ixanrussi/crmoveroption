@@ -16,6 +16,8 @@ import { toast } from "sonner";
 
 interface Country { id: string; name: string }
 interface Channel { id: string; name: string }
+interface Client { id: string; company_name: string }
+interface PlanTemplate { id: string; name: string; client_id: string | null; brand: string | null }
 interface ProspectAffiliate {
   id: string;
   fixed_name: string;
@@ -39,6 +41,7 @@ const empty = {
   brands: [] as string[],
   channel_ids: [] as string[],
   channel_links: {} as Record<string, string[]>,
+  interests: {} as Record<string, string[]>,
   notes: "",
 };
 

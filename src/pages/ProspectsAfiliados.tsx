@@ -82,11 +82,15 @@ export default function ProspectsAfiliados() {
   };
 
   const loadLookups = async () => {
-    const [c, ch] = await Promise.all([
+    const [c, ch, cl, tpl] = await Promise.all([
       supabase.from("countries").select("id,name").order("name"),
       supabase.from("affiliate_channels").select("id,name").order("name"),
+      supabase.from("clients").select("id, company_name").eq("status", "active").order("company_name"),
+      supabase.from("commission_plan_templates").select("id, name, client_id, brand").order("name"),
     ]);
     setCountries(c.data ?? []);
+    setClients((cl.data as any) ?? []);
+    setTemplates((tpl.data as any) ?? []);
     let existing = ch.data ?? [];
     const missing = PRESET_CHANNELS.filter(
       (n) => !existing.some((e) => e.name.toLowerCase() === n.toLowerCase())

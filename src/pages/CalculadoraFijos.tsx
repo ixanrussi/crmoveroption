@@ -429,7 +429,7 @@ export default function CalculadoraFijos() {
     const proportionalEnabled = !!plan.proportional_enabled;
     const proportionalMinPct = plan.proportional_min_pct ?? 0;
     const fixedMarginPct = plan.fixed_margin_pct ?? 0;
-    const recommendedMarginPct = plan.recommended_margin_pct ?? 0;
+    const recommendedMarginPct = OO_MARGIN_PCT;
     const ftdT = parseFloat(sel.ftdTarget) || 0;
     const ftdA = sel.ftdActual === "" ? ftdT : (parseFloat(sel.ftdActual) || 0);
     const fixed = cpaNeto * ftdT;

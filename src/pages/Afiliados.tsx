@@ -1299,6 +1299,11 @@ export default function Afiliados() {
                   </TabsContent>
                 )}
                 {editing && (
+                  <TabsContent value="cuentas">
+                    <AffiliateCasinoAccounts affiliateId={editing.id} />
+                  </TabsContent>
+                )}
+                {editing && (
                   <TabsContent value="ganadas">
                     <AffiliateEarnings affiliateId={editing.id} />
                   </TabsContent>

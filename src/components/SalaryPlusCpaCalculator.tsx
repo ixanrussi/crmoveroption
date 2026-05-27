@@ -4,11 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Copy, FileDown, Save, Trash2, UserPlus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Copy, FileDown, Save, Trash2, UserPlus, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import overoptionLogo from "@/assets/overoption-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+
+type OpPlan = {
+  id: string;
+  brand: string | null;
+  description: string | null;
+  currency: string | null;
+  cpa: number | null;
+};
+type Operator = {
+  id: string;
+  company_name: string;
+  client_commission_plans: OpPlan[];
+};
+
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(

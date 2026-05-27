@@ -380,8 +380,12 @@ export default function ProspectsAfiliados() {
                       : countries.filter((c) => form.country_ids.includes(c.id)).map((c) => c.name).join(", ")}
                   </Button>
                 </PopoverTrigger>
-                <PopoverContent className="w-72 max-h-72 overflow-auto">
-                  <div className="space-y-2">
+                <PopoverContent className="w-72">
+                  <div
+                    className="space-y-2 max-h-72 overflow-y-auto pr-1 overscroll-contain"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
                     {countries.map((c) => {
                       const checked = form.country_ids.includes(c.id);
                       return (

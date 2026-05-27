@@ -15,13 +15,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 type AffPlan = {
   id: string;
+  name: string | null;
   client_id: string | null;
-  affiliate_id: string | null;
   brand: string | null;
   description: string | null;
   currency: string | null;
   cpa: number | null;
-  affiliates?: { fixed_name: string | null } | null;
 };
 type Operator = {
   id: string;

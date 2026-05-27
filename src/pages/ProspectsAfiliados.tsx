@@ -42,6 +42,8 @@ const empty = {
   notes: "",
 };
 
+const PRESET_CHANNELS = ["Kick", "Pinterest", "Web", "Otros"];
+
 export default function ProspectsAfiliados() {
   const { user, isAdmin, isSuperAdmin } = useAuth();
   const canSeeAll = isAdmin || isSuperAdmin;
@@ -80,7 +82,18 @@ export default function ProspectsAfiliados() {
       supabase.from("affiliate_channels").select("id,name").order("name"),
     ]);
     setCountries(c.data ?? []);
-    setChannels(ch.data ?? []);
+    let existing = ch.data ?? [];
+    const missing = PRESET_CHANNELS.filter(
+      (n) => !existing.some((e) => e.name.toLowerCase() === n.toLowerCase())
+    );
+    if (missing.length > 0) {
+      const { data: inserted } = await supabase
+        .from("affiliate_channels")
+        .insert(missing.map((name) => ({ name })))
+        .select("id,name");
+      if (inserted) existing = [...existing, ...inserted];
+    }
+    setChannels(existing.sort((a, b) => a.name.localeCompare(b.name)));
   };
 
   useEffect(() => { load(); loadLookups(); }, []);
@@ -154,7 +167,6 @@ export default function ProspectsAfiliados() {
     setForm({ ...form, channel_ids: next, channel_links: nextLinks });
   };
 
-  const PRESET_CHANNELS = ["Kick", "Pinterest", "Web", "Otros"];
 
   const addBrand = () => {
     const v = brandInput.trim();
@@ -435,29 +447,6 @@ export default function ProspectsAfiliados() {
                       >
                         {creatingChannel ? <Loader2 className="h-3 w-3 animate-spin" /> : "Añadir"}
                       </Button>
-                    </div>
-                    <div className="pt-2">
-                      <p className="text-xs text-muted-foreground mb-1.5">Canales comunes</p>
-                      <div className="flex flex-wrap gap-1.5">
-                        {PRESET_CHANNELS.map((name) => {
-                          const ch = channels.find((c) => c.name.toLowerCase() === name.toLowerCase());
-                          const active = ch ? form.channel_ids.includes(ch.id) : false;
-                          return (
-                            <button
-                              key={name}
-                              type="button"
-                              onClick={() => togglePresetChannel(name)}
-                              className={`text-xs px-2.5 py-1 rounded-full border transition-colors ${
-                                active
-                                  ? "bg-primary text-primary-foreground border-primary"
-                                  : "bg-background hover:bg-muted border-border"
-                              }`}
-                            >
-                              {name}
-                            </button>
-                          );
-                        })}
-                      </div>
                     </div>
                   </div>
                 </PopoverContent>

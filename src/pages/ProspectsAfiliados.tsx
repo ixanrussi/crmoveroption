@@ -16,6 +16,8 @@ import { toast } from "sonner";
 
 interface Country { id: string; name: string }
 interface Channel { id: string; name: string }
+interface Client { id: string; company_name: string }
+interface PlanTemplate { id: string; name: string; client_id: string | null; brand: string | null }
 interface ProspectAffiliate {
   id: string;
   fixed_name: string;
@@ -39,6 +41,7 @@ const empty = {
   brands: [] as string[],
   channel_ids: [] as string[],
   channel_links: {} as Record<string, string[]>,
+  interests: {} as Record<string, string[]>,
   notes: "",
 };
 
@@ -50,6 +53,8 @@ export default function ProspectsAfiliados() {
   const [rows, setRows] = useState<ProspectAffiliate[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [templates, setTemplates] = useState<PlanTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -77,11 +82,15 @@ export default function ProspectsAfiliados() {
   };
 
   const loadLookups = async () => {
-    const [c, ch] = await Promise.all([
+    const [c, ch, cl, tpl] = await Promise.all([
       supabase.from("countries").select("id,name").order("name"),
       supabase.from("affiliate_channels").select("id,name").order("name"),
+      supabase.from("clients").select("id, company_name").eq("status", "active").order("company_name"),
+      supabase.from("commission_plan_templates").select("id, name, client_id, brand").order("name"),
     ]);
     setCountries(c.data ?? []);
+    setClients((cl.data as any) ?? []);
+    setTemplates((tpl.data as any) ?? []);
     let existing = ch.data ?? [];
     const missing = PRESET_CHANNELS.filter(
       (n) => !existing.some((e) => e.name.toLowerCase() === n.toLowerCase())
@@ -111,7 +120,7 @@ export default function ProspectsAfiliados() {
     setOpen(true);
   };
 
-  const openEdit = (row: ProspectAffiliate) => {
+  const openEdit = async (row: ProspectAffiliate) => {
     setEditing(row);
     const links = row.affiliate_channel_links ?? [];
     const grouped: Record<string, string[]> = {};
@@ -122,6 +131,15 @@ export default function ProspectsAfiliados() {
     for (const k of Object.keys(grouped)) {
       if (grouped[k].length === 0) grouped[k] = [""];
     }
+    const { data: interestRows } = await supabase
+      .from("affiliate_prospect_interests")
+      .select("client_id, template_id")
+      .eq("affiliate_id", row.id);
+    const interests: Record<string, string[]> = {};
+    for (const r of interestRows ?? []) {
+      if (!interests[r.client_id]) interests[r.client_id] = [];
+      if (r.template_id) interests[r.client_id].push(r.template_id);
+    }
     setForm({
       fixed_name: row.fixed_name ?? "",
       alias: row.alias ?? "",
@@ -131,6 +149,7 @@ export default function ProspectsAfiliados() {
       brands: row.brands ?? [],
       channel_ids: Object.keys(grouped),
       channel_links: grouped,
+      interests,
       notes: row.notes ?? "",
     });
     setBrandInput("");
@@ -238,6 +257,26 @@ export default function ProspectsAfiliados() {
         await supabase.from("affiliate_channel_links").insert(rowsToInsert);
       }
     }
+
+    // Sync interests (operators + commission plan templates of interest)
+    if (affiliateId) {
+      await supabase.from("affiliate_prospect_interests").delete().eq("affiliate_id", affiliateId);
+      const interestRows: { affiliate_id: string; client_id: string; template_id: string | null; created_by: string | null }[] = [];
+      for (const [client_id, tplIds] of Object.entries(form.interests)) {
+        if (tplIds.length === 0) {
+          interestRows.push({ affiliate_id: affiliateId!, client_id, template_id: null, created_by: user?.id ?? null });
+        } else {
+          for (const template_id of tplIds) {
+            interestRows.push({ affiliate_id: affiliateId!, client_id, template_id, created_by: user?.id ?? null });
+          }
+        }
+      }
+      if (interestRows.length > 0) {
+        await supabase.from("affiliate_prospect_interests").insert(interestRows);
+      }
+    }
+
+
 
     setSaving(false);
     toast.success(editing ? "Prospect actualizado" : "Prospect creado");
@@ -558,6 +597,101 @@ export default function ProspectsAfiliados() {
                 ))}
               </div>
             </div>
+
+            <div className="grid gap-2">
+              <Label>Operadores y planes de comisión de interés</Label>
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="justify-start font-normal">
+                    {Object.keys(form.interests).length === 0
+                      ? "Seleccionar operadores"
+                      : clients.filter((c) => c.id in form.interests).map((c) => c.company_name).join(", ")}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80">
+                  <div
+                    className="max-h-60 overflow-y-auto space-y-2 pr-1 overscroll-contain"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
+                    {clients.length === 0 && (
+                      <p className="text-xs text-muted-foreground">No hay operadores activos.</p>
+                    )}
+                    {clients.map((c) => {
+                      const checked = c.id in form.interests;
+                      return (
+                        <label key={c.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                          <Checkbox
+                            checked={checked}
+                            onCheckedChange={(v) => {
+                              const next = { ...form.interests };
+                              if (v) next[c.id] = [];
+                              else delete next[c.id];
+                              setForm({ ...form, interests: next });
+                            }}
+                          />
+                          {c.company_name}
+                        </label>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {Object.keys(form.interests).length > 0 && (
+                <div className="grid gap-3 mt-2 rounded-md border p-3 bg-muted/30">
+                  <p className="text-xs text-muted-foreground">Planes de comisión de afiliado de interés (opcional)</p>
+                  {Object.keys(form.interests).map((cid) => {
+                    const client = clients.find((c) => c.id === cid);
+                    const clientTpls = templates.filter((t) => t.client_id === cid);
+                    const selected = form.interests[cid] ?? [];
+                    return (
+                      <div key={cid} className="grid gap-1">
+                        <Label className="text-xs font-medium">{client?.company_name ?? "—"}</Label>
+                        {clientTpls.length === 0 ? (
+                          <p className="text-xs text-muted-foreground">Sin planes disponibles para este operador.</p>
+                        ) : (
+                          <Popover>
+                            <PopoverTrigger asChild>
+                              <Button variant="outline" size="sm" className="justify-start font-normal h-8">
+                                {selected.length === 0
+                                  ? "Sin plan específico"
+                                  : clientTpls.filter((t) => selected.includes(t.id)).map((t) => t.name).join(", ")}
+                              </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-72">
+                              <div
+                                className="max-h-60 overflow-y-auto space-y-2 pr-1 overscroll-contain"
+                                onWheel={(e) => e.stopPropagation()}
+                                onTouchMove={(e) => e.stopPropagation()}
+                              >
+                                {clientTpls.map((t) => {
+                                  const isChecked = selected.includes(t.id);
+                                  return (
+                                    <label key={t.id} className="flex items-center gap-2 text-sm cursor-pointer">
+                                      <Checkbox
+                                        checked={isChecked}
+                                        onCheckedChange={(v) => {
+                                          const next = v
+                                            ? [...selected, t.id]
+                                            : selected.filter((x) => x !== t.id);
+                                          setForm({ ...form, interests: { ...form.interests, [cid]: next } });
+                                        }}
+                                      />
+                                      <span>{t.name}{t.brand ? ` · ${t.brand}` : ""}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            </PopoverContent>
+                          </Popover>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+
 
             <div className="grid gap-2">
               <Label>Notas</Label>

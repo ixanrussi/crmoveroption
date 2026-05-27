@@ -54,12 +54,12 @@ export default function SalaryPlusCpaCalculator() {
       const [cliRes, planRes] = await Promise.all([
         supabase.from("clients").select("id, company_name, brands").order("company_name"),
         supabase
-          .from("affiliate_commission_plans")
-          .select("id, client_id, affiliate_id, brand, description, currency, cpa, affiliates(fixed_name)")
+          .from("commission_plan_templates")
+          .select("id, name, client_id, brand, description, currency, cpa")
           .not("client_id", "is", null),
       ]);
       if (cliRes.error) { toast.error("Error cargando operadores"); return; }
-      if (planRes.error) { toast.error("Error cargando planes de afiliados"); return; }
+      if (planRes.error) { toast.error("Error cargando comisiones de afiliado"); return; }
       setOperators((cliRes.data as any) ?? []);
       setAffPlans((planRes.data as any) ?? []);
     })();

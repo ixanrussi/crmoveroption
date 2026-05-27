@@ -23,6 +23,7 @@ import { Progress } from "@/components/ui/progress";
 import AffiliateEarnings from "@/components/AffiliateEarnings";
 import AffiliateGoals from "@/components/AffiliateGoals";
 import AffiliateTrackingLinks from "@/components/AffiliateTrackingLinks";
+import AffiliateCasinoAccounts from "@/components/AffiliateCasinoAccounts";
 import { toast } from "sonner";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog";
 

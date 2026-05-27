@@ -167,7 +167,6 @@ export default function ProspectsAfiliados() {
     setForm({ ...form, channel_ids: next, channel_links: nextLinks });
   };
 
-  const PRESET_CHANNELS = ["Kick", "Pinterest", "Web", "Otros"];
 
   const addBrand = () => {
     const v = brandInput.trim();

@@ -13,17 +13,20 @@ import jsPDF from "jspdf";
 import overoptionLogo from "@/assets/overoption-logo.png";
 import { supabase } from "@/integrations/supabase/client";
 
-type OpPlan = {
+type AffPlan = {
   id: string;
+  client_id: string | null;
+  affiliate_id: string | null;
   brand: string | null;
   description: string | null;
   currency: string | null;
   cpa: number | null;
+  affiliates?: { fixed_name: string | null } | null;
 };
 type Operator = {
   id: string;
   company_name: string;
-  client_commission_plans: OpPlan[];
+  brands?: string[] | null;
 };
 
 
@@ -41,6 +44,7 @@ export default function SalaryPlusCpaCalculator() {
   const [pct, setPct] = useState<number>(50);
 
   const [operators, setOperators] = useState<Operator[]>([]);
+  const [affPlans, setAffPlans] = useState<AffPlan[]>([]);
   const [opId, setOpId] = useState<string>("");
   const [planId, setPlanId] = useState<string>("");
   const [opOpen, setOpOpen] = useState(false);
@@ -48,17 +52,25 @@ export default function SalaryPlusCpaCalculator() {
 
   useEffect(() => {
     (async () => {
-      const { data, error } = await supabase
-        .from("clients")
-        .select("id, company_name, client_commission_plans(id, brand, description, currency, cpa)")
-        .order("company_name");
-      if (error) { toast.error("Error cargando operadores"); return; }
-      setOperators((data as any) ?? []);
+      const [cliRes, planRes] = await Promise.all([
+        supabase.from("clients").select("id, company_name, brands").order("company_name"),
+        supabase
+          .from("affiliate_commission_plans")
+          .select("id, client_id, affiliate_id, brand, description, currency, cpa, affiliates(fixed_name)")
+          .not("client_id", "is", null),
+      ]);
+      if (cliRes.error) { toast.error("Error cargando operadores"); return; }
+      if (planRes.error) { toast.error("Error cargando planes de afiliados"); return; }
+      setOperators((cliRes.data as any) ?? []);
+      setAffPlans((planRes.data as any) ?? []);
     })();
   }, []);
 
   const operator = operators.find((o) => o.id === opId);
-  const plans = operator?.client_commission_plans ?? [];
+  const plans = useMemo(
+    () => affPlans.filter((p) => p.client_id === opId),
+    [affPlans, opId],
+  );
   const plan = plans.find((p) => p.id === planId);
 
   // When a plan is selected, push its CPA value as the base CPA

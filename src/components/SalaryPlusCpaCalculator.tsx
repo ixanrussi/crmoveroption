@@ -4,11 +4,28 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Copy, FileDown, Save, Trash2, UserPlus } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Copy, FileDown, Save, Trash2, UserPlus, Check, ChevronsUpDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import overoptionLogo from "@/assets/overoption-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+
+type OpPlan = {
+  id: string;
+  brand: string | null;
+  description: string | null;
+  currency: string | null;
+  cpa: number | null;
+};
+type Operator = {
+  id: string;
+  company_name: string;
+  client_commission_plans: OpPlan[];
+};
+
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(
@@ -23,10 +40,40 @@ export default function SalaryPlusCpaCalculator() {
   const [capacidad, setCapacidad] = useState<string>("100");
   const [pct, setPct] = useState<number>(50);
 
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [opId, setOpId] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("");
+  const [opOpen, setOpOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, company_name, client_commission_plans(id, brand, description, currency, cpa)")
+        .order("company_name");
+      if (error) { toast.error("Error cargando operadores"); return; }
+      setOperators((data as any) ?? []);
+    })();
+  }, []);
+
+  const operator = operators.find((o) => o.id === opId);
+  const plans = operator?.client_commission_plans ?? [];
+  const plan = plans.find((p) => p.id === planId);
+
+  // When a plan is selected, push its CPA value as the base CPA
+  useEffect(() => {
+    if (plan && plan.cpa != null) {
+      setCpaOp(String(plan.cpa));
+    }
+  }, [planId]);
+
   const cpaNum = Math.max(0, parseFloat(cpaOp) || 0);
   const capNum = Math.max(0, parseFloat(capacidad) || 0);
   const presupuesto = cpaNum * capNum;
   const valid = cpaNum > 0 && capNum > 0;
+
+
 
   const salario = (pct / 100) * presupuesto;
   const comisionCpa = capNum > 0 ? (presupuesto - salario) / capNum : 0;
@@ -66,6 +113,90 @@ export default function SalaryPlusCpaCalculator() {
   return (
     <div className="space-y-6">
       <Card>
+        <CardHeader>
+          <CardTitle className="text-lg">Operador y plan de comisión</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Operador</Label>
+            <Popover open={opOpen} onOpenChange={setOpOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between">
+                  {operator ? operator.company_name : "Selecciona operador..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar operador..." />
+                  <CommandList>
+                    <CommandEmpty>Sin resultados</CommandEmpty>
+                    <CommandGroup>
+                      {operators.map((o) => (
+                        <CommandItem
+                          key={o.id}
+                          value={o.company_name}
+                          onSelect={() => { setOpId(o.id); setPlanId(""); setOpOpen(false); }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", opId === o.id ? "opacity-100" : "opacity-0")} />
+                          {o.company_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="space-y-1">
+            <Label>Commission plan</Label>
+            <Popover open={planOpen} onOpenChange={setPlanOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between" disabled={!operator}>
+                  {plan
+                    ? `${plan.brand ?? "—"} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
+                    : operator ? "Selecciona plan..." : "Elige operador primero"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar plan..." />
+                  <CommandList>
+                    <CommandEmpty>Sin planes</CommandEmpty>
+                    <CommandGroup>
+                      {plans.map((p) => (
+                        <CommandItem
+                          key={p.id}
+                          value={`${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
+                          onSelect={() => { setPlanId(p.id); setPlanOpen(false); }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", planId === p.id ? "opacity-100" : "opacity-0")} />
+                          <span className="flex-1">
+                            <span className="font-medium">{p.brand ?? "—"}</span>
+                            {p.description ? <span className="text-muted-foreground"> · {p.description}</span> : null}
+                          </span>
+                          <span className="ml-2 text-xs font-semibold">CPA {p.cpa ?? 0} {p.currency ?? ""}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          {plan && (
+            <div className="md:col-span-2 rounded-lg border p-3 bg-primary/5 border-primary/20 text-sm">
+              Base CPA tomada del plan: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
+              {plan.brand ? <> · Brand <span className="font-medium">{plan.brand}</span></> : null}
+              <span className="text-muted-foreground"> — puedes ajustarlo manualmente abajo.</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+
         <CardHeader>
           <CardTitle className="text-lg">Datos de entrada</CardTitle>
         </CardHeader>

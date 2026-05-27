@@ -120,7 +120,7 @@ export default function ProspectsAfiliados() {
     setOpen(true);
   };
 
-  const openEdit = (row: ProspectAffiliate) => {
+  const openEdit = async (row: ProspectAffiliate) => {
     setEditing(row);
     const links = row.affiliate_channel_links ?? [];
     const grouped: Record<string, string[]> = {};
@@ -131,6 +131,15 @@ export default function ProspectsAfiliados() {
     for (const k of Object.keys(grouped)) {
       if (grouped[k].length === 0) grouped[k] = [""];
     }
+    const { data: interestRows } = await supabase
+      .from("affiliate_prospect_interests")
+      .select("client_id, template_id")
+      .eq("affiliate_id", row.id);
+    const interests: Record<string, string[]> = {};
+    for (const r of interestRows ?? []) {
+      if (!interests[r.client_id]) interests[r.client_id] = [];
+      if (r.template_id) interests[r.client_id].push(r.template_id);
+    }
     setForm({
       fixed_name: row.fixed_name ?? "",
       alias: row.alias ?? "",
@@ -140,6 +149,7 @@ export default function ProspectsAfiliados() {
       brands: row.brands ?? [],
       channel_ids: Object.keys(grouped),
       channel_links: grouped,
+      interests,
       notes: row.notes ?? "",
     });
     setBrandInput("");

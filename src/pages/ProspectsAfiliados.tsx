@@ -42,6 +42,8 @@ const empty = {
   notes: "",
 };
 
+const PRESET_CHANNELS = ["Kick", "Pinterest", "Web", "Otros"];
+
 export default function ProspectsAfiliados() {
   const { user, isAdmin, isSuperAdmin } = useAuth();
   const canSeeAll = isAdmin || isSuperAdmin;

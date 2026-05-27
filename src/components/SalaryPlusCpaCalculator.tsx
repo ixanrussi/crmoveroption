@@ -122,7 +122,12 @@ export default function SalaryPlusCpaCalculator() {
             <Popover open={opOpen} onOpenChange={setOpOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" className="w-full justify-between">
-                  {operator ? operator.company_name : "Selecciona operador..."}
+                  {operator
+                    ? `${operator.company_name}${(() => {
+                        const brands = [...new Set((operator.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))];
+                        return brands.length ? ` (${brands.join(", ")})` : "";
+                      })()}`
+                    : "Selecciona operador..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
@@ -132,16 +137,22 @@ export default function SalaryPlusCpaCalculator() {
                   <CommandList>
                     <CommandEmpty>Sin resultados</CommandEmpty>
                     <CommandGroup>
-                      {operators.map((o) => (
-                        <CommandItem
-                          key={o.id}
-                          value={o.company_name}
-                          onSelect={() => { setOpId(o.id); setPlanId(""); setOpOpen(false); }}
-                        >
-                          <Check className={cn("mr-2 h-4 w-4", opId === o.id ? "opacity-100" : "opacity-0")} />
-                          {o.company_name}
-                        </CommandItem>
-                      ))}
+                      {operators.map((o) => {
+                        const brands = [...new Set((o.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))];
+                        return (
+                          <CommandItem
+                            key={o.id}
+                            value={`${o.company_name} ${brands.join(" ")}`}
+                            onSelect={() => { setOpId(o.id); setPlanId(""); setOpOpen(false); }}
+                          >
+                            <Check className={cn("mr-2 h-4 w-4", opId === o.id ? "opacity-100" : "opacity-0")} />
+                            <span className="flex-1">
+                              <span className="font-medium">{o.company_name}</span>
+                              {brands.length ? <span className="text-muted-foreground"> · {brands.join(", ")}</span> : null}
+                            </span>
+                          </CommandItem>
+                        );
+                      })}
                     </CommandGroup>
                   </CommandList>
                 </Command>

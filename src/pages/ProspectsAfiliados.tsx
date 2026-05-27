@@ -53,6 +53,8 @@ export default function ProspectsAfiliados() {
   const [rows, setRows] = useState<ProspectAffiliate[]>([]);
   const [countries, setCountries] = useState<Country[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
+  const [clients, setClients] = useState<Client[]>([]);
+  const [templates, setTemplates] = useState<PlanTemplate[]>([]);
   const [loading, setLoading] = useState(true);
   const [open, setOpen] = useState(false);
   const [saving, setSaving] = useState(false);

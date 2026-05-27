@@ -530,6 +530,29 @@ export default function ProspectsAfiliados() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle>¿Eliminar prospect?</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">
+            Esta acción no se puede deshacer. ¿Seguro que quieres eliminar este afiliado prospect?
+          </p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => { setConfirmOpen(false); setDeletingId(null); }}>
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deletingId && remove(deletingId)}
+              disabled={!deletingId}
+            >
+              Eliminar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

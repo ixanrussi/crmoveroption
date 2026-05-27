@@ -15,13 +15,12 @@ import { supabase } from "@/integrations/supabase/client";
 
 type AffPlan = {
   id: string;
+  name: string | null;
   client_id: string | null;
-  affiliate_id: string | null;
   brand: string | null;
   description: string | null;
   currency: string | null;
   cpa: number | null;
-  affiliates?: { fixed_name: string | null } | null;
 };
 type Operator = {
   id: string;
@@ -55,12 +54,12 @@ export default function SalaryPlusCpaCalculator() {
       const [cliRes, planRes] = await Promise.all([
         supabase.from("clients").select("id, company_name, brands").order("company_name"),
         supabase
-          .from("affiliate_commission_plans")
-          .select("id, client_id, affiliate_id, brand, description, currency, cpa, affiliates(fixed_name)")
+          .from("commission_plan_templates")
+          .select("id, name, client_id, brand, description, currency, cpa")
           .not("client_id", "is", null),
       ]);
       if (cliRes.error) { toast.error("Error cargando operadores"); return; }
-      if (planRes.error) { toast.error("Error cargando planes de afiliados"); return; }
+      if (planRes.error) { toast.error("Error cargando comisiones de afiliado"); return; }
       setOperators((cliRes.data as any) ?? []);
       setAffPlans((planRes.data as any) ?? []);
     })();
@@ -169,33 +168,33 @@ export default function SalaryPlusCpaCalculator() {
             </Popover>
           </div>
           <div className="space-y-1">
-            <Label>Commission plan de afiliado</Label>
+            <Label>Comisión Afiliado</Label>
             <Popover open={planOpen} onOpenChange={setPlanOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" className="w-full justify-between" disabled={!operator}>
                   {plan
-                    ? `${plan.affiliates?.fixed_name ?? "—"}${plan.brand ? ` · ${plan.brand}` : ""} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
-                    : operator ? (plans.length ? "Selecciona plan..." : "Sin planes de afiliados para este operador") : "Elige operador primero"}
+                    ? `${plan.name ?? "—"}${plan.brand ? ` · ${plan.brand}` : ""} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
+                    : operator ? (plans.length ? "Selecciona comisión..." : "Sin comisiones de afiliado para este operador") : "Elige operador primero"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
                 <Command>
-                  <CommandInput placeholder="Buscar plan..." />
+                  <CommandInput placeholder="Buscar comisión..." />
                   <CommandList>
-                    <CommandEmpty>Sin planes</CommandEmpty>
+                    <CommandEmpty>Sin comisiones</CommandEmpty>
                     <CommandGroup>
                       {plans.map((p) => {
-                        const aff = p.affiliates?.fixed_name ?? "—";
+                        const name = p.name ?? "—";
                         return (
                           <CommandItem
                             key={p.id}
-                            value={`${aff} ${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
+                            value={`${name} ${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
                             onSelect={() => { setPlanId(p.id); setPlanOpen(false); }}
                           >
                             <Check className={cn("mr-2 h-4 w-4", planId === p.id ? "opacity-100" : "opacity-0")} />
                             <span className="flex-1">
-                              <span className="font-medium">{aff}</span>
+                              <span className="font-medium">{name}</span>
                               {p.brand ? <span className="text-muted-foreground"> · {p.brand}</span> : null}
                               {p.description ? <span className="text-muted-foreground"> · {p.description}</span> : null}
                             </span>
@@ -211,7 +210,7 @@ export default function SalaryPlusCpaCalculator() {
           </div>
           {plan && (
             <div className="md:col-span-2 rounded-lg border p-3 bg-primary/5 border-primary/20 text-sm">
-              Base CPA del afiliado <span className="font-semibold">{plan.affiliates?.fixed_name ?? "—"}</span>: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
+              Base CPA de la comisión <span className="font-semibold">{plan.name ?? "—"}</span>: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
               {plan.brand ? <> · Brand <span className="font-medium">{plan.brand}</span></> : null}
               <span className="text-muted-foreground"> — este CPA ya contempla el margen de OO. Puedes ajustarlo manualmente abajo.</span>
             </div>

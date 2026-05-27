@@ -5,11 +5,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
-import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash } from "lucide-react";
+import { Calculator, Printer, Share2, Plus, Trash2, Save, History, Trash, Check, ChevronsUpDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Slider } from "@/components/ui/slider";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { cn } from "@/lib/utils";
 import SalaryPlusCpaCalculator from "@/components/SalaryPlusCpaCalculator";
 
 
@@ -18,6 +21,8 @@ import jsPDF from "jspdf";
 import { toast } from "sonner";
 import { useAuth } from "@/hooks/useAuth";
 import overoptionLogo from "@/assets/overoption-logo.png";
+
+const OO_MARGIN_PCT = 30;
 
 
 type Plan = {

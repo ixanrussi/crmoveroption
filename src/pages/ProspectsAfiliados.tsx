@@ -93,7 +93,13 @@ export default function ProspectsAfiliados() {
         .select("id,name");
       if (inserted) existing = [...existing, ...inserted];
     }
-    setChannels(existing.sort((a, b) => a.name.localeCompare(b.name)));
+    setChannels(existing.sort((a, b) => {
+      const aIsOtros = a.name.toLowerCase() === "otros";
+      const bIsOtros = b.name.toLowerCase() === "otros";
+      if (aIsOtros && !bIsOtros) return 1;
+      if (!aIsOtros && bIsOtros) return -1;
+      return a.name.localeCompare(b.name);
+    }));
   };
 
   useEffect(() => { load(); loadLookups(); }, []);

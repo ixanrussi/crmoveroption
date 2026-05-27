@@ -40,6 +40,30 @@ export default function SalaryPlusCpaCalculator() {
   const [cpaOp, setCpaOp] = useState<string>("20");
   const [capacidad, setCapacidad] = useState<string>("100");
   const [pct, setPct] = useState<number>(50);
+  const [operators, setOperators] = useState<SPCOperator[]>([]);
+  const [opId, setOpId] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("clients")
+        .select("id, company_name, client_commission_plans(id, brand, currency, cpa, overoption_retention)")
+        .order("company_name", { ascending: true });
+      setOperators((data ?? []) as any);
+    })();
+  }, []);
+
+  const selectedOp = operators.find((o) => o.id === opId);
+  const selectedPlan = selectedOp?.client_commission_plans.find((p) => p.id === planId);
+
+  // When operator/plan changes, set CPA from the plan (net = cpa - overoption_retention)
+  useEffect(() => {
+    if (!selectedPlan) return;
+    const net = Math.max(0, (selectedPlan.cpa ?? 0) - (selectedPlan.overoption_retention ?? 0));
+    if (net > 0) setCpaOp(String(net));
+  }, [planId, opId]);
+
 
   const cpaNum = Math.max(0, parseFloat(cpaOp) || 0);
   const capNum = Math.max(0, parseFloat(capacidad) || 0);

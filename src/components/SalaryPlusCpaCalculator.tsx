@@ -109,9 +109,49 @@ export default function SalaryPlusCpaCalculator() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
+          <CardTitle className="text-lg">Operador</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Operador (búsqueda rápida)</Label>
+            <SPCOperatorCombobox
+              operators={operators}
+              value={opId}
+              onChange={(id) => {
+                setOpId(id);
+                const op = operators.find((o) => o.id === id);
+                const plans = op?.client_commission_plans ?? [];
+                setPlanId(plans.length === 1 ? plans[0].id : "");
+              }}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Plan / Brand</Label>
+            <Select value={planId} onValueChange={setPlanId} disabled={!selectedOp}>
+              <SelectTrigger>
+                <SelectValue placeholder={selectedOp ? "Selecciona un plan" : "Selecciona un operador primero"} />
+              </SelectTrigger>
+              <SelectContent>
+                {(selectedOp?.client_commission_plans ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {(p.brand || "Plan")} — CPA {p.cpa ?? 0} {p.currency || ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">
+              El CPA del operador se completa automáticamente con el CPA neto del plan seleccionado.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-lg">Datos de entrada</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
+
           <div className="space-y-1">
             <Label>CPA del operador (€)</Label>
             <Input

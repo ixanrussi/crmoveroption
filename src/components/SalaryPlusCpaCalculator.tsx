@@ -583,3 +583,51 @@ function ProposalBuilder({
     </Card>
   );
 }
+
+function SPCOperatorCombobox({
+  operators,
+  value,
+  onChange,
+}: {
+  operators: SPCOperator[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = operators.find((o) => o.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
+          <span className="truncate">
+            {selected ? selected.company_name : (operators.length ? "Selecciona un operador..." : "Sin operadores disponibles")}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar operador..." />
+          <CommandList>
+            <CommandEmpty>Sin resultados.</CommandEmpty>
+            <CommandGroup>
+              {operators.map((o) => (
+                <CommandItem
+                  key={o.id}
+                  value={o.company_name}
+                  onSelect={() => {
+                    onChange(o.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === o.id ? "opacity-100" : "opacity-0")} />
+                  {o.company_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}

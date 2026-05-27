@@ -40,10 +40,40 @@ export default function SalaryPlusCpaCalculator() {
   const [capacidad, setCapacidad] = useState<string>("100");
   const [pct, setPct] = useState<number>(50);
 
+  const [operators, setOperators] = useState<Operator[]>([]);
+  const [opId, setOpId] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("");
+  const [opOpen, setOpOpen] = useState(false);
+  const [planOpen, setPlanOpen] = useState(false);
+
+  useEffect(() => {
+    (async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("id, company_name, client_commission_plans(id, brand, description, currency, cpa)")
+        .order("company_name");
+      if (error) { toast.error("Error cargando operadores"); return; }
+      setOperators((data as any) ?? []);
+    })();
+  }, []);
+
+  const operator = operators.find((o) => o.id === opId);
+  const plans = operator?.client_commission_plans ?? [];
+  const plan = plans.find((p) => p.id === planId);
+
+  // When a plan is selected, push its CPA value as the base CPA
+  useEffect(() => {
+    if (plan && plan.cpa != null) {
+      setCpaOp(String(plan.cpa));
+    }
+  }, [planId]);
+
   const cpaNum = Math.max(0, parseFloat(cpaOp) || 0);
   const capNum = Math.max(0, parseFloat(capacidad) || 0);
   const presupuesto = cpaNum * capNum;
   const valid = cpaNum > 0 && capNum > 0;
+
+
 
   const salario = (pct / 100) * presupuesto;
   const comisionCpa = capNum > 0 ? (presupuesto - salario) / capNum : 0;

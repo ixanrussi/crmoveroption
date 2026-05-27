@@ -114,6 +114,90 @@ export default function SalaryPlusCpaCalculator() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
+          <CardTitle className="text-lg">Operador y plan de comisión</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Operador</Label>
+            <Popover open={opOpen} onOpenChange={setOpOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between">
+                  {operator ? operator.company_name : "Selecciona operador..."}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar operador..." />
+                  <CommandList>
+                    <CommandEmpty>Sin resultados</CommandEmpty>
+                    <CommandGroup>
+                      {operators.map((o) => (
+                        <CommandItem
+                          key={o.id}
+                          value={o.company_name}
+                          onSelect={() => { setOpId(o.id); setPlanId(""); setOpOpen(false); }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", opId === o.id ? "opacity-100" : "opacity-0")} />
+                          {o.company_name}
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="space-y-1">
+            <Label>Commission plan</Label>
+            <Popover open={planOpen} onOpenChange={setPlanOpen}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" role="combobox" className="w-full justify-between" disabled={!operator}>
+                  {plan
+                    ? `${plan.brand ?? "—"} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
+                    : operator ? "Selecciona plan..." : "Elige operador primero"}
+                  <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                <Command>
+                  <CommandInput placeholder="Buscar plan..." />
+                  <CommandList>
+                    <CommandEmpty>Sin planes</CommandEmpty>
+                    <CommandGroup>
+                      {plans.map((p) => (
+                        <CommandItem
+                          key={p.id}
+                          value={`${p.brand ?? ""} ${p.description ?? ""} ${p.cpa ?? ""}`}
+                          onSelect={() => { setPlanId(p.id); setPlanOpen(false); }}
+                        >
+                          <Check className={cn("mr-2 h-4 w-4", planId === p.id ? "opacity-100" : "opacity-0")} />
+                          <span className="flex-1">
+                            <span className="font-medium">{p.brand ?? "—"}</span>
+                            {p.description ? <span className="text-muted-foreground"> · {p.description}</span> : null}
+                          </span>
+                          <span className="ml-2 text-xs font-semibold">CPA {p.cpa ?? 0} {p.currency ?? ""}</span>
+                        </CommandItem>
+                      ))}
+                    </CommandGroup>
+                  </CommandList>
+                </Command>
+              </PopoverContent>
+            </Popover>
+          </div>
+          {plan && (
+            <div className="md:col-span-2 rounded-lg border p-3 bg-primary/5 border-primary/20 text-sm">
+              Base CPA tomada del plan: <span className="font-semibold">{plan.cpa ?? 0} {plan.currency ?? ""}</span>
+              {plan.brand ? <> · Brand <span className="font-medium">{plan.brand}</span></> : null}
+              <span className="text-muted-foreground"> — puedes ajustarlo manualmente abajo.</span>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card>
+
+        <CardHeader>
           <CardTitle className="text-lg">Datos de entrada</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">

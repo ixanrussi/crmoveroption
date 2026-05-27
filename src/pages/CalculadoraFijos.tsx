@@ -585,7 +585,7 @@ export default function CalculadoraFijos() {
               const retencion = plan?.overoption_retention ?? 0;
               const cpaNeto = Math.max(0, cpaBruto - retencion);
               const fixedMarginPct = plan?.fixed_margin_pct ?? 0;
-              const recommendedMarginPct = plan?.recommended_margin_pct ?? 0;
+              const recommendedMarginPct = OO_MARGIN_PCT;
               const ftdT = parseFloat(sel.ftdTarget) || 0;
               const fijoMax = cpaNeto * ftdT * Math.max(0, 1 - fixedMarginPct / 100);
               const fijoRec = cpaNeto * ftdT * Math.max(0, 1 - recommendedMarginPct / 100);

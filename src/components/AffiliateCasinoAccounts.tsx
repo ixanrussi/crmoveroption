@@ -143,42 +143,42 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
 
   const brandsFor = (clientId: string) => clients.find((c) => c.id === clientId)?.brands ?? [];
 
-  if (loading) return <div className="py-6 text-sm text-muted-foreground">Cargando…</div>;
+  if (loading) return <div className="py-8 text-base text-muted-foreground">Cargando…</div>;
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-start justify-between gap-3">
+    <div className="space-y-6">
+      <div className="flex items-start justify-between gap-4">
         <div>
-          <h3 className="font-semibold flex items-center gap-2">
-            <Wallet className="h-4 w-4" /> Cuentas de casino (banca fake)
+          <h3 className="text-lg font-semibold flex items-center gap-2">
+            <Wallet className="h-5 w-5" /> Cuentas de casino (banca fake)
           </h3>
-          <p className="text-xs text-muted-foreground">
+          <p className="text-sm text-muted-foreground mt-1">
             Credenciales de acceso del afiliado a las cuentas de prueba en cada operador.
           </p>
         </div>
-        <Button size="sm" variant="outline" onClick={addBlank}>
-          <Plus className="h-4 w-4 mr-1" /> Añadir cuenta
+        <Button size="default" variant="outline" onClick={addBlank}>
+          <Plus className="h-4 w-4 mr-2" /> Añadir cuenta
         </Button>
       </div>
 
-      <div className="border rounded-md overflow-hidden">
-        <Table>
+      <div className="border rounded-lg overflow-x-auto">
+        <Table className="min-w-[1100px]">
           <TableHeader>
-            <TableRow>
-              <TableHead className="w-[18%]">Operador</TableHead>
-              <TableHead className="w-[12%]">Marca</TableHead>
-              <TableHead className="w-[15%]">Usuario</TableHead>
-              <TableHead className="w-[18%]">Contraseña</TableHead>
-              <TableHead className="w-[10%]">Saldo</TableHead>
-              <TableHead className="w-[8%]">Moneda</TableHead>
-              <TableHead>Notas saldo</TableHead>
-              <TableHead className="w-20"></TableHead>
+            <TableRow className="bg-muted/50">
+              <TableHead className="w-[22%] text-sm py-3">Operador</TableHead>
+              <TableHead className="w-[14%] text-sm py-3">Marca</TableHead>
+              <TableHead className="w-[18%] text-sm py-3">Usuario</TableHead>
+              <TableHead className="w-[20%] text-sm py-3">Contraseña</TableHead>
+              <TableHead className="w-[10%] text-sm py-3">Saldo</TableHead>
+              <TableHead className="w-[10%] text-sm py-3">Moneda</TableHead>
+              <TableHead className="w-[16%] text-sm py-3">Notas saldo</TableHead>
+              <TableHead className="w-24 text-sm py-3"></TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {rows.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-muted-foreground py-6 text-sm">
+                <TableCell colSpan={8} className="text-center text-muted-foreground py-8 text-base">
                   Aún no hay cuentas registradas
                 </TableCell>
               </TableRow>
@@ -187,10 +187,12 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
               const key = r.id ?? `new-${idx}`;
               const visible = !!showPwd[key];
               return (
-                <TableRow key={key} className="[&>td]:py-2 align-top">
+                <TableRow key={key} className="[&>td]:py-3 align-top hover:bg-muted/30 transition-colors">
                   <TableCell>
                     <Select value={r.client_id} onValueChange={(v) => update(idx, { client_id: v, brand: null })}>
-                      <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="Operador" /></SelectTrigger>
+                      <SelectTrigger className="h-10 text-sm w-full">
+                        <SelectValue placeholder="Seleccionar operador" />
+                      </SelectTrigger>
                       <SelectContent>
                         {clients.map((c) => (
                           <SelectItem key={c.id} value={c.id}>{c.company_name}</SelectItem>
@@ -201,7 +203,9 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
                   <TableCell>
                     {brandsFor(r.client_id).length > 0 ? (
                       <Select value={r.brand ?? ""} onValueChange={(v) => update(idx, { brand: v || null })}>
-                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="—" /></SelectTrigger>
+                        <SelectTrigger className="h-10 text-sm w-full">
+                          <SelectValue placeholder="—" />
+                        </SelectTrigger>
                         <SelectContent>
                           {brandsFor(r.client_id).map((b) => (
                             <SelectItem key={b} value={b}>{b}</SelectItem>
@@ -209,33 +213,44 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
                         </SelectContent>
                       </Select>
                     ) : (
-                      <Input value={r.brand ?? ""} onChange={(e) => update(idx, { brand: e.target.value })} className="h-8 text-xs" placeholder="—" />
+                      <Input
+                        value={r.brand ?? ""}
+                        onChange={(e) => update(idx, { brand: e.target.value })}
+                        className="h-10 text-sm w-full"
+                        placeholder="—"
+                      />
                     )}
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Input value={r.username} onChange={(e) => update(idx, { username: e.target.value })} className="h-8 text-xs" />
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={r.username}
+                        onChange={(e) => update(idx, { username: e.target.value })}
+                        className="h-10 text-sm w-full"
+                        placeholder="Usuario"
+                      />
                       {r.username && (
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.username, "Usuario")} title="Copiar">
-                          <Copy className="h-3.5 w-3.5" />
+                        <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => copy(r.username, "Usuario")} title="Copiar usuario">
+                          <Copy className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-2">
                       <Input
                         type={visible ? "text" : "password"}
                         value={r.password}
                         onChange={(e) => update(idx, { password: e.target.value })}
-                        className="h-8 text-xs"
+                        className="h-10 text-sm w-full"
+                        placeholder="Contraseña"
                       />
-                      <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => togglePwd(key)} title={visible ? "Ocultar" : "Ver"}>
-                        {visible ? <EyeOff className="h-3.5 w-3.5" /> : <Eye className="h-3.5 w-3.5" />}
+                      <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => togglePwd(key)} title={visible ? "Ocultar" : "Ver"}>
+                        {visible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </Button>
                       {r.password && (
-                        <Button size="icon" variant="ghost" className="h-7 w-7" onClick={() => copy(r.password, "Contraseña")} title="Copiar">
-                          <Copy className="h-3.5 w-3.5" />
+                        <Button size="icon" variant="ghost" className="h-9 w-9 shrink-0" onClick={() => copy(r.password, "Contraseña")} title="Copiar contraseña">
+                          <Copy className="h-4 w-4" />
                         </Button>
                       )}
                     </div>
@@ -245,7 +260,7 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
                       type="number"
                       value={r.balance}
                       onChange={(e) => update(idx, { balance: e.target.value })}
-                      className="h-8 text-xs"
+                      className="h-10 text-sm w-full"
                       placeholder="0"
                     />
                   </TableCell>
@@ -253,7 +268,7 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
                     <Input
                       value={r.balance_currency ?? ""}
                       onChange={(e) => update(idx, { balance_currency: e.target.value.toUpperCase() })}
-                      className="h-8 text-xs"
+                      className="h-10 text-sm w-full"
                       placeholder="PEN"
                       maxLength={6}
                     />
@@ -262,17 +277,17 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
                     <Input
                       value={r.balance_notes ?? ""}
                       onChange={(e) => update(idx, { balance_notes: e.target.value })}
-                      className="h-8 text-xs"
+                      className="h-10 text-sm w-full"
                       placeholder="no retirables"
                     />
                   </TableCell>
                   <TableCell>
                     <div className="flex items-center gap-1">
-                      <Button size="icon" variant="ghost" onClick={() => saveOne(idx)} disabled={saving} title="Guardar">
+                      <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => saveOne(idx)} disabled={saving} title="Guardar">
                         <Save className="h-4 w-4" />
                       </Button>
-                      <Button size="icon" variant="ghost" onClick={() => remove(idx)} title="Eliminar">
-                        <Trash2 className="h-4 w-4" />
+                      <Button size="icon" variant="ghost" className="h-9 w-9" onClick={() => remove(idx)} title="Eliminar">
+                        <Trash2 className="h-4 w-4 text-destructive" />
                       </Button>
                     </div>
                   </TableCell>
@@ -283,8 +298,8 @@ export default function AffiliateCasinoAccounts({ affiliateId }: Props) {
         </Table>
       </div>
       {rows.some((r) => r.balance) && (
-        <div className="text-xs text-muted-foreground flex items-center gap-2">
-          <Badge variant="outline" className="text-[10px]">Ejemplo</Badge>
+        <div className="text-sm text-muted-foreground flex items-center gap-2">
+          <Badge variant="outline" className="text-xs">Ejemplo</Badge>
           User: Overoptionpe · Pass: Stakeperu2025* · Saldo: S/5,000 no retirables
         </div>
       )}

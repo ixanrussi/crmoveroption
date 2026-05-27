@@ -135,10 +135,7 @@ export default function SalaryPlusCpaCalculator() {
               <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" className="w-full justify-between">
                   {operator
-                    ? `${operator.company_name}${(() => {
-                        const brands = [...new Set((operator.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))];
-                        return brands.length ? ` (${brands.join(", ")})` : "";
-                      })()}`
+                    ? `${operator.company_name}${(operator.brands?.length ? ` (${operator.brands.join(", ")})` : "")}`
                     : "Selecciona operador..."}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
@@ -150,7 +147,7 @@ export default function SalaryPlusCpaCalculator() {
                     <CommandEmpty>Sin resultados</CommandEmpty>
                     <CommandGroup>
                       {operators.map((o) => {
-                        const brands = [...new Set((o.client_commission_plans ?? []).map((p) => p.brand).filter(Boolean))];
+                        const brands = o.brands ?? [];
                         return (
                           <CommandItem
                             key={o.id}
@@ -172,13 +169,13 @@ export default function SalaryPlusCpaCalculator() {
             </Popover>
           </div>
           <div className="space-y-1">
-            <Label>Commission plan</Label>
+            <Label>Commission plan de afiliado</Label>
             <Popover open={planOpen} onOpenChange={setPlanOpen}>
               <PopoverTrigger asChild>
                 <Button variant="outline" role="combobox" className="w-full justify-between" disabled={!operator}>
                   {plan
-                    ? `${plan.brand ?? "—"} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
-                    : operator ? "Selecciona plan..." : "Elige operador primero"}
+                    ? `${plan.affiliates?.fixed_name ?? "—"}${plan.brand ? ` · ${plan.brand}` : ""} · CPA ${plan.cpa ?? 0} ${plan.currency ?? ""}`
+                    : operator ? (plans.length ? "Selecciona plan..." : "Sin planes de afiliados para este operador") : "Elige operador primero"}
                   <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                 </Button>
               </PopoverTrigger>

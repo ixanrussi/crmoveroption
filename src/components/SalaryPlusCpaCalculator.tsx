@@ -4,11 +4,15 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
 import { Button } from "@/components/ui/button";
-import { Copy, FileDown, Save, Trash2, UserPlus } from "lucide-react";
+import { Copy, FileDown, Save, Trash2, UserPlus, Check, ChevronsUpDown } from "lucide-react";
 import { toast } from "sonner";
 import jsPDF from "jspdf";
 import overoptionLogo from "@/assets/overoption-logo.png";
 import { supabase } from "@/integrations/supabase/client";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 const fmtEur = (n: number) =>
   new Intl.NumberFormat("es-ES", { style: "currency", currency: "EUR", maximumFractionDigits: 2 }).format(
@@ -18,10 +22,48 @@ const fmtEur = (n: number) =>
 const MIN_PCT = 30;
 const MAX_PCT = 70;
 
+type SPCPlan = {
+  id: string;
+  brand: string | null;
+  currency: string | null;
+  cpa: number | null;
+  overoption_retention: number | null;
+};
+type SPCOperator = {
+  id: string;
+  company_name: string;
+  client_commission_plans: SPCPlan[];
+};
+
+
 export default function SalaryPlusCpaCalculator() {
   const [cpaOp, setCpaOp] = useState<string>("20");
   const [capacidad, setCapacidad] = useState<string>("100");
   const [pct, setPct] = useState<number>(50);
+  const [operators, setOperators] = useState<SPCOperator[]>([]);
+  const [opId, setOpId] = useState<string>("");
+  const [planId, setPlanId] = useState<string>("");
+
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from("clients")
+        .select("id, company_name, client_commission_plans(id, brand, currency, cpa, overoption_retention)")
+        .order("company_name", { ascending: true });
+      setOperators((data ?? []) as any);
+    })();
+  }, []);
+
+  const selectedOp = operators.find((o) => o.id === opId);
+  const selectedPlan = selectedOp?.client_commission_plans.find((p) => p.id === planId);
+
+  // When operator/plan changes, set CPA from the plan (net = cpa - overoption_retention)
+  useEffect(() => {
+    if (!selectedPlan) return;
+    const net = Math.max(0, (selectedPlan.cpa ?? 0) - (selectedPlan.overoption_retention ?? 0));
+    if (net > 0) setCpaOp(String(net));
+  }, [planId, opId]);
+
 
   const cpaNum = Math.max(0, parseFloat(cpaOp) || 0);
   const capNum = Math.max(0, parseFloat(capacidad) || 0);
@@ -67,9 +109,49 @@ export default function SalaryPlusCpaCalculator() {
     <div className="space-y-6">
       <Card>
         <CardHeader>
+          <CardTitle className="text-lg">Operador</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 md:grid-cols-2">
+          <div className="space-y-1">
+            <Label>Operador (búsqueda rápida)</Label>
+            <SPCOperatorCombobox
+              operators={operators}
+              value={opId}
+              onChange={(id) => {
+                setOpId(id);
+                const op = operators.find((o) => o.id === id);
+                const plans = op?.client_commission_plans ?? [];
+                setPlanId(plans.length === 1 ? plans[0].id : "");
+              }}
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Plan / Brand</Label>
+            <Select value={planId} onValueChange={setPlanId} disabled={!selectedOp}>
+              <SelectTrigger>
+                <SelectValue placeholder={selectedOp ? "Selecciona un plan" : "Selecciona un operador primero"} />
+              </SelectTrigger>
+              <SelectContent>
+                {(selectedOp?.client_commission_plans ?? []).map((p) => (
+                  <SelectItem key={p.id} value={p.id}>
+                    {(p.brand || "Plan")} — CPA {p.cpa ?? 0} {p.currency || ""}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-[11px] text-muted-foreground">
+              El CPA del operador se completa automáticamente con el CPA neto del plan seleccionado.
+            </p>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
           <CardTitle className="text-lg">Datos de entrada</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-4 md:grid-cols-2">
+
           <div className="space-y-1">
             <Label>CPA del operador (€)</Label>
             <Input
@@ -499,5 +581,53 @@ function ProposalBuilder({
         </p>
       </CardContent>
     </Card>
+  );
+}
+
+function SPCOperatorCombobox({
+  operators,
+  value,
+  onChange,
+}: {
+  operators: SPCOperator[];
+  value: string;
+  onChange: (id: string) => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const selected = operators.find((o) => o.id === value);
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button variant="outline" role="combobox" aria-expanded={open} className="w-full justify-between font-normal">
+          <span className="truncate">
+            {selected ? selected.company_name : (operators.length ? "Selecciona un operador..." : "Sin operadores disponibles")}
+          </span>
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+        <Command>
+          <CommandInput placeholder="Buscar operador..." />
+          <CommandList>
+            <CommandEmpty>Sin resultados.</CommandEmpty>
+            <CommandGroup>
+              {operators.map((o) => (
+                <CommandItem
+                  key={o.id}
+                  value={o.company_name}
+                  onSelect={() => {
+                    onChange(o.id);
+                    setOpen(false);
+                  }}
+                >
+                  <Check className={cn("mr-2 h-4 w-4", value === o.id ? "opacity-100" : "opacity-0")} />
+                  {o.company_name}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </CommandList>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 }

@@ -413,7 +413,11 @@ export default function ProspectsAfiliados() {
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80">
-                  <div className="max-h-60 overflow-y-auto space-y-2 pr-1">
+                  <div
+                    className="max-h-60 overflow-y-auto space-y-2 pr-1 overscroll-contain"
+                    onWheel={(e) => e.stopPropagation()}
+                    onTouchMove={(e) => e.stopPropagation()}
+                  >
                     {channels.length === 0 && (
                       <p className="text-xs text-muted-foreground">No hay canales aún. Crea el primero abajo.</p>
                     )}

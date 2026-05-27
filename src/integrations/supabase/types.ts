@@ -330,6 +330,39 @@ export type Database = {
         }
         Relationships: []
       }
+      affiliate_prospect_interests: {
+        Row: {
+          affiliate_id: string
+          client_id: string
+          created_at: string
+          created_by: string | null
+          id: string
+          notes: string | null
+          template_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          affiliate_id: string
+          client_id: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          affiliate_id?: string
+          client_id?: string
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          notes?: string | null
+          template_id?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       affiliate_salary_deals: {
         Row: {
           affiliate_id: string

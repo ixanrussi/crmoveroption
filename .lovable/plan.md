@@ -1,84 +1,93 @@
 
-## Objetivo
+# Migração de dados Lovable Cloud → Lovable Cloud (outra conta)
 
-Crear una página de análisis por operador accesible desde el listado de Operadores (botón **"Ver análisis"** en cada fila), que use **Routy** en tiempo real como fuente de datos y `brand_cpa_goals` como objetivos.
+Lovable Cloud não tem hoje um botão "exportar/importar projeto" entre contas. A migração é feita manualmente em 4 blocos: **schema**, **dados**, **storage** e **configuração** (secrets, auth, edge functions). Como o novo projeto já tem Cloud habilitado, ele já tem seu próprio backend vazio pronto para receber.
 
-## Acceso
+## Pré-requisitos
 
-- Ruta nueva: `/clientes/:id/analisis` (registrada en `App.tsx`, protegida por `ProtectedRoute`).
-- En `src/pages/Clientes.tsx`, agregar acción **"Ver análisis"** (icono `BarChart3`) en la tabla, junto a Editar/Eliminar, que navega a la ruta.
+- Acesso de owner aos **dois** projetos Lovable.
+- Ambos com Lovable Cloud habilitado (✅ confirmado neste).
+- `psql` e `pg_dump` instalados localmente (vêm com Postgres client).
+- Strings de conexão de banco de **ambos** os projetos. No Lovable: **Cloud → Database → Connection string** (use a connection string "Session pooler" ou direta, não a "Transaction pooler", porque `pg_dump` precisa de sessão).
 
-## Estructura de la página
+## 1. Schema (estrutura)
 
-Header con nombre/logo del operador, selector de período (mes en curso por defecto, con flechas para navegar meses) y selector de marca (`Todas` + cada marca del operador).
+A forma mais limpa e suportada é **reaplicar as migrations** no projeto novo, não fazer `pg_dump` de schema bruto. Motivo: o Cloud novo já tem o schema base do Supabase (auth, storage, realtime). Despejar tudo gera conflito.
 
-### 1. Card de Objetivo del operador (estilo `BrandGoals`)
+Passos:
+1. No projeto novo (Lovable da outra conta), abrir o chat e pedir: "aplica todas as migrations existentes em `supabase/migrations/`". O agente vai rodar as 1+N migrations em ordem.
+2. Alternativa manual: copiar a pasta `supabase/migrations/` para o repo do novo projeto e deixar o Lovable executá-las.
 
-- Reusar la visualización exacta de `GlobalIndicator` + `DailyDots` de `BrandGoals.tsx` (anillo SVG con % del mes, esperado al día, barra, puntitos diarios verde/amarillo/naranja/rojo).
-- **Objetivo total** = suma de `brand_cpa_goals.cpa_target` para el período, filtrando por las marcas del operador (`clients.brands`).
-- **Actual** = suma de `cpaCount` de Routy filtrando `accountId = clients.routy_account_id` y `brand ∈ clients.brands` (si hay filtro de marca activo, restringir a esa marca).
-- Si se selecciona una marca: el card se enfoca en esa marca (objetivo de esa sola marca, actual de esa marca).
+Resultado: tabelas, enums, funções (`has_role`, `is_admin_or_super`, triggers de activity log, etc.), RLS, grants — tudo recriado idêntico.
 
-### 2. Desglose por marca (colapsable)
+## 2. Dados (linhas das tabelas)
 
-Igual que `BrandGoals` pero filtrado al operador: una fila por marca del cliente con objetivo editable, barra de progreso, y puntos diarios.
+Usar `pg_dump` só de dados (`--data-only`) das tabelas do schema `public`, e restaurar no novo. Importante: **excluir** tabelas do Supabase (`auth.*`, `storage.*`) e desligar triggers durante o restore para não disparar `activity_logs` e `handle_new_user`.
 
-### 3. Card de Tendencia (nuevo, también reusable en home)
+```bash
+# dump apenas dados do schema public
+pg_dump "postgres://postgres:SENHA@HOST_ATUAL:5432/postgres" \
+  --data-only \
+  --schema=public \
+  --disable-triggers \
+  --no-owner --no-privileges \
+  -f data.sql
 
-- Promedio diario del mes en curso = `actual / dayOfMonth`.
-- **Proyección cierre de mes** = `promedio_diario * daysInMonth`.
-- **Comparativo vs mes anterior**: traer total del mes anterior (Routy con `from/to` del mes anterior) y mostrar `proyección vs total_mes_anterior` con delta % y flecha ↑/↓.
-- Mostrar tres números: Actual MTD · Proyección fin de mes · Mes anterior (con delta).
-- Métricas: **FTDs (cpaCount)** y **Comisión total (cpaCommission + revShareCommission)** en dos sub-cards.
+# restore no novo
+psql "postgres://postgres:SENHA@HOST_NOVO:5432/postgres" -f data.sql
+```
 
-### 4. Comparativos semana/mes anterior
+Pontos de atenção:
+- IDs (`uuid`) são preservados → bom, mantém referências entre tabelas.
+- `auth.users` **não** é migrado por esta etapa (ver bloco 4).
+- Se houver FKs para `auth.users` (ex.: `created_by`), os usuários precisam existir no novo projeto antes do restore, senão restore falha. Por isso bloco 4 vem primeiro na prática.
+- Sequences (`affiliate_id_seq`) precisam ser reajustadas: rodar `SELECT setval('public.affiliate_id_seq', (SELECT max(...) FROM ...));` depois.
 
-Mini cards con FTDs y Comisión:
-- **Esta semana vs semana anterior** (lunes-domingo): delta absoluto y %.
-- **Este mes vs mes anterior** (mismo rango de días, ej. día 1 al día N): delta y %.
+## 3. Storage (arquivos)
 
-### 5. Tabla de afiliados que entregan resultado
+Os 5 buckets (`avatars`, `commission-reports`, `client-knowledge`, `operator-logos`, `affiliate-avatars`) precisam ser:
+1. **Recriados** no projeto novo com mesma visibilidade (public/private). Pode ser via migration SQL ou via UI Cloud.
+2. **Conteúdo copiado** com a CLI do Supabase ou script Node usando service_role key dos dois projetos:
+   - listar objetos do bucket origem
+   - baixar
+   - subir no bucket destino com mesmo path
 
-- Agrupar filas Routy por `tracker` (= `affiliates.unique_id`, p.ej. `OVO-00123`).
-- Resolver nombre con `affiliates` (join por `unique_id`).
-- Columnas: Afiliado · Marca · FTDs · Comisión · Última actividad.
-- Filtros locales: marca y rango de días (todo el mes / últimos 7 / últimos 30 / día específico).
-- Orden por FTDs desc; click en fila → `/afiliados/:id/performance` (si existe) o popover con detalle.
+Caminhos armazenados no banco (`avatar_url`, `logo_url`, `file_path`) continuam válidos se buckets e paths se mantêm.
 
-### 6. Tendencia global en la home
+## 4. Usuários de autenticação
 
-Agregar el mismo card **Tendencia** en `Dashboard.tsx` (sin filtro de operador): proyección global de FTDs y Comisión con comparativo vs mes anterior. Componente reutilizable.
+`auth.users` é o mais sensível. Duas opções:
 
-## Datos y queries
+**a) Migração assistida (recomendado):** usar a API admin do Supabase do projeto antigo para listar usuários e recriá-los no novo via `auth.admin.createUser` mantendo o mesmo `id`. Senhas hash podem ser migradas com `password_hash` no createUser. Faço um edge function temporário que lê do antigo (service_role antigo como secret) e escreve no novo.
 
-Toda la data viene de la edge function existente `routy-proxy` (ya pivota por brand/accountId/tracker/date). No requiere cambios en el backend ni migraciones.
+**b) Reset:** usuários recriam contas no novo. Mais simples mas perde histórico de login e quebra FKs (`created_by`, `user_id`).
 
-Llamadas necesarias por carga (en paralelo):
-1. Mes en curso completo, `accountId = client.routy_account_id`.
-2. Mes anterior completo, mismo accountId (para tendencia y comparativo mensual).
-3. Semana actual y semana anterior, mismo accountId (comparativo semanal).
-4. `brand_cpa_goals` del período actual filtrados por `brand IN client.brands`.
-5. `affiliates` (id, unique_id, fixed_name) para resolver nombres de los trackers presentes.
+Depois disso, repopular `public.user_roles` (vem do dump de dados do bloco 2).
 
-El desglose por día se obtiene agrupando localmente las filas del mes (cada fila trae `date`), evitando 30 llamadas separadas.
+## 5. Secrets, Auth providers, Edge Functions
 
-## Detalles técnicos
+- **Edge functions**: já estão no repo (`supabase/functions/*`). Ao abrir o projeto novo no Lovable e fazer qualquer deploy, elas sobem automaticamente.
+- **Secrets** (`ROUTY_TOKEN`, etc.): precisam ser adicionados manualmente no projeto novo via Cloud → Secrets ou pelo chat. `LOVABLE_API_KEY`, `SUPABASE_*` são auto-provisionados.
+- **Auth providers** (Google, etc.): reconfigurar no projeto novo (Cloud → Users → Auth Settings).
+- **Custom domain**: re-apontar para o novo projeto quando estiver pronto.
 
-- **Archivos nuevos**:
-  - `src/pages/ClienteAnalisis.tsx` — página principal.
-  - `src/components/operator/OperatorGoalCard.tsx` — refactor extraído de `GlobalIndicator`/`DailyDots`.
-  - `src/components/TrendCard.tsx` — card de tendencia reutilizable (acepta `currentMTD`, `previousMonthTotal`, `daysInMonth`, `dayOfMonth`, `label`, `format`).
-  - `src/components/operator/OperatorAffiliatesTable.tsx`.
-- **Archivos modificados**:
-  - `src/App.tsx` — nueva ruta.
-  - `src/pages/Clientes.tsx` — botón "Ver análisis" en cada fila.
-  - `src/pages/Dashboard.tsx` — montar `<TrendCard>` global.
-  - `src/components/BrandGoals.tsx` — extraer `DailyDots` y `GlobalIndicator` a `OperatorGoalCard` y reimportarlos para no duplicar.
-- **Sin cambios** en `supabase/`, `src/integrations/supabase/types.ts` ni migraciones.
-- Caching: usar `useMemo` y cancelación con flag `cancelled`. Loading skeletons por sección.
+## Ordem recomendada de execução
 
-## Edge cases
+```text
+1. No projeto NOVO: aplicar migrations  → schema pronto
+2. Adicionar secrets + auth providers   → infra pronta
+3. Recriar buckets + copiar arquivos    → storage pronto
+4. Migrar auth.users (mesmos IDs)       → users prontos
+5. Restaurar dados public (data-only)   → dados prontos
+6. Reajustar sequences                  → IDs auto consistentes
+7. Smoke test: login, listagens, RLS    → validação
+8. Trocar URL pública / domínio         → cutover
+```
 
-- Operadores sin `routy_account_id` → mostrar aviso: "Vincula la cuenta Routy en la ficha del operador para ver el análisis".
-- Operadores sin marcas o sin `brand_cpa_goals` → mostrar la sección de tendencia/afiliados igual; el card de objetivo muestra "Sin objetivo definido".
-- Tracker no encontrado en `affiliates` → mostrar el tracker crudo en la tabla.
+## O que preciso de você antes de executar
+
+1. Confirmar se quer **migrar usuários mantendo o mesmo `id`** (recomendo sim — preserva todos os `created_by` e roles) ou se aceita que cada usuário se recadastre.
+2. Me passar (ou colar quando começarmos) as **duas connection strings** do banco — origem e destino. Não as cole agora se não quiser; pode esperar até estarmos no projeto novo.
+3. Confirmar se o projeto novo está **vazio** (sem nenhuma migration aplicada além do default), ou se já tem alguma estrutura que precisa ser preservada.
+
+Quando me confirmar, eu te guio comando por comando — boa parte da execução acontece **no chat do projeto novo**, não neste.

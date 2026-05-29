@@ -27,6 +27,17 @@ function csvEscape(val: any): string {
   return s;
 }
 
+// Columns that reference auth.users and won't exist in a fresh destination
+// project. We blank them on export so FKs to auth.users don't fail.
+const USER_FK_COLUMNS = new Set([
+  "created_by",
+  "updated_by",
+  "answered_by",
+  "resolved_by",
+  "requested_by",
+  "user_id",
+]);
+
 function rowsToCsv(rows: any[], table: string): string {
   if (!rows.length) return "";
   const cols = Object.keys(rows[0]);
@@ -35,6 +46,7 @@ function rowsToCsv(rows: any[], table: string): string {
   const lines = rows.map((r) =>
     cols
       .map((c) => {
+        if (USER_FK_COLUMNS.has(c)) return ""; // strip user FKs
         const v = r[c];
         if (jsonCols.has(c) && v !== null && v !== undefined) {
           return csvEscape(JSON.stringify(v));
@@ -45,6 +57,7 @@ function rowsToCsv(rows: any[], table: string): string {
   );
   return [header, ...lines].join("\n");
 }
+
 
 async function fetchAll(table: string, orderBy = "created_at"): Promise<any[]> {
   const pageSize = 1000;

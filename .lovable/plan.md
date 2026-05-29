@@ -1,15 +1,32 @@
-## Problema
+## Causa de las recargas constantes
 
-`client_software_links` es una tabla de unión pura: solo tiene `client_id` y `software_id`, sin `id` ni `created_at`. El helper `fetchAll` en `src/lib/importBundles.ts` intenta ordenar por `created_at`, falla, y como fallback intenta `id`, que tampoco existe → error `column client_software_links.id does not exist`.
+Encontré el motivo. En dos páginas se ejecuta `window.location.reload()` después de guardar:
 
-## Solución
+- `src/pages/Afiliados.tsx` línea 486 — tras crear/editar un afiliado
+- `src/pages/Clientes.tsx` línea 325 — tras crear/editar un cliente
 
-Modificar `fetchAll` en `src/lib/importBundles.ts` para ser tolerante a tablas sin columnas estándar:
+Esto fuerza una **recarga completa del navegador** cada vez que pulsas "Guardar". Resultado:
+- Se pierde el scroll, los filtros aplicados, las pestañas abiertas, búsquedas en curso, etc.
+- Si estabas a punto de añadir otro registro o seguir editando algo más, todo el contexto desaparece.
+- Da la sensación de "el sistema se actualiza solo todo el rato".
 
-1. Intentar ordenar por `created_at`.
-2. Si falla por columna inexistente, intentar `id`.
-3. Si también falla, hacer la consulta **sin `order()`** (paginación simple por `range`).
+No hay `setInterval`, ni `refetchInterval`, ni realtime que recargue las páginas de Afiliados/Clientes. La única suscripción realtime activa es la campanita de notificaciones (`NotificationsBell`), que solo refresca su propio listado, no la página.
 
-Esto permite exportar tablas de unión puras (como `client_software_links`) y cualquier otra tabla que no tenga ni `id` ni `created_at`, sin tocar el resto del flujo del bundle.
+## Solución propuesta
 
-No se requieren cambios de esquema ni de UI.
+Reemplazar ambos `window.location.reload()` por una recarga **en memoria** de los datos de la tabla:
+
+1. En `Afiliados.tsx`: después de `setOpen(false)`, llamar a `load()` (la función que ya existe y trae la lista de afiliados desde Supabase). Sin recarga del navegador.
+2. En `Clientes.tsx`: lo mismo — llamar a `load()` en lugar de `window.location.reload()`.
+
+Con esto:
+- La lista se actualiza con los datos nuevos al instante.
+- Filtros, scroll, búsquedas y demás contexto se mantienen intactos.
+- La página solo "se refresca" cuando tú decides recargarla manualmente.
+
+No tocaré el resto de comportamiento (creación, edición, validaciones, toasts) — solo el modo de refrescar la lista.
+
+## Archivos a modificar
+
+- `src/pages/Afiliados.tsx` (1 línea)
+- `src/pages/Clientes.tsx` (1 línea)

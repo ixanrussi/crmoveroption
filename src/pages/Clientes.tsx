@@ -322,7 +322,7 @@ export default function Clientes() {
     if (errMsg) { toast.error(errMsg); return; }
     toast.success("Guardado");
     setOpen(false);
-    window.location.reload();
+    load();
   };
 
   const remove = async (id: string) => {

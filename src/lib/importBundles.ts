@@ -48,20 +48,34 @@ function rowsToCsv(rows: any[], table: string): string {
 
 async function fetchAll(table: string, orderBy = "created_at"): Promise<any[]> {
   const pageSize = 1000;
-  let from = 0;
   const out: any[] = [];
-  // Some tables don't have created_at; fall back to id
+  // Try preferred order column, then "id", then no ordering at all (for pure junction tables).
+  const orderCandidates: (string | null)[] = [orderBy, "id", null];
+  let orderCol: string | null | undefined;
+
+  // Probe which order works with a single small query.
+  for (const cand of orderCandidates) {
+    let q = supabase.from(table as any).select("*").range(0, 0);
+    if (cand) q = q.order(cand, { ascending: true });
+    const { error } = await q;
+    if (!error) {
+      orderCol = cand;
+      break;
+    }
+    if (!/does not exist|column/i.test(error.message)) {
+      throw new Error(`${table}: ${error.message}`);
+    }
+  }
+  if (orderCol === undefined) {
+    // All probes failed for non-column reasons; fall back to no order.
+    orderCol = null;
+  }
+
+  let from = 0;
   while (true) {
     let q = supabase.from(table as any).select("*").range(from, from + pageSize - 1);
-    const tryOrder = await q.order(orderBy, { ascending: true });
-    let { data, error } = tryOrder;
-    if (error && error.message?.includes(orderBy)) {
-      ({ data, error } = await supabase
-        .from(table as any)
-        .select("*")
-        .range(from, from + pageSize - 1)
-        .order("id", { ascending: true }));
-    }
+    if (orderCol) q = q.order(orderCol, { ascending: true });
+    const { data, error } = await q;
     if (error) throw new Error(`${table}: ${error.message}`);
     const chunk = data ?? [];
     out.push(...chunk);
@@ -77,9 +91,9 @@ export interface Bundle {
   key: BundleKey;
   label: string;
   description: string;
-  // Tables in import order (parents first).
   tables: string[];
 }
+
 
 export const BUNDLES: Bundle[] = [
   {

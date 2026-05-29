@@ -137,8 +137,10 @@ export default function ExportData() {
       toast({ title: "Error al exportar", description: e.message, variant: "destructive" });
     } finally {
       setLoading(false);
-    }
+  };
+
   const [bundleLoading, setBundleLoading] = useState<string | null>(null);
+
 
   const downloadBundle = async (b: Bundle) => {
     setBundleLoading(b.key);

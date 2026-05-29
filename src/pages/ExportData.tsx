@@ -6,8 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, Package } from "lucide-react";
 import * as XLSX from "xlsx";
+import { BUNDLES, buildBundleZip, type Bundle } from "@/lib/importBundles";
+
 
 type AreaKey = "afiliados";
 
@@ -138,12 +140,77 @@ export default function ExportData() {
     }
   };
 
+
+  const [bundleLoading, setBundleLoading] = useState<string | null>(null);
+
+
+  const downloadBundle = async (b: Bundle) => {
+    setBundleLoading(b.key);
+    try {
+      const blob = await buildBundleZip(b);
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `import_${b.key}_${new Date().toISOString().slice(0, 10)}.zip`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+      toast({ title: `Bundle "${b.label}" descargado` });
+    } catch (e: any) {
+      toast({ title: "Error al generar bundle", description: e.message, variant: "destructive" });
+    } finally {
+      setBundleLoading(null);
+    }
+  };
+
   return (
     <div className="p-6 space-y-6 max-w-5xl">
       <div>
         <h1 className="text-2xl font-semibold">Descarga de datos</h1>
         <p className="text-muted-foreground text-sm">
-          Selecciona el área y los campos que deseas exportar.
+          Exporta datos para análisis o genera bundles completos para importar en otro proyecto.
+        </p>
+      </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Descarga para importación</CardTitle>
+          <p className="text-sm text-muted-foreground">
+            Genera un ZIP con todos los CSV de un área, en orden de importación, preservando
+            IDs y relaciones. Incluye un README con instrucciones.
+          </p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {BUNDLES.map((b) => (
+            <div
+              key={b.key}
+              className="flex items-center justify-between gap-4 p-3 border rounded"
+            >
+              <div className="min-w-0">
+                <div className="font-medium">{b.label}</div>
+                <div className="text-xs text-muted-foreground">{b.description}</div>
+                <div className="text-xs text-muted-foreground mt-1">
+                  Tablas: {b.tables.join(" → ")}
+                </div>
+              </div>
+              <Button
+                onClick={() => downloadBundle(b)}
+                disabled={bundleLoading !== null}
+                className="shrink-0"
+              >
+                <Package className="h-4 w-4" />
+                {bundleLoading === b.key ? "Generando..." : "Descarga para importación"}
+              </Button>
+            </div>
+          ))}
+        </CardContent>
+      </Card>
+
+      <div>
+        <h2 className="text-lg font-semibold mt-4">Exportación por campos (Excel / CSV)</h2>
+        <p className="text-sm text-muted-foreground">
+          Selecciona un área y los campos que quieras incluir en el archivo.
         </p>
       </div>
 

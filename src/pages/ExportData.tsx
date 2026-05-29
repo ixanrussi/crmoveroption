@@ -6,8 +6,10 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { toast } from "@/hooks/use-toast";
-import { Download, FileSpreadsheet, FileText } from "lucide-react";
+import { Download, FileSpreadsheet, FileText, Package } from "lucide-react";
 import * as XLSX from "xlsx";
+import { BUNDLES, buildBundleZip, type Bundle } from "@/lib/importBundles";
+
 
 type AreaKey = "afiliados";
 

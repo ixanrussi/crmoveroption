@@ -85,6 +85,16 @@ async function fetchAll(table: string, orderBy = "created_at"): Promise<any[]> {
   return out;
 }
 
+export type BundleKey = "listas_maestras" | "operadores" | "afiliados" | "comision_afiliados";
+
+export interface Bundle {
+  key: BundleKey;
+  label: string;
+  description: string;
+  tables: string[];
+}
+
+
 export const BUNDLES: Bundle[] = [
   {
     key: "listas_maestras",

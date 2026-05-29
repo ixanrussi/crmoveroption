@@ -203,6 +203,10 @@ export default function ExportData() {
         </CardContent>
       </Card>
 
+      <div>
+        <h2 className="text-lg font-semibold mt-4">Exportación por campos (Excel / CSV)</h2>
+        <p className="text-sm text-muted-foreground">
+          Selecciona un área y los campos que quieras incluir en el archivo.
         </p>
       </div>
 

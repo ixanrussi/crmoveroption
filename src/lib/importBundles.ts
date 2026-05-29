@@ -193,10 +193,12 @@ Cómo importar en el proyecto nuevo:
        SELECT setval('public.affiliate_id_seq', 85);
 
 Notas:
-  - Este bundle NO incluye auth.users; los user_id (created_by, etc.) sólo
-    serán válidos si los usuarios existen en el destino con el mismo UUID.
+  - Las columnas que referencian auth.users (created_by, updated_by,
+    answered_by, resolved_by, requested_by, user_id) se exportan VACÍAS
+    para evitar violar FKs cuando los usuarios no existen en el destino.
   - Storage (avatars, logos, knowledge docs) tampoco se incluye.
 `;
+
   zip.file("README.txt", readme);
   return zip.generateAsync({ type: "blob" });
 }

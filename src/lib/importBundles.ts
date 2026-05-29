@@ -48,18 +48,6 @@ function rowsToCsv(rows: any[], table: string): string {
 
 async function fetchAll(table: string, orderBy = "created_at"): Promise<any[]> {
   const pageSize = 1000;
-  let from = 0;
-  const out: any[] = [];
-  // Some tables don't have created_at; fall back to id
-  while (true) {
-    let q = supabase.from(table as any).select("*").range(from, from + pageSize - 1);
-    const tryOrder = await q.order(orderBy, { ascending: true });
-    let { data, error } = tryOrder;
-    if (error && error.message?.includes(orderBy)) {
-      ({ data, error } = await supabase
-        .from(table as any)
-async function fetchAll(table: string, orderBy = "created_at"): Promise<any[]> {
-  const pageSize = 1000;
   const out: any[] = [];
   // Try preferred order column, then "id", then no ordering at all (for pure junction tables).
   const orderCandidates: (string | null)[] = [orderBy, "id", null];

@@ -483,7 +483,7 @@ export default function Afiliados() {
     }
     toast.success(!editing && (data as any)?.unique_id ? `Afiliado creado: ${(data as any).unique_id}` : "Guardado");
     setOpen(false);
-    window.location.reload();
+    load();
   };
 
   const remove = async (id: string) => {

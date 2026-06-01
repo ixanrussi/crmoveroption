@@ -10,6 +10,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -17,6 +18,8 @@ import { ChevronDown, ChevronUp, ChevronRight, Loader2, Check, ChevronsUpDown } 
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ApiReportByRef from "@/components/ApiReportByRef";
+
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
 type ClientOp = { id: string; company_name: string; routy_account_id: string | null };

@@ -731,3 +731,22 @@ function RoutyReport() {
     </div>
   );
 }
+
+export default function TrackerReport() {
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      <Tabs defaultValue="routy">
+        <TabsList>
+          <TabsTrigger value="routy">Routy Report</TabsTrigger>
+          <TabsTrigger value="api">API Report</TabsTrigger>
+        </TabsList>
+        <TabsContent value="routy" className="mt-4">
+          <RoutyReport />
+        </TabsContent>
+        <TabsContent value="api" className="mt-4">
+          <ApiReportByRef />
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}

@@ -231,11 +231,8 @@ export default function ApiReportByRef() {
     };
   }, [raw, aliasMap]);
 
-  const operatorOpts = useMemo(() => {
-    const s = new Set<string>();
-    for (const r of raw) if (r.operator) s.add(r.operator);
-    return Array.from(s).sort();
-  }, [raw]);
+
+
 
   const filteredAggs = useMemo(() => {
     const q = normalize(search);

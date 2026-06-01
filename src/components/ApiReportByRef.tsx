@@ -240,14 +240,6 @@ export default function ApiReportByRef() {
   const filteredAggs = useMemo(() => {
     const q = normalize(search);
     return aggregates
-      .map(a => {
-        if (operatorFilter === ALL) return a;
-        const rows = a.rows.filter(r => (r.operator ?? "") === operatorFilter);
-        const totals = emptyTotals();
-        for (const r of rows) for (const m of METRIC_KEYS) totals[m] += Number(r[m]) || 0;
-        return { ...a, rows, totals };
-      })
-      .filter(a => a.rows.length > 0)
       .filter(a => affiliateFilter === ALL || a.affiliateId === affiliateFilter)
       .filter(a => !onlyActive || isActive(a.totals))
       .filter(a => !q || normalize(a.affiliateName).includes(q) ||

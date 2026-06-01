@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
+type Operator = { id: number; name: string };
 
 type ApiRow = {
   operator_id: number | null;

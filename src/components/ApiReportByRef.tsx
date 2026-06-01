@@ -140,6 +140,7 @@ export default function ApiReportByRef() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
 
   useEffect(() => {
     const r = computePreset("thisMonth")!;
@@ -156,11 +157,24 @@ export default function ApiReportByRef() {
   };
   useEffect(() => { loadAffiliates(); }, []);
 
-  const fetchData = async (from: string, to: string) => {
+  const loadOperators = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/operators`, { headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } });
+      if (!res.ok) return;
+      const json = await res.json();
+      const arr: Operator[] = Array.isArray(json) ? json.map((o: any) => ({ id: o.id, name: o.name })) : [];
+      setOperators(arr.sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (e) { console.error(e); }
+  };
+  useEffect(() => { loadOperators(); }, []);
+
+  const fetchData = async (from: string, to: string, opId: string) => {
     if (!from || !to) return;
     setLoading(true); setError(null);
     try {
-      const url = `${BASE_URL}/performance/by-ref?period_from=${from}&period_to=${to}`;
+      const params = new URLSearchParams({ period_from: from, period_to: to });
+      if (opId !== ALL) params.append("operator_id", opId);
+      const url = `${BASE_URL}/performance/by-ref?${params.toString()}`;
       const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       const json = await res.json();
@@ -173,9 +187,9 @@ export default function ApiReportByRef() {
   };
 
   useEffect(() => {
-    if (appliedRange.from && appliedRange.to) fetchData(appliedRange.from, appliedRange.to);
+    if (appliedRange.from && appliedRange.to) fetchData(appliedRange.from, appliedRange.to, operatorFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appliedRange]);
+  }, [appliedRange, operatorFilter]);
 
   const aliasMap = useMemo(() => {
     const m = new Map<string, { id: string; name: string }>();

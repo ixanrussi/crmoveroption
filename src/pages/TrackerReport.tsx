@@ -148,7 +148,7 @@ function AffiliateCombo({
   );
 }
 
-export default function TrackerReport() {
+function RoutyReport() {
   const { toast } = useToast();
   const [assigning, setAssigning] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);

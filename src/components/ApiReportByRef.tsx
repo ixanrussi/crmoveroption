@@ -361,7 +361,7 @@ export default function ApiReportByRef() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent className="max-h-72">
                   <SelectItem value={ALL}>Todos</SelectItem>
-                  {operatorOpts.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                  {operators.map(o => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>

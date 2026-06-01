@@ -10,6 +10,7 @@ import {
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
@@ -17,6 +18,8 @@ import { ChevronDown, ChevronUp, ChevronRight, Loader2, Check, ChevronsUpDown } 
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
+import ApiReportByRef from "@/components/ApiReportByRef";
+
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
 type ClientOp = { id: string; company_name: string; routy_account_id: string | null };
@@ -145,7 +148,7 @@ function AffiliateCombo({
   );
 }
 
-export default function TrackerReport() {
+function RoutyReport() {
   const { toast } = useToast();
   const [assigning, setAssigning] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
@@ -440,7 +443,7 @@ export default function TrackerReport() {
   const rate = (num: number, den: number) => den > 0 ? (num / den) * 100 : 0;
 
   return (
-    <div className="space-y-6 p-4 md:p-6">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-semibold">API Report</h1>
@@ -725,6 +728,25 @@ export default function TrackerReport() {
           </CollapsibleContent>
         </Collapsible>
       </Card>
+    </div>
+  );
+}
+
+export default function TrackerReport() {
+  return (
+    <div className="space-y-4 p-4 md:p-6">
+      <Tabs defaultValue="routy">
+        <TabsList>
+          <TabsTrigger value="routy">Routy Report</TabsTrigger>
+          <TabsTrigger value="api">API Report</TabsTrigger>
+        </TabsList>
+        <TabsContent value="routy" className="mt-4">
+          <RoutyReport />
+        </TabsContent>
+        <TabsContent value="api" className="mt-4">
+          <ApiReportByRef />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

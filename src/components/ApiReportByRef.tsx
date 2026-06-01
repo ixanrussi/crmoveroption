@@ -303,7 +303,7 @@ export default function ApiReportByRef() {
           <h2 className="text-xl font-semibold">API Report (by-ref)</h2>
           <p className="text-sm text-muted-foreground">Performance por external_ref</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to)} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to, operatorFilter)} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recargar"}
         </Button>
       </div>

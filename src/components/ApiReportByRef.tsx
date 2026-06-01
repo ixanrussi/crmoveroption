@@ -18,6 +18,7 @@ import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
 
 type Affiliate = { id: string; fixed_name: string; aliases: string[] };
+type Operator = { id: number; name: string };
 
 type ApiRow = {
   operator_id: number | null;
@@ -139,6 +140,7 @@ export default function ApiReportByRef() {
   const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   const [affiliates, setAffiliates] = useState<Affiliate[]>([]);
+  const [operators, setOperators] = useState<Operator[]>([]);
 
   useEffect(() => {
     const r = computePreset("thisMonth")!;
@@ -155,11 +157,24 @@ export default function ApiReportByRef() {
   };
   useEffect(() => { loadAffiliates(); }, []);
 
-  const fetchData = async (from: string, to: string) => {
+  const loadOperators = async () => {
+    try {
+      const res = await fetch(`${BASE_URL}/operators`, { headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } });
+      if (!res.ok) return;
+      const json = await res.json();
+      const arr: Operator[] = Array.isArray(json) ? json.map((o: any) => ({ id: o.id, name: o.name })) : [];
+      setOperators(arr.sort((a, b) => a.name.localeCompare(b.name)));
+    } catch (e) { console.error(e); }
+  };
+  useEffect(() => { loadOperators(); }, []);
+
+  const fetchData = async (from: string, to: string, opId: string) => {
     if (!from || !to) return;
     setLoading(true); setError(null);
     try {
-      const url = `${BASE_URL}/performance/by-ref?period_from=${from}&period_to=${to}`;
+      const params = new URLSearchParams({ period_from: from, period_to: to });
+      if (opId !== ALL) params.append("operator_id", opId);
+      const url = `${BASE_URL}/performance/by-ref?${params.toString()}`;
       const res = await fetch(url, { headers: { "ngrok-skip-browser-warning": "true", "Accept": "application/json" } });
       if (!res.ok) throw new Error(`HTTP ${res.status} ${res.statusText}`);
       const json = await res.json();
@@ -172,9 +187,9 @@ export default function ApiReportByRef() {
   };
 
   useEffect(() => {
-    if (appliedRange.from && appliedRange.to) fetchData(appliedRange.from, appliedRange.to);
+    if (appliedRange.from && appliedRange.to) fetchData(appliedRange.from, appliedRange.to, operatorFilter);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [appliedRange]);
+  }, [appliedRange, operatorFilter]);
 
   const aliasMap = useMemo(() => {
     const m = new Map<string, { id: string; name: string }>();
@@ -216,23 +231,12 @@ export default function ApiReportByRef() {
     };
   }, [raw, aliasMap]);
 
-  const operatorOpts = useMemo(() => {
-    const s = new Set<string>();
-    for (const r of raw) if (r.operator) s.add(r.operator);
-    return Array.from(s).sort();
-  }, [raw]);
+
+
 
   const filteredAggs = useMemo(() => {
     const q = normalize(search);
     return aggregates
-      .map(a => {
-        if (operatorFilter === ALL) return a;
-        const rows = a.rows.filter(r => (r.operator ?? "") === operatorFilter);
-        const totals = emptyTotals();
-        for (const r of rows) for (const m of METRIC_KEYS) totals[m] += Number(r[m]) || 0;
-        return { ...a, rows, totals };
-      })
-      .filter(a => a.rows.length > 0)
       .filter(a => affiliateFilter === ALL || a.affiliateId === affiliateFilter)
       .filter(a => !onlyActive || isActive(a.totals))
       .filter(a => !q || normalize(a.affiliateName).includes(q) ||
@@ -296,7 +300,7 @@ export default function ApiReportByRef() {
           <h2 className="text-xl font-semibold">API Report (by-ref)</h2>
           <p className="text-sm text-muted-foreground">Performance por external_ref</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to)} disabled={loading}>
+        <Button variant="outline" size="sm" onClick={() => fetchData(appliedRange.from, appliedRange.to, operatorFilter)} disabled={loading}>
           {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : "Recargar"}
         </Button>
       </div>
@@ -354,7 +358,7 @@ export default function ApiReportByRef() {
                 <SelectTrigger><SelectValue /></SelectTrigger>
                 <SelectContent className="max-h-72">
                   <SelectItem value={ALL}>Todos</SelectItem>
-                  {operatorOpts.map(v => <SelectItem key={v} value={v}>{v}</SelectItem>)}
+                  {operators.map(o => <SelectItem key={o.id} value={String(o.id)}>{o.name}</SelectItem>)}
                 </SelectContent>
               </Select>
             </div>
@@ -406,7 +410,7 @@ export default function ApiReportByRef() {
             <div className="py-12 text-center text-destructive">
               <div className="font-medium">Error</div>
               <div className="text-sm mt-1">{error}</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData(appliedRange.from, appliedRange.to)}>Reintentar</Button>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData(appliedRange.from, appliedRange.to, operatorFilter)}>Reintentar</Button>
             </div>
           )}
           {!loading && !error && filteredAggs.length === 0 && (

@@ -413,7 +413,7 @@ export default function ApiReportByRef() {
             <div className="py-12 text-center text-destructive">
               <div className="font-medium">Error</div>
               <div className="text-sm mt-1">{error}</div>
-              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData(appliedRange.from, appliedRange.to)}>Reintentar</Button>
+              <Button variant="outline" size="sm" className="mt-3" onClick={() => fetchData(appliedRange.from, appliedRange.to, operatorFilter)}>Reintentar</Button>
             </div>
           )}
           {!loading && !error && filteredAggs.length === 0 && (

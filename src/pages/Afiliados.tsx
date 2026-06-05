@@ -1337,7 +1337,7 @@ export default function Afiliados() {
           <div className="[&>div]:max-h-[calc(100vh-260px)]">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
-              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
+              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead><TableHead>Alias</TableHead>
               <TableHead className="w-10 text-center">Margen</TableHead>
               <TableHead className="w-10 text-center">Planes</TableHead>
               <TableHead className="w-10 text-center">Tracking</TableHead>

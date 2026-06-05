@@ -1442,6 +1442,7 @@ export default function Afiliados() {
                         </div>
                       );
                     })()}
+                  </TableCell>
                   <TableCell className="text-center align-middle">
                     <Tooltip>
                       <TooltipTrigger asChild>

@@ -1428,6 +1428,20 @@ export default function Afiliados() {
                       );
                     })()}
                   </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const list: string[] = Array.isArray(r.aliases) && r.aliases.length > 0
+                        ? r.aliases
+                        : (r.alias ? [r.alias] : []);
+                      if (list.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {list.map((a: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="text-[10px]">{a}</Badge>
+                          ))}
+                        </div>
+                      );
+                    })()}
                   <TableCell className="text-center align-middle">
                     <Tooltip>
                       <TooltipTrigger asChild>

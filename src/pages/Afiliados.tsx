@@ -1337,7 +1337,7 @@ export default function Afiliados() {
           <div className="[&>div]:max-h-[calc(100vh-260px)]">
           <Table>
             <TableHeader className="sticky top-0 z-10 bg-background shadow-[0_1px_0_0_hsl(var(--border))]"><TableRow>
-              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead>
+              <TableHead>ID</TableHead><TableHead>Nombre fijo</TableHead><TableHead>Alias</TableHead>
               <TableHead className="w-10 text-center">Margen</TableHead>
               <TableHead className="w-10 text-center">Planes</TableHead>
               <TableHead className="w-10 text-center">Tracking</TableHead>
@@ -1424,6 +1424,21 @@ export default function Afiliados() {
                       return (
                         <div className="text-[10px] text-muted-foreground mt-0.5">
                           Meta diaria: {daily.toFixed(1)} FTD
+                        </div>
+                      );
+                    })()}
+                  </TableCell>
+                  <TableCell>
+                    {(() => {
+                      const list: string[] = Array.isArray(r.aliases) && r.aliases.length > 0
+                        ? r.aliases
+                        : (r.alias ? [r.alias] : []);
+                      if (list.length === 0) return <span className="text-xs text-muted-foreground">—</span>;
+                      return (
+                        <div className="flex flex-wrap gap-1">
+                          {list.map((a: string, i: number) => (
+                            <Badge key={i} variant="secondary" className="text-[10px]">{a}</Badge>
+                          ))}
                         </div>
                       );
                     })()}
